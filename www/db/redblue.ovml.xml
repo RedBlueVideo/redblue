@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Content-type: application/ovml+xml; charset=UTF-8; -->
+<ovml xmlns:ovml="http://vocab.nospoon.tv/ovml#" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <link rel="glossary" xlink:href="/glossary.ovml" />
+  <!-- video = any creative work whose canonical representation is motion-based (visual changes over time) -->
+  <video type="short" xml:lang="en" xml:id="redblue-test">
+    <title>RedBlue Test</title>
+    <published>2014</published>
+    <runtime>variable</runtime>
+    <description>What will it be, Neo?</description>
+    <!-- Presentation defines the ways in which this work can be displayed. -->
+    <presentation><!-- Renamed from resource -->
+      <!-- Width and Height are specified to aid UAs in selecting the right one (or compiling a series into a responsive presentation) -->
+      <poster xml:id="poster-1080" width="1920" height="1080" xlink:href="/path/to/poster-1920x1080.png" />
+      <!--poster xml:id="poster-360" width="" height="" /-->
+      <!-- Frame type, PAR, and frame rate are consistent across all files so no need to specify one for each. -->
+      <frametype abbr="p">progressive</frametype>
+      <par x="1" y="1" />
+      <fps rate="24000" scale="1001" />
+      <!-- We are using XLink 1.1 to avoid having to specify xlink:type. -->
+      <!-- labels are shareable identifiers, similar to xlink:label but not limited to xlink:type="resource|locator". -->
+      <file xml:id="intro-webm-1080p" label="intro" xlink:href="media/intro-1080p.webm">
+        <!-- Specify equivalent files (in terms of quality, dimensions, etc.) but in a different format. -->
+        <link rel="alternate" xlink:href="#intro-mp4-1080p" />
+        <!-- Instrinsic width and height in pixels. -->
+        <width>1920</width>
+        <height>1080</height>
+        <!-- The following specify exactly what the file format is, similar to html's codecs attribute but more specific, and with options for human-readability. The <names> could be omitted in lieu of a mime->name lookup in some database. All of this could be omitted by specifying in an OVML glossary (syntax TBD). -->
+        <container>
+          <name>WebM</name>
+          <mime>video/webm</mime>
+        </container>
+        <codec type="video">
+          <name>VP8</name>
+          <mime>vp8</mime>
+          <bitrate type="cbr">100</bitrate><!-- made-up -->
+          <bitdepth></bitdepth>
+        </codec>
+        <codec type="audio">
+          <name>Vorbis</name>
+          <mime>vorbis</mime>
+          <bitrate>320000</bitrate>
+          <samplerate>48000</samplerate>
+          <bitdepth>24</bitdepth>
+        </codec>
+      </file>
+      <file xml:id="red-webm-1080p" label="red" xlink:href="media/red-pill-1080p.webm">
+        <!-- Specify equivalent files (in terms of quality, dimensions, etc.) but in a different format. -->
+        <link rel="alternate" xlink:href="#intro-mp4-1080p" />
+        <!-- Instrinsic width and height in pixels. -->
+        <width>1920</width>
+        <height>1080</height>
+        <!-- The following specify exactly what the file format is, similar to html's codecs attribute but more specific, and with options for human-readability. The <names> could be omitted in lieu of a mime->name lookup in some database. All of this could be omitted by specifying in an OVML glossary (syntax TBD). -->
+        <container>
+          <name>WebM</name>
+          <mime>video/webm</mime>
+        </container>
+        <codec type="video">
+          <name>VP8</name>
+          <mime>vp8</mime>
+          <bitrate type="cbr">100</bitrate><!-- made-up -->
+          <bitdepth></bitdepth>
+        </codec>
+        <codec type="audio">
+          <name>Vorbis</name>
+          <mime>vorbis</mime>
+          <bitrate>320000</bitrate>
+          <samplerate>48000</samplerate>
+          <bitdepth>24</bitdepth>
+        </codec>
+      </file>
+      <file xml:id="blue-webm-1080p" label="blue" xlink:href="media/blue-pill-1080p.webm">
+        <!-- Specify equivalent files (in terms of quality, dimensions, etc.) but in a different format. -->
+        <link rel="alternate" xlink:href="#intro-mp4-1080p" />
+        <!-- Instrinsic width and height in pixels. -->
+        <width>1920</width>
+        <height>1080</height>
+        <!-- The following specify exactly what the file format is, similar to html's codecs attribute but more specific, and with options for human-readability. The <names> could be omitted in lieu of a mime->name lookup in some database. All of this could be omitted by specifying in an OVML glossary (syntax TBD). -->
+        <container>
+          <name>WebM</name>
+          <mime>video/webm</mime>
+        </container>
+        <codec type="video">
+          <name>VP8</name>
+          <mime>vp8</mime>
+          <bitrate type="cbr">100</bitrate><!-- made-up -->
+          <bitdepth></bitdepth>
+        </codec>
+        <codec type="audio">
+          <name>Vorbis</name>
+          <mime>vorbis</mime>
+          <bitrate>320000</bitrate>
+          <samplerate>48000</samplerate>
+          <bitdepth>24</bitdepth>
+        </codec>
+      </file>
+      <!-- MP4 versions -->
+      <file xml:id="intro-mp4-1080p" label="intro" xlink:href="media/intro-1080p.mp4">
+        <!-- Point to all files labeled "1080p" as equivalents -->
+        <link rel="alternate" xlink:href="#xpointer(//file[@label='intro'])" /><!-- should also have not:parent but i'm not going to deal with that right now -->
+
+        <container>
+          <name>MPEG-4 Part 14</name>
+          <nickname>MP4</nickname>
+          <mime>video/mp4</mime>
+        </container>
+        <codec type="video">
+          <name>H.264/MPEG-4 Part 10 AVC</name>
+          <nickname>H.264</nickname>
+          <codecProfile>High</codecProfile>
+          <mime>avc1.6400xx</mime>
+        </codec>
+        <codec type="audio">
+          <name>AAC-LC</name>
+          <mime>aac</mime>
+        </codec>
+      </file>
+      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/intro-choice-1080.jpg">
+        <!-- Non-video sources -->
+        <codec>
+          <name>JPEG</name>
+          <mime>image/jpeg</mime>
+        </codec>
+      </file>
+      <!-- For simple or prexisting playlists, you may link to an M3U instead, with @xlink:href="/path/to/playlist.m3u8". The mime type will be assumed M3U if server does not respond appropriately. -->
+
+      <!-- linear|nonlinear, default linear. Processed in order w/branching; maybe doesn't need "nonlinear", though may be useful for queuing up relevant processes or letting the user know that this is interactive. Perhaps nonlinear prevents the playlist from executing sequentially. -->
+      <playlist type="nonlinear">
+        <!-- Use xpointer URIs to point to the "platonic ideal" of a resource, i.e. all variations that share a common label attribute value. The returned node set, if non-empty, should be further filtered by the UA for canPlayType(), available bandwidth, etc. -->
+
+        <!-- @xlink:show="embed" implied on all media elements unless otherwise specified. -->
+
+        <!-- In a nonlinear playlist, the first <media> with parent <playlist> or <choices> is implied as having @xlink:actuate="onLoad" for first element, onRequest for all subsequent elements. In a linear playlist, all are implied as onLoad? -->
+
+        <!-- Due to the inclusive nature of the href (recommended), this represents the behavior for all versions, i.e. any combination of: webm or mp4, and 1080p or 360p. -->
+
+        <!-- Because the file variations all use @xml:id="intro-format-resolution", and labels are not IDs, we are free to use @xml:id="intro" here. All media elements in a nonlinear playlist need an ID in order to be linked to. In a linear playlist, they will be played in sequence. -->
+        <media xml:id="intro" xlink:href="#xpointer(//file[@label='intro'])">
+          <!-- @on="durationEnd" -> the end of the file, whenever that is; may also be "durationStart" (@value = 0 implied) or "duration" with @value=X (milliseconds). -->
+
+          <!-- @action="play" is default, "pause" alternate. May leave up to specific implementations to decide which to do; maybe set with playlist/@gotoActionDefault. -->
+          
+          <!-- TBD: @action or possibly @method COULD be a freeform attribute that is up to implementations to decide what to do with it. for instance, you could define some custom javascript function. -->
+          <goto on="durationEnd" xlink:href="#red-pill-or-blue-pill" />
+        </media>
+        <choices xml:id="red-pill-or-blue-pill">
+          <name>What will it be, Neo?</name>
+          <!-- Play something in the bg while user makes decision -->
+          <media xlink:href="#xpointer(//file[@label='intro-choice'])" />
+          <choice xml:id="red">
+            <name>Red Pill</name>
+            <goto xlink:actuate="onRequest" xlink:href="#wakes-up-to-reality" />
+          </choice>
+          <choice xml:id="blue">
+            <name>Blue Pill</name>
+            <goto xlink:actuate="onRequest" xlink:href="#stays-in-the-matrix" />
+          </choice>
+        </choices>
+        <media xml:id="wakes-up-to-reality" xlink:href="#xpointer(//file[@label='red'])">
+          <goto xlink:href="#credits" />
+        </media>
+        <media xml:id="stays-in-the-matrix" xlink:href="#xpointer(//file[@label='blue'])">
+          <goto xlink:href="#credits" />
+        </media>
+        <media xml:id="credits" xlink:href="#xpointer(//file[@label='credits'])" />
+      </playlist>
+    </presentation>
+  </video>
+</ovml>
