@@ -10,6 +10,28 @@ body {
 
 .video-container {
   position: relative;
+}
+
+video {
+  max-width: 100%;
+}
+
+.res-1080p {
+  width: 1920px;
+  height: 1080px;
+}
+
+.res-720p {
+  width: 1280px;
+  height: 720px;
+}
+
+.res-640p {
+  width: 1138px;
+  height: 640px;
+}
+
+.res-360p {
   width: 640px;
   height: 360px;
 }
@@ -71,6 +93,7 @@ h2 {
 #choice-1b {
   color: transparent;
   background: transparent;
+  top: 50%;
 }
 
 #choice-1a {
@@ -84,7 +107,6 @@ h2 {
 #choice-1b {
   position: absolute;
   left: 55%;
-  top: 50%;
   width: 25%;
   height: 60%;
 }

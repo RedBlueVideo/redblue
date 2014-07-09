@@ -79,20 +79,20 @@
         <container>
           <name>WebM</name>
           <mime>video/webm</mime>
+          <codec type="video">
+            <name>VP8</name>
+            <mime>vp8</mime>
+            <bitrate type="cbr">100</bitrate><!-- made-up -->
+            <bitdepth></bitdepth>
+          </codec>
+          <codec type="audio">
+            <name>Vorbis</name>
+            <mime>vorbis</mime>
+            <bitrate>320000</bitrate>
+            <samplerate>48000</samplerate>
+            <bitdepth>24</bitdepth>
+          </codec>
         </container>
-        <codec type="video">
-          <name>VP8</name>
-          <mime>vp8</mime>
-          <bitrate type="cbr">100</bitrate><!-- made-up -->
-          <bitdepth></bitdepth>
-        </codec>
-        <codec type="audio">
-          <name>Vorbis</name>
-          <mime>vorbis</mime>
-          <bitrate>320000</bitrate>
-          <samplerate>48000</samplerate>
-          <bitdepth>24</bitdepth>
-        </codec>
       </file>
       <!-- MP4 versions -->
       <file xml:id="intro-mp4-1080p" label="intro" xlink:href="media/intro-1080p.mp4">
@@ -103,17 +103,17 @@
           <name>MPEG-4 Part 14</name>
           <nickname>MP4</nickname>
           <mime>video/mp4</mime>
+          <codec type="video">
+            <name>H.264/MPEG-4 Part 10 AVC</name>
+            <nickname>H.264</nickname>
+            <codecProfile>High</codecProfile>
+            <mime>avc1.6400xx</mime>
+          </codec>
+          <codec type="audio">
+            <name>AAC-LC</name>
+            <mime>aac</mime>
+          </codec>
         </container>
-        <codec type="video">
-          <name>H.264/MPEG-4 Part 10 AVC</name>
-          <nickname>H.264</nickname>
-          <codecProfile>High</codecProfile>
-          <mime>avc1.6400xx</mime>
-        </codec>
-        <codec type="audio">
-          <name>AAC-LC</name>
-          <mime>aac</mime>
-        </codec>
       </file>
       <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/morpheus-hands.jpg">
         <!-- Non-video sources -->
@@ -121,6 +121,18 @@
           <name>JPEG</name>
           <mime>image/jpeg</mime>
         </codec>
+      </file>
+      <file xml:id="credits" label="credits" xlink:href="media/the-end.webm">
+        <!-- Done: Conceptually it might make more sense to put codec and coduc inside container -->
+        <container>
+          <mime>video/webm</mime>
+          <codec type="video">
+            <mime>vp8</mime>
+          </codec>
+          <codec type="audio">
+            <mime>vorbis</mime>
+          </codec>
+        </container>
       </file>
       <!-- For simple or prexisting playlists, you may link to an M3U instead, with @xlink:href="/path/to/playlist.m3u8". The mime type will be assumed M3U if server does not respond appropriately. -->
 
@@ -157,12 +169,12 @@
           </choice>
         </choices>
         <media xml:id="wakes-up-to-reality" xlink:href="#xpointer(//file[@label='red'])">
-          <goto xlink:href="#credits" />
+          <goto xlink:href="#the-end" />
         </media>
         <media xml:id="stays-in-the-matrix" xlink:href="#xpointer(//file[@label='blue'])">
-          <goto xlink:href="#credits" />
+          <goto xlink:href="#the-end" />
         </media>
-        <media xml:id="credits" xlink:href="#xpointer(//file[@label='credits'])" />
+        <media xml:id="the-end" xlink:href="#xpointer(//file[@label='credits'])" />
       </playlist>
     </presentation>
   </video>

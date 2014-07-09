@@ -33,6 +33,7 @@ var bufferLoading = false;
 var video = document.getElementById( 'v' );
 var duration;
 var mediaSource = new MediaSource();
+var mediaQueueHistory = [];
 //var mediaQueue;
 var checkStatus;
 var choiceContainer;
@@ -45,6 +46,8 @@ var lastSegmentAppended = false;
 var sourceBuffer;
 var gotoElement;
 var fileMime;
+var obj;
+var endOfStream = false;
 
 function onSourceOpen( videoTag, event ) {
   var mediaSource = event.target;
@@ -264,6 +267,7 @@ function getMime( fileElement ) {
     return returnVal.textContent;
   }
 
+  // for images etc. with no container format
   returnVal = getNodes( 'codec/mime', fileElement ).iterateNext();
 
   if ( returnVal ) {
@@ -427,14 +431,18 @@ function parseNonlinearPlaylistItems( playlistItems ) {
       }
 
       if ( containers.length > 0 ) {
-        mediaQueue.push({
+        obj = {
           //'type': 'media',
           'mime': containers[0]['mime'],
-          'path': getXLink( containers[0]['node'].parentElement )
-        });
+          'path': getXLink( containers[0]['node'].parentElement ),
+          'line': 440
+        };
+
+        mediaQueue.push( obj );
+        mediaQueueHistory.push( obj );
       }
 
-      console.log( playlistItem );
+      console.log( playlistItem.children.length );
 
       if ( playlistItem.children.length > 0 ) {
         for ( i = playlistItem.children.length - 1; i >= 0; --i) {
@@ -450,16 +458,22 @@ function parseNonlinearPlaylistItems( playlistItems ) {
             break;
           }
         }
+        console.log( 'had some grandchildren' );
       } else {
-        fileElement = getNodesFromXLink( playlistItem ).iterateNext();
-        var filePath = getXLink( fileElement );
+        // fileElement = getNodesFromXLink( playlistItem ).iterateNext();
+        // var filePath = getXLink( fileElement );
 
-        mediaQueue.push({
-          'path': filePath,
-          'type': getMime( fileElement )
-        });
+        // obj = {
+        //   'path': filePath,
+        //   'type': getMime( fileElement ),
+        //   'line': 471
+        // };
 
-        console.log( mediaQueue );
+        // mediaQueue.push( obj );
+        // mediaQueueHistory.push( obj );
+
+        // console.log( mediaQueue );
+        endOfStream = true;
       }
     break;
 
@@ -521,6 +535,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
         case 'image/webp':
           //console.log(choicesContainer);
           choiceContainer.style.backgroundImage = 'url(' + file + ')';
+          choiceContainer.style.backgroundRepeat = 'no-repeat';
           choiceContainer.style.backgroundSize = 'contain';
           //console.log(choicesContainer.style.backgroundImage);
           //console.log('happened');
@@ -601,7 +616,10 @@ function importXML( xmlFile ) {
 function presentChoice( event ) {
   //console.log(this.duration);
   if ( this.currentTime === this.duration ) {
-    
+    if ( endOfStream ) {
+      mediaSource.endOfStream();
+    }
+
     choiceContainer.removeAttribute('hidden');
     choiceContainer.hidden = false;
     this.removeEventListener('timeupdate', presentChoice);
@@ -629,13 +647,18 @@ function choiceClicked( event ) {
     firstChoiceSelected = true;
     lastSegmentAppended = true;
 
-    // if data-goto
-    parseNonlinearPlaylistItems( getNodes( parseXPointer( link.getAttribute('data-goto') ) ) );
+    // obj = {
+    //   'path': link.getAttribute('data-play'),
+    //   'mime': link.getAttribute('data-type'),
+    //   'line': 651
+    // };
 
-    mediaQueue.push({
-      'path': link.getAttribute('data-play'),
-      'type': link.getAttribute('data-type')
-    });
+    // mediaQueue.push( obj );
+    // mediaQueueHistory.push( obj );
+
+    // if data-goto
+
+    parseNonlinearPlaylistItems( getNodes( parseXPointer( link.getAttribute('data-goto') ) ).iterateNext() );
 
     get_and_play();
   }
@@ -658,6 +681,7 @@ function get_and_play() {
 
   if ( mediaQueue.length === 0 ) {
     //mediaSource.endOfStream();
+
     return false;
   }
 
