@@ -115,7 +115,7 @@
           <mime>aac</mime>
         </codec>
       </file>
-      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/intro-choice-1080.jpg">
+      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/morpheus-hands.jpg">
         <!-- Non-video sources -->
         <codec>
           <name>JPEG</name>

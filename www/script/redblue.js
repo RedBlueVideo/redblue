@@ -20,7 +20,7 @@ var fileTypePreferences = [
     }
   }
 ];
-var finalPlaylist = [];
+var mediaQueue = [];
 var choicesContainer = document.getElementById( 'choices-container' );
 var choicesCounter = 0;
 
@@ -33,7 +33,7 @@ var bufferLoading = false;
 var video = document.getElementById( 'v' );
 var duration;
 var mediaSource = new MediaSource();
-//var finalPlaylist;
+//var mediaQueue;
 var checkStatus;
 var choiceContainer;
 var choicesContainerCounter = 0;
@@ -43,6 +43,8 @@ var firstChoiceSelected = false;
 var firstSegmentAppended = false;
 var lastSegmentAppended = false;
 var sourceBuffer;
+var gotoElement;
+var fileMime;
 
 function onSourceOpen( videoTag, event ) {
   var mediaSource = event.target;
@@ -255,6 +257,26 @@ function getNodes( xpath, refNode, xpathType ) {
   );
 }
 
+function getMime( fileElement ) {
+  var returnVal = getNodes( 'container/mime', fileElement ).iterateNext();
+
+  if ( returnVal ) {
+    return returnVal.textContent;
+  }
+
+  returnVal = getNodes( 'codec/mime', fileElement ).iterateNext();
+
+  if ( returnVal ) {
+    return returnVal.textContent;
+  }
+
+  return returnVal;
+}
+
+function getNodesFromXLink( refNode ) {
+  return getNodes( getQueryFromXLink( refNode ) );
+}
+
 // function nsResolver( prefix ) {
 //   prefix = prefix || 'ovml';
 
@@ -342,7 +364,7 @@ function parseXPointer( xlinkHref ) {
 }
 
 function parseNonlinearPlaylistItems( playlistItems ) {
-  console.log( playlistItems.localName );
+  console.log( playlistItems );
 
   var playlistItem;
 
@@ -368,6 +390,8 @@ function parseNonlinearPlaylistItems( playlistItems ) {
   var choices;
   var choice;
   var choicesHTML = '<ul>';
+
+  //console.log( playlistItem.getAttribute('xml:id') );
   
   switch ( playlistItem.localName ) {
     case 'media':
@@ -403,12 +427,14 @@ function parseNonlinearPlaylistItems( playlistItems ) {
       }
 
       if ( containers.length > 0 ) {
-        finalPlaylist.push({
+        mediaQueue.push({
           //'type': 'media',
           'mime': containers[0]['mime'],
           'path': getXLink( containers[0]['node'].parentElement )
         });
       }
+
+      console.log( playlistItem );
 
       if ( playlistItem.children.length > 0 ) {
         for ( i = playlistItem.children.length - 1; i >= 0; --i) {
@@ -424,6 +450,16 @@ function parseNonlinearPlaylistItems( playlistItems ) {
             break;
           }
         }
+      } else {
+        fileElement = getNodesFromXLink( playlistItem ).iterateNext();
+        var filePath = getXLink( fileElement );
+
+        mediaQueue.push({
+          'path': filePath,
+          'type': getMime( fileElement )
+        });
+
+        console.log( mediaQueue );
       }
     break;
 
@@ -441,22 +477,22 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
       // static bg - use poster frame?
       // http://stackoverflow.com/a/19457115/214325
-      
+
       while ( choice ) {
-        var gotoElement = getNodes( 'goto', choice ).iterateNext();
+        gotoElement = getNodes( 'goto', choice ).iterateNext();
         xlinkHref = getXLink( gotoElement );
         query = parseXPointer( xlinkHref );
+
         mediaElement = getNodes( query ).iterateNext();
 
         query = getQueryFromXLink( mediaElement );
         fileElement = getNodes( query ).iterateNext(); // @todo: filter by filetype/etc.
-        var fileMime = getNodes( 'container/mime', fileElement ).iterateNext().textContent;
-        console.log( fileMime );
+        fileMime = getMime( fileElement );
 
         var choiceLetter = String.fromCharCode( 64 + choicesCounter ).toLowerCase();
         
         choicesHTML += '<li>' +
-          '<a id="' + choicesContainerCounter + choiceLetter + '" class="choice choice-' + choiceLetter + '" href="' + xlinkHref + '" data-play="' + getXLink( fileElement ) + '" data-type="' + fileMime + '">' +
+          '<a id="choice-' + choicesContainerCounter + choiceLetter + '" class="choice choice-' + choiceLetter + '" href="javascript:void(0);" data-goto="' + xlinkHref + '" data-play="' + getXLink( fileElement ) + '" data-type="' + fileMime + '">' +
             getNodes( 'name', choice ).iterateNext().textContent +
           '</a>' +
         '</li>';
@@ -469,6 +505,30 @@ function parseNonlinearPlaylistItems( playlistItems ) {
       choicesContainer.innerHTML += '<nav id="choice-' + choicesContainerCounter + '" class="choices" hidden="hidden"><div class="container"><h2>' + choicesName + '</h2>' + choicesHTML + '</div></nav>';
 
       choiceContainer = document.getElementById( 'choice-' + choicesContainerCounter );
+
+      // if bg
+      fileElement = getNodesFromXLink( choicesBg ).iterateNext();
+      fileMime = getMime( fileElement );
+      file = getXLink( fileElement );
+
+      console.log( fileElement.localName + ' + ' + fileMime );
+      console.log(fileMime);
+
+      switch ( fileMime ) {
+        case 'image/jpeg':
+        case 'image/png':
+        case 'image/gif':
+        case 'image/webp':
+          //console.log(choicesContainer);
+          choiceContainer.style.backgroundImage = 'url(' + file + ')';
+          choiceContainer.style.backgroundSize = 'contain';
+          //console.log(choicesContainer.style.backgroundImage);
+          //console.log('happened');
+        break;
+
+        default:
+          console.log('didnt happen');
+      }
     break;
   }
 }
@@ -483,10 +543,10 @@ function mediaSourceOnSourceOpen( event ) {
   importXML( 'db/redblue.ovml.xml' );
 
   //console.log(buffers);
-  console.log( finalPlaylist );
+  console.log( mediaQueue );
 
-  for ( var i = finalPlaylist.length - 1; i >= 0; --i ) {
-    GET( finalPlaylist[i].path, finalPlaylist[i].type, readPlaylistItem );
+  for ( var i = mediaQueue.length - 1; i >= 0; --i ) {
+    GET( mediaQueue[i].path, mediaQueue[i].type, readPlaylistItem );
   }
 
   get_and_play();
@@ -561,8 +621,6 @@ function choiceClicked( event ) {
 
   var id = event.target.id;
 
-
-
   if ( !firstChoiceSelected ) {
     var link = event.target;
 
@@ -571,7 +629,10 @@ function choiceClicked( event ) {
     firstChoiceSelected = true;
     lastSegmentAppended = true;
 
-    finalPlaylist.push({
+    // if data-goto
+    parseNonlinearPlaylistItems( getNodes( parseXPointer( link.getAttribute('data-goto') ) ) );
+
+    mediaQueue.push({
       'path': link.getAttribute('data-play'),
       'type': link.getAttribute('data-type')
     });
@@ -595,15 +656,15 @@ function get_and_play() {
     return false;
   }
 
-  if ( finalPlaylist.length === 0 ) {
+  if ( mediaQueue.length === 0 ) {
     //mediaSource.endOfStream();
     return false;
   }
 
   var buffer = 0;
 
-  GET( finalPlaylist[0].path, finalPlaylist[0].type, function ( uInt8Array ) {
-    type = finalPlaylist[0].type || 'video/webm';
+  GET( mediaQueue[0].path, mediaQueue[0].type, function ( uInt8Array ) {
+    type = mediaQueue[0].type || 'video/webm';
 
     var file = new Blob(
       [uInt8Array],
@@ -644,9 +705,9 @@ function get_and_play() {
         video.play(); // Start playing after 1st chunk is appended.
       }
       
-      finalPlaylist = finalPlaylist.slice( 1 );
+      mediaQueue = mediaQueue.slice( 1 );
 
-      if ( finalPlaylist.length > 0 ) {
+      if ( mediaQueue.length > 0 ) {
         clearInterval( checkStatus );
 
         checkStatus = setInterval(function () {

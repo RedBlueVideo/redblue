@@ -42,7 +42,7 @@ h2 {
 
 .container {
   width: 100%;
-  top: 40%;
+  top: 5%;
   position: relative;
   height: 60%;
 }
@@ -64,12 +64,27 @@ h2 {
   border-radius: 3em;
   display: block;
   width: 80px;
+  position: absolute;
 }
 
-.choice-a {
-  background: #cc092f;
+#choice-1a,
+#choice-1b {
+  color: transparent;
+  background: transparent;
 }
 
-.choice-b {
-  background: #002596;
+#choice-1a {
+  left: 20%;
+  width: 25%;
+  height: 57%;
+  color: hsla(0, 0%, 0%, 0);
+  background: hsla(0, 0%, 0%, 0);
+}
+
+#choice-1b {
+  position: absolute;
+  left: 55%;
+  top: 50%;
+  width: 25%;
+  height: 60%;
 }
