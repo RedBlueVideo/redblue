@@ -474,6 +474,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
         // console.log( mediaQueue );
         endOfStream = true;
+        playWhenReady();
       }
     break;
 
@@ -550,9 +551,13 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
 function mediaSourceOnSourceOpen( event ) {
   //var sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
-  sourceBuffer = mediaSource.addSourceBuffer( 'video/webm; codecs="vorbis,vp8"' );
 
-  console.log( 'mediaSource readyState: ' + this.readyState );
+  // Why would sourceopen even fire again after the first time???
+  if ( !endOfStream ) {
+    sourceBuffer = mediaSource.addSourceBuffer( 'video/webm; codecs="vorbis,vp8"' );
+  } else {
+    return false;
+  }
 
   // Load playlist
   importXML( 'db/redblue.ovml.xml' );
@@ -568,6 +573,22 @@ function mediaSourceOnSourceOpen( event ) {
 
   // video.addEventListener('progress', function(e) {
   // });
+}
+
+function playWhenReady() {
+  clearInterval( checkStatus );
+
+  checkStatus = setInterval(function () {
+    var appended = get_and_play();
+
+    if ( appended ) {
+      clearInterval( checkStatus );
+
+      if ( endOfStream ) {
+        mediaSource.endOfStream();
+      }
+    }
+  }, 1000);
 }
 
 function mediaSourceOnSourceEnded( event ) {
@@ -586,9 +607,9 @@ function initLibrary() {
 
   choicesContainer.addEventListener('click', choiceClicked, false);
 
-  mediaSource.addEventListener('sourceopen', mediaSourceOnSourceOpen, false);
+  mediaSource.addEventListener( 'sourceopen', mediaSourceOnSourceOpen, false );
 
-  mediaSource.addEventListener('sourceended', mediaSourceOnSourceEnded, false);
+  mediaSource.addEventListener( 'sourceended', mediaSourceOnSourceEnded, false );
 }
 
 function importXML( xmlFile ) {
@@ -616,10 +637,6 @@ function importXML( xmlFile ) {
 function presentChoice( event ) {
   //console.log(this.duration);
   if ( this.currentTime === this.duration ) {
-    if ( endOfStream ) {
-      mediaSource.endOfStream();
-    }
-
     choiceContainer.removeAttribute('hidden');
     choiceContainer.hidden = false;
     this.removeEventListener('timeupdate', presentChoice);
@@ -680,8 +697,6 @@ function get_and_play() {
   }
 
   if ( mediaQueue.length === 0 ) {
-    //mediaSource.endOfStream();
-
     return false;
   }
 
@@ -732,15 +747,7 @@ function get_and_play() {
       mediaQueue = mediaQueue.slice( 1 );
 
       if ( mediaQueue.length > 0 ) {
-        clearInterval( checkStatus );
-
-        checkStatus = setInterval(function () {
-          var appended = get_and_play();
-
-          if ( appended ) {
-            clearInterval( checkStatus );
-          }
-        }, 1000);
+        playWhenReady();
       }
     };
 
