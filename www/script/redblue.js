@@ -369,16 +369,19 @@ function parseXPointer( xlinkHref ) {
 
 function parseNonlinearPlaylistItems( playlistItems ) {
   console.log( playlistItems );
+  console.log( playlistItems.localName );
+  console.log( playlistItems.children );
+  console.log( playlistItems.children.length );
 
   var playlistItem;
 
-  if (
-    ( playlistItems.localName === 'playlist' ) && //|| playlistItems.localName === 'choices' )
-    playlistItems.hasOwnProperty( 'children' ) && playlistItems.children.length > 0 ) {
-    
+  // hasOwnProperty('children') does not work in Firefox
+  if ( ( playlistItems.localName === 'playlist' ) && playlistItems.children && playlistItems.children.length > 0 ) {
     playlistItem = playlistItems.children[0];
+    console.log( playlistItem );
   } else {
     playlistItem = playlistItems;
+    console.log( playlistItem );
   }
 
   var i;
@@ -395,10 +398,14 @@ function parseNonlinearPlaylistItems( playlistItems ) {
   var choice;
   var choicesHTML = '<ul>';
 
+  console.log( 'got this far' );
+  console.log( playlistItem.localName );
+
   //console.log( playlistItem.getAttribute('xml:id') );
   
   switch ( playlistItem.localName ) {
     case 'media':
+      console.log( 'got this far!' );
       query = getQueryFromXLink( playlistItem );
 
       mediaFile = getNodes( query ); // This will return both webm and mp4
@@ -479,6 +486,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
     break;
 
     case 'choices':
+      console.log( 'got this far' );
       console.log('encountered a choice');
       console.log( playlistItem );
       //parseNonlinearPlaylistItems( playlistItem );
@@ -561,18 +569,6 @@ function mediaSourceOnSourceOpen( event ) {
 
   // Load playlist
   importXML( 'db/redblue.ovml.xml' );
-
-  //console.log(buffers);
-  console.log( mediaQueue );
-
-  for ( var i = mediaQueue.length - 1; i >= 0; --i ) {
-    GET( mediaQueue[i].path, mediaQueue[i].type, readPlaylistItem );
-  }
-
-  get_and_play();
-
-  // video.addEventListener('progress', function(e) {
-  // });
 }
 
 function playWhenReady() {
@@ -605,7 +601,7 @@ function initLibrary() {
   video.src = window.URL.createObjectURL( mediaSource );
   video.pause();
 
-  choicesContainer.addEventListener('click', choiceClicked, false);
+  choicesContainer.addEventListener( 'click', choiceClicked, false );
 
   mediaSource.addEventListener( 'sourceopen', mediaSourceOnSourceOpen, false );
 
@@ -613,25 +609,33 @@ function initLibrary() {
 }
 
 function importXML( xmlFile ) {
-  var xhr;
+  var xhr = new XMLHttpRequest();
 
-  try {
-    xhr = new XMLHttpRequest();
-    xhr.open( 'GET', xmlFile, false );
-  } catch ( Exception ) {
-    xmlDoc = document.implementation.createDocument( 'http://vocab.nospoon.tv/ovml#', 'ovml', null );
-    xmlDoc.onload = readXML;
-    xmlDoc.load( xmlFile );
-    xmlLoaded = true;
-  }
+  xhr.open( 'GET', xmlFile, true );
+  xhr.setRequestHeader( 'Content-Type', 'text/xml' ); // application/ovml+xml
+  xhr.onload = function xhrOnLoad( event ) {
+    switch ( xhr.status ) {
+      case 200:
+        xmlDoc = xhr.responseXML;
+        readXML();
 
-  if ( !xmlLoaded ) {
-    xhr.setRequestHeader( 'Content-Type', 'text/xml' );
-    xhr.send( '' );
-    xmlDoc = xhr.responseXML;
-    readXML();
-    xmlLoaded = true;
-  }
+        //console.log(buffers);
+        console.log( mediaQueue );
+
+        for ( var i = mediaQueue.length - 1; i >= 0; --i ) {
+          GET( mediaQueue[i].path, mediaQueue[i].type, readPlaylistItem );
+        }
+
+        get_and_play();
+
+        // video.addEventListener('progress', function(e) {
+        // });
+      break;
+
+      default:
+    }
+  };
+  xhr.send( '' );
 }
 
 function presentChoice( event ) {
