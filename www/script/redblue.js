@@ -1,6 +1,13 @@
 /*jshint laxcomma:true, smarttabs:true */
 //(function () {
 //"use strict";
+
+var DEBUG_MODE = true;
+
+if ( !DEBUG_MODE ) {
+  console.log = function () {};
+}
+
 var xmlDoc;
 var xmlLoaded = false;
 var evaluator = new XPathEvaluator();
@@ -133,9 +140,9 @@ function appendNextMediaSegment(mediaSource) {
   mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
 }
 
-function onSeeking(mediaSource, e) {
+function onSeeking( mediaSource, event ) {
   console.log('--onSeeking--');
-  var video = e.target;
+  var video = event.target;
 
   if (mediaSource.readyState == "open") {
     // Abort current segment append.
@@ -216,7 +223,7 @@ function GET( url, type, callback ) {
 
 // function loadM3Uplaylist( url, callback ) {
 //   var xhr = new XMLHttpRequest();
-//   xhr.addEventListener('load', function(e) {
+//   xhr.addEventListener('load', function ( event ) {
 
 //     if ( xhr.status !== 200 ) {
 //       console.log( "Unexpected status code " + xhr.status + " for " + url );
@@ -580,9 +587,9 @@ function playWhenReady() {
     if ( appended ) {
       clearInterval( checkStatus );
 
-      if ( endOfStream ) {
-        mediaSource.endOfStream();
-      }
+      // if ( endOfStream ) {
+      //   mediaSource.endOfStream();
+      // }
     }
   }, 1000);
 }
@@ -628,7 +635,7 @@ function importXML( xmlFile ) {
 
         get_and_play();
 
-        // video.addEventListener('progress', function(e) {
+        // video.addEventListener('progress', function ( event ) {
         // });
       break;
 
@@ -640,7 +647,15 @@ function importXML( xmlFile ) {
 
 function presentChoice( event ) {
   //console.log(this.duration);
-  if ( this.currentTime === this.duration ) {
+
+  console.log( +this.currentTime.toFixed(0), +this.duration.toFixed(0) );
+
+  // toFixed works around a Firefox bug but makes it slightly less accurate
+  // @todo: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
+  // Imprecision may not matter if it's going to be an overlay onto bg video.
+  if ( +this.currentTime.toFixed(0) === +this.duration.toFixed(0) ) {
+  //if ( this.currentTime === this.duration ) {
+    console.log( 'choice presented' );
     choiceContainer.removeAttribute('hidden');
     choiceContainer.hidden = false;
     this.removeEventListener('timeupdate', presentChoice);
@@ -720,8 +735,8 @@ function get_and_play() {
     // Reads aren't guaranteed to finish in the same order they're started in,
     // so we need to read + append the next chunk after the previous reader
     // is done (onload is fired).
-    reader.onload = function ( e ) {
-      var mediaSegment = new Uint8Array( e.target.result );
+    reader.onload = function ( event ) {
+      var mediaSegment = new Uint8Array( event.target.result );
 
       duration = mediaSource.duration || 0;
 
