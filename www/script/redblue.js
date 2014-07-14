@@ -43,6 +43,7 @@ var mediaSource = new MediaSource();
 var mediaQueueHistory = [];
 //var mediaQueue;
 var checkStatus;
+var checkStatusBuffer; // Do we really need 2?
 var choiceContainer;
 var choicesContainerCounter = 0;
 var choices = document.querySelectorAll( '.choice' );
@@ -375,10 +376,10 @@ function parseXPointer( xlinkHref ) {
 }
 
 function parseNonlinearPlaylistItems( playlistItems ) {
-  console.log( playlistItems );
-  console.log( playlistItems.localName );
-  console.log( playlistItems.children );
-  console.log( playlistItems.children.length );
+  // console.log( playlistItems );
+  // console.log( playlistItems.localName );
+  // console.log( playlistItems.children );
+  // console.log( playlistItems.children.length );
 
   var playlistItem;
 
@@ -405,14 +406,10 @@ function parseNonlinearPlaylistItems( playlistItems ) {
   var choice;
   var choicesHTML = '<ul>';
 
-  console.log( 'got this far' );
-  console.log( playlistItem.localName );
-
   //console.log( playlistItem.getAttribute('xml:id') );
   
   switch ( playlistItem.localName ) {
     case 'media':
-      console.log( 'got this far!' );
       query = getQueryFromXLink( playlistItem );
 
       mediaFile = getNodes( query ); // This will return both webm and mp4
@@ -456,7 +453,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
         mediaQueueHistory.push( obj );
       }
 
-      console.log( playlistItem.children.length );
+      //console.log( playlistItem.children.length );
 
       if ( playlistItem.children.length > 0 ) {
         for ( i = playlistItem.children.length - 1; i >= 0; --i) {
@@ -472,7 +469,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
             break;
           }
         }
-        console.log( 'had some grandchildren' );
+        //console.log( 'had some grandchildren' );
       } else {
         // fileElement = getNodesFromXLink( playlistItem ).iterateNext();
         // var filePath = getXLink( fileElement );
@@ -488,14 +485,13 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
         // console.log( mediaQueue );
         endOfStream = true;
-        playWhenReady();
+        playNextWhenReady();
       }
     break;
 
     case 'choices':
-      console.log( 'got this far' );
       console.log('encountered a choice');
-      console.log( playlistItem );
+      //console.log( playlistItem );
       //parseNonlinearPlaylistItems( playlistItem );
 
       choicesBg = getNodes( 'media', playlistItem ).iterateNext();
@@ -541,8 +537,8 @@ function parseNonlinearPlaylistItems( playlistItems ) {
       fileMime = getMime( fileElement );
       file = getXLink( fileElement );
 
-      console.log( fileElement.localName + ' + ' + fileMime );
-      console.log(fileMime);
+      // console.log( fileElement.localName + ' + ' + fileMime );
+      // console.log(fileMime);
 
       switch ( fileMime ) {
         case 'image/jpeg':
@@ -578,11 +574,32 @@ function mediaSourceOnSourceOpen( event ) {
   importXML( 'db/redblue.ovml.xml' );
 }
 
-function playWhenReady() {
+function isMediaSourceReady() {
+  if ( mediaSource.sourceBuffers[0].updating ) {
+    console.log('still appending');
+    return false;
+  }
+
+  if ( mediaSource.readyState !== "open" ) {
+    return false;
+  }
+
+  if ( mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
+    return false;
+  }
+
+  if ( mediaQueue.length === 0 ) {
+    return false;
+  }
+
+  return true;
+}
+
+function playNextWhenReady() {
   clearInterval( checkStatus );
 
   checkStatus = setInterval(function () {
-    var appended = get_and_play();
+    var appended = getAndPlay();
 
     if ( appended ) {
       clearInterval( checkStatus );
@@ -590,6 +607,51 @@ function playWhenReady() {
       // if ( endOfStream ) {
       //   mediaSource.endOfStream();
       // }
+    }
+  }, 1000);
+}
+
+function appendBufferWhenReady( mediaSegment ) {
+  clearInterval( checkStatusBuffer );
+
+  checkStatusBuffer = setInterval(function () {
+    var ready = isMediaSourceReady();
+
+    console.log( 'isMediaSourceReady', ready );
+
+    if ( ready ) {
+      clearInterval( checkStatusBuffer );
+
+      duration = mediaSource.duration || 0;
+
+      console.log('Duration: ' + duration);
+
+      sourceBuffer.timestampOffset = duration;
+      //mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
+
+      sourceBuffer.appendBuffer( mediaSegment );
+
+      if ( !firstSegmentAppended ) {
+        firstSegmentDuration = duration;
+
+        //console.log( video.duration );
+        //console.log( mediaSegment );
+        //console.log( sourceBuffer );
+
+        video.addEventListener( 'timeupdate', presentChoice );
+
+        firstSegmentAppended = true;
+      }
+
+      if ( video.paused ) {
+        video.play(); // Start playing after 1st chunk is appended.
+      }
+      
+      mediaQueue = mediaQueue.slice( 1 );
+
+      if ( mediaQueue.length > 0 ) {
+        playNextWhenReady();
+      }
     }
   }, 1000);
 }
@@ -633,7 +695,7 @@ function importXML( xmlFile ) {
           GET( mediaQueue[i].path, mediaQueue[i].type, readPlaylistItem );
         }
 
-        get_and_play();
+        getAndPlay();
 
         // video.addEventListener('progress', function ( event ) {
         // });
@@ -648,7 +710,7 @@ function importXML( xmlFile ) {
 function presentChoice( event ) {
   //console.log(this.duration);
 
-  console.log( +this.currentTime.toFixed(0), +this.duration.toFixed(0) );
+  //console.log( +this.currentTime.toFixed(0), +this.duration.toFixed(0) );
 
   // toFixed works around a Firefox bug but makes it slightly less accurate
   // @todo: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
@@ -696,25 +758,19 @@ function choiceClicked( event ) {
 
     parseNonlinearPlaylistItems( getNodes( parseXPointer( link.getAttribute('data-goto') ) ).iterateNext() );
 
-    get_and_play();
+    getAndPlay();
   }
 }
 
-function get_and_play() {
+function getAndPlay() {
   // Make sure the previous append is not still pending.
-  if ( mediaSource.sourceBuffers[0].updating ) {
-    console.log('still appending');
+  var ready = isMediaSourceReady();
+
+  if ( !ready ) {
     return false;
   }
 
-  if ( mediaSource.readyState !== "open" ) {
-    return false;
-  }
-
-  if ( mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
-    return false;
-  }
-
+  // This is already checked in isMediaSourceReady. Am I going insane?
   if ( mediaQueue.length === 0 ) {
     return false;
   }
@@ -730,6 +786,7 @@ function get_and_play() {
         type: type
       }
     );
+
     var reader = new FileReader();
 
     // Reads aren't guaranteed to finish in the same order they're started in,
@@ -737,37 +794,7 @@ function get_and_play() {
     // is done (onload is fired).
     reader.onload = function ( event ) {
       var mediaSegment = new Uint8Array( event.target.result );
-
-      duration = mediaSource.duration || 0;
-
-      console.log('Duration: ' + duration);
-
-      sourceBuffer.timestampOffset = duration;
-      //mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
-
-      sourceBuffer.appendBuffer( mediaSegment );
-
-      if ( !firstSegmentAppended ) {
-        firstSegmentDuration = duration;
-
-        //console.log( video.duration );
-        //console.log( mediaSegment );
-        //console.log( sourceBuffer );
-
-        video.addEventListener( 'timeupdate', presentChoice );
-
-        firstSegmentAppended = true;
-      }
-
-      if ( video.paused ) {
-        video.play(); // Start playing after 1st chunk is appended.
-      }
-      
-      mediaQueue = mediaQueue.slice( 1 );
-
-      if ( mediaQueue.length > 0 ) {
-        playWhenReady();
-      }
+      appendBufferWhenReady( mediaSegment );
     };
 
     reader.readAsArrayBuffer( file );
