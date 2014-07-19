@@ -15,17 +15,17 @@ var nsResolver;
 var ns = {};
 var fileTypePreferences = [
   {
-    'video/webm': {
-      'video': ['vp9', 'vp8'],
-      'audio': ['vorbis']
-    }
-  },
-  {
     'video/mp4': {
       'video': ['avc1.6400xx'],
       'audio': ['aac']
     }
-  }
+  },
+  // {
+  //   'video/webm': {
+  //     'video': ['vp9', 'vp8'],
+  //     'audio': ['vorbis']
+  //   }
+  // }
 ];
 var mediaQueue = [];
 var choicesContainer = document.getElementById( 'choices-container' );
@@ -64,7 +64,9 @@ function onSourceOpen( videoTag, event ) {
     return;
   }
 
-  var sourceBuffer = mediaSource.addSourceBuffer( 'video/webm; codecs="vorbis,vp8"' );
+  // 'video/webm; codecs="vorbis,vp8"'
+  // 'video/mp4'
+  var sourceBuffer = mediaSource.addSourceBuffer( 'video/mp4' );
 
   //videoTag.addEventListener('seeking', onSeeking.bind(videoTag, mediaSource));
   //videoTag.addEventListener('progress', onProgress.bind(videoTag, mediaSource));
@@ -93,54 +95,6 @@ function onSourceOpen( videoTag, event ) {
   sourceBuffer.appendBuffer(initSegment);
 }
 
-function appendNextMediaSegment(mediaSource) {
-  console.log('--appendNextMediaSegment--');
-  
-  // Make sure the previous append is not still pending.
-  if ( mediaSource.sourceBuffers[0].updating ) {
-    return;
-  }
-
-  if ( mediaSource.readyState !== "open" ) {
-    return;
-  }
-
-  if ( mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
-    return;
-  }
-
-  // If we have run out of stream data, then signal end of stream.
-  // This should come after the updating check.
-  if ( !HaveMoreMediaSegments() ) {
-    console.log( mediaSource.readyState );
-    console.log( "There are no more media segments" );
-    mediaSource.endOfStream();
-    return;
-  }
-
-  if (bufferLoading) {
-    return;
-  }
-
-  var mediaSegment = GetNextMediaSegment();
-
-  if (!mediaSegment) {
-    // Error fetching the next media segment.
-    console.log("Error fetching the next media segment.");
-    mediaSource.endOfStream("network");
-    return;
-  }
-
-  // NOTE: If mediaSource.readyState == “ended”, this appendBuffer() call will
-  // cause mediaSource.readyState to transition to "open". The web application
-  // should be prepared to handle multiple “sourceopen” events.
-
-  duration = mediaSource.duration;
-  console.log('Duration: ' + duration);
-  mediaSource.sourceBuffers[0].timestampOffset = duration;
-  mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
-}
-
 function onSeeking( mediaSource, event ) {
   console.log('--onSeeking--');
   var video = event.target;
@@ -165,7 +119,7 @@ function onProgress( mediaSource, e ) {
 }
 
 function readPlaylistItem( uInt8Array, type ) {
-  type = type || 'video/webm';
+  type = type || 'video/mp4'; //'video/webm';
   
   var file = new Blob(
     [uInt8Array],
@@ -335,6 +289,7 @@ function readXML() {
 }
 
 function getXLink( node ) {
+  console.log( node );
   return node.getAttributeNS( ns.xlink, 'href' );
 }
 
@@ -485,7 +440,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
         // console.log( mediaQueue );
         endOfStream = true;
-        playNextWhenReady();
+        playNextWhenReady(489);
       }
     break;
 
@@ -565,7 +520,8 @@ function mediaSourceOnSourceOpen( event ) {
 
   // Why would sourceopen even fire again after the first time???
   if ( !endOfStream ) {
-    sourceBuffer = mediaSource.addSourceBuffer( 'video/webm; codecs="vorbis,vp8"' );
+    // 'video/webm; codecs="vorbis,vp8"'
+    sourceBuffer = mediaSource.addSourceBuffer( 'video/mp4' );
   } else {
     return false;
   }
@@ -575,6 +531,10 @@ function mediaSourceOnSourceOpen( event ) {
 }
 
 function isMediaSourceReady() {
+  if ( !mediaSource.sourceBuffers[0] ) {
+    return false;
+  }
+
   if ( mediaSource.sourceBuffers[0].updating ) {
     console.log('still appending');
     return false;
@@ -595,10 +555,11 @@ function isMediaSourceReady() {
   return true;
 }
 
-function playNextWhenReady() {
+function playNextWhenReady(line) {
+  console.log(line);
   clearInterval( checkStatus );
 
-  checkStatus = setInterval(function () {
+  checkStatus = setInterval(function checkStatusInterval() {
     var appended = getAndPlay();
 
     if ( appended ) {
@@ -650,7 +611,7 @@ function appendBufferWhenReady( mediaSegment ) {
       mediaQueue = mediaQueue.slice( 1 );
 
       if ( mediaQueue.length > 0 ) {
-        playNextWhenReady();
+        playNextWhenReady(654);
       }
     }
   }, 1000);
@@ -778,7 +739,7 @@ function getAndPlay() {
   var buffer = 0;
 
   GET( mediaQueue[0].path, mediaQueue[0].type, function ( uInt8Array ) {
-    type = mediaQueue[0].type || 'video/webm';
+    type = mediaQueue[0].type || 'video/mp4'; //'video/webm';
 
     var file = new Blob(
       [uInt8Array],
