@@ -3,30 +3,52 @@
 //"use strict";
 
 var DEBUG_MODE = true;
+var DEBUG_MEDIA = 'mp4';
 
 if ( !DEBUG_MODE ) {
   console.log = function () {};
 }
+
+var bufferTypes = {
+  'webm': 'video/webm; codecs="vorbis,vp8"',
+  'mp4': 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"'
+};
+
+var mimeTypes = {
+  'webm': 'video/webm',
+  'mp4': 'video/mp4'
+};
 
 var xmlDoc;
 var xmlLoaded = false;
 var evaluator = new XPathEvaluator();
 var nsResolver;
 var ns = {};
-var fileTypePreferences = [
-  {
-    'video/mp4': {
-      'video': ['avc1.6400xx'],
-      'audio': ['aac']
+var fileTypePreferences = [];
+
+if ( DEBUG_MEDIA === 'mp4' ) {
+  fileTypePreferences = [
+    {
+      'video/mp4': {
+        'video': ['avc1.42E01E'],
+        'audio': ['mp4a.40.2'],
+      }
     }
-  },
-  // {
-  //   'video/webm': {
-  //     'video': ['vp9', 'vp8'],
-  //     'audio': ['vorbis']
-  //   }
-  // }
-];
+  ];
+} else if ( DEBUG_MEDIA === 'webm' ) {
+  fileTypePreferences = [
+    {
+      'video/webm': {
+        'video': ['vp9', 'vp8'],
+        'audio': ['vorbis']
+      }
+    }
+  ];
+}
+
+var DEBUG_BUFFER_TYPE = bufferTypes[DEBUG_MEDIA];
+var DEBUG_MIME_TYPE = mimeTypes[DEBUG_MEDIA];
+
 var mediaQueue = [];
 var choicesContainer = document.getElementById( 'choices-container' );
 var choicesCounter = 0;
@@ -64,9 +86,7 @@ function onSourceOpen( videoTag, event ) {
     return;
   }
 
-  // 'video/webm; codecs="vorbis,vp8"'
-  // 'video/mp4'
-  var sourceBuffer = mediaSource.addSourceBuffer( 'video/mp4' );
+  var sourceBuffer = mediaSource.addSourceBuffer( DEBUG_BUFFER_TYPE );
 
   //videoTag.addEventListener('seeking', onSeeking.bind(videoTag, mediaSource));
   //videoTag.addEventListener('progress', onProgress.bind(videoTag, mediaSource));
@@ -119,7 +139,7 @@ function onProgress( mediaSource, e ) {
 }
 
 function readPlaylistItem( uInt8Array, type ) {
-  type = type || 'video/mp4'; //'video/webm';
+  type = type || DEBUG_MIME_TYPE; //'video/webm';
   
   var file = new Blob(
     [uInt8Array],
@@ -521,7 +541,8 @@ function mediaSourceOnSourceOpen( event ) {
   // Why would sourceopen even fire again after the first time???
   if ( !endOfStream ) {
     // 'video/webm; codecs="vorbis,vp8"'
-    sourceBuffer = mediaSource.addSourceBuffer( 'video/mp4' );
+    // 
+    sourceBuffer = mediaSource.addSourceBuffer( DEBUG_BUFFER_TYPE );
   } else {
     return false;
   }
@@ -739,7 +760,7 @@ function getAndPlay() {
   var buffer = 0;
 
   GET( mediaQueue[0].path, mediaQueue[0].type, function ( uInt8Array ) {
-    type = mediaQueue[0].type || 'video/mp4'; //'video/webm';
+    type = mediaQueue[0].type || DEBUG_BUFFER_TYPE; //'video/webm';
 
     var file = new Blob(
       [uInt8Array],

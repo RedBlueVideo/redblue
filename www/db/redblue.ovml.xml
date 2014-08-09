@@ -19,7 +19,7 @@
       <fps rate="24000" scale="1001" />
       <!-- We are using XLink 1.1 to avoid having to specify xlink:type. -->
       <!-- labels are shareable identifiers, similar to xlink:label but not limited to xlink:type="resource|locator". -->
-      <file xml:id="intro-webm-1080p" label="intro" xlink:href="media/intro-1080p.webm">
+      <file xml:id="intro-webm-1080p" label="intro" xlink:href="media/webm/intro-1080p.webm">
         <!-- Specify equivalent files (in terms of quality, dimensions, etc.) but in a different format. -->
         <!-- No longer necessary with @label attribute:
         <link rel="alternate" xlink:href="#intro-mp4-1080p" /> -->
@@ -45,7 +45,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="red-webm-1080p" label="red" xlink:href="media/red-pill-1080p.webm">
+      <file xml:id="red-webm-1080p" label="red" xlink:href="media/webm/red-pill-1080p.webm">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -68,7 +68,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="blue-webm-1080p" label="blue" xlink:href="media/blue-pill-1080p.webm">
+      <file xml:id="blue-webm-1080p" label="blue" xlink:href="media/webm/blue-pill-1080p.webm">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -91,7 +91,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="credits-webm" label="credits" xlink:href="media/the-end.webm">
+      <file xml:id="credits-webm" label="credits" xlink:href="media/webm/the-end.webm">
         <!-- Done: Conceptually it might make more sense to put codec and coduc inside container -->
         <container>
           <name>WebM</name>
@@ -105,7 +105,7 @@
         </container>
       </file>
       <!-- MP4 versions -->
-      <file xml:id="intro-mp4-1080p" label="intro" xlink:href="media/intro-1080p.mp4">
+      <file xml:id="intro-mp4-1080p" label="intro" xlink:href="media/mp4-dash/intro-1080p.mp4">
         <!-- Point to all files labeled "1080p" as equivalents. Necessary with @label? -->
         <link rel="alternate" xlink:href="#xpointer(//file[@label='intro'])" /><!-- should also have not:parent but i'm not going to deal with that right now -->
         <container>
@@ -120,11 +120,11 @@
           </codec>
           <codec type="audio">
             <name>AAC-LC</name>
-            <mime>aac</mime>
+            <mime>mp4a.40.2</mime>
           </codec>
         </container>
       </file>
-      <file xml:id="red-mp4-1080p" label="red" xlink:href="media/red-pill-1080p.mp4">
+      <file xml:id="red-mp4-1080p" label="red" xlink:href="media/mp4-dash/red-pill-1080p.mp4">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -141,11 +141,11 @@
           </codec>
           <codec type="audio">
             <name>AAC-LC</name>
-            <mime>aac</mime>
+            <mime>mp4a.40.2</mime>
           </codec>
         </container>
       </file>
-      <file xml:id="blue-mp4-1080p" label="blue" xlink:href="media/blue-pill-1080p.mp4">
+      <file xml:id="blue-mp4-1080p" label="blue" xlink:href="media/mp4-dash/blue-pill-1080p.mp4">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -162,11 +162,11 @@
           </codec>
           <codec type="audio">
             <name>AAC-LC</name>
-            <mime>aac</mime>
+            <mime>mp4a.40.2</mime>
           </codec>
         </container>
       </file>
-      <file xml:id="credits-mp4-1080p" label="credits" xlink:href="media/the-end.mp4">
+      <file xml:id="credits-mp4-1080p" label="credits" xlink:href="media/mp4-dash/the-end.mp4">
         <!-- Done: Conceptually it might make more sense to put codec and coduc inside container -->
         <container>
           <name>MPEG-4 Part 14</name>
@@ -180,12 +180,12 @@
           </codec>
           <codec type="audio">
             <name>AAC-LC</name>
-            <mime>aac</mime>
+            <mime>mp4a.40.2</mime>
           </codec>
         </container>
       </file>
       <!-- Stills -->
-      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/morpheus-hands.jpg">
+      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/bitmap/morpheus-hands.jpg">
         <!-- Non-video sources -->
         <codec>
           <name>JPEG</name>
