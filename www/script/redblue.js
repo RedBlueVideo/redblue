@@ -3,7 +3,18 @@
 //"use strict";
 
 var DEBUG_MODE = true;
-var DEBUG_MEDIA = 'mp4';
+//var DEBUG_MEDIA = 'mp4';
+var DEBUG_MEDIA = 'webm';
+
+//var POLLING_INTERVAL = 1000; // 1 second
+//var POLLING_INTERVAL = 41.66666666667; // 1/24 second
+//var POLLING_INTERVAL = 33.33333333333; // 1/30 second
+//var POLLING_INTERVAL = 20.83333333333; // 1/48 second
+var POLLING_INTERVAL = 16.66666666667; // 1/60 second
+
+// Past this point, errors: second video gets appended twice, third not at all, because shit is not ready
+//var POLLING_INTERVAL = 8.33333333333; // 1/120 second
+//var POLLING_INTERVAL = 1; // 1/1000 second
 
 if ( !DEBUG_MODE ) {
   console.log = function () {};
@@ -590,7 +601,7 @@ function playNextWhenReady(line) {
       //   mediaSource.endOfStream();
       // }
     }
-  }, 1000);
+  }, POLLING_INTERVAL);
 }
 
 function appendBufferWhenReady( mediaSegment ) {
@@ -635,7 +646,7 @@ function appendBufferWhenReady( mediaSegment ) {
         playNextWhenReady(654);
       }
     }
-  }, 1000);
+  }, POLLING_INTERVAL);
 }
 
 function mediaSourceOnSourceEnded( event ) {
