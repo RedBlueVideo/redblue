@@ -211,6 +211,34 @@
           <!-- @action="play" is default, "pause" alternate. May leave up to specific implementations to decide which to do; maybe set with playlist/@gotoActionDefault. -->
           
           <!-- TBD: @action or possibly @method COULD be a freeform attribute that is up to implementations to decide what to do with it. for instance, you could define some custom javascript function. -->
+
+          <!-- Logic -->
+          <assign>
+            <var>randomSeed</var>
+            <val type="xs:integer" func="generateRandomSeed" args="0, 1000">0</val>
+          </assign>
+          <test>
+            <!-- if ( ( randomSeed > 400 ) || ( randomSeed < 200 ) ) { goto(#the-end); } -->
+            <if>
+              <conditions>
+                <condition var="randomSeed" operator="&gt;">400</condition>
+                <operator>||</operator>
+                <condition var="randomSeed" operator="&lt;">200</condition>
+              </conditions>
+              <statements>
+                <goto xlink:href="#the-end" />
+              </statements>
+            </if>
+            <elseif>
+              <conditions></conditions>
+              <statements></statements>
+            </elseif>
+            <else>
+              <statements></statements>
+            </else>
+          </test>
+          <!-- End Logic -->
+
           <goto on="durationEnd" xlink:href="#red-pill-or-blue-pill" />
         </media>
         <choices xml:id="red-pill-or-blue-pill">
