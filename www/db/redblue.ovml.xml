@@ -213,10 +213,45 @@
           <!-- TBD: @action or possibly @method COULD be a freeform attribute that is up to implementations to decide what to do with it. for instance, you could define some custom javascript function. -->
 
           <!-- Logic -->
-          <assign>
-            <var>randomSeed</var>
-            <val type="xs:integer" func="generateRandomSeed" args="0, 1000">0</val>
-          </assign>
+          <function xml:id="xhr">
+            <opts>
+              <opt>
+                <name>method</name>
+                <val>post</val>
+              </opt>
+            </opts>
+            <def>
+              <!-- ... -->
+            </def>
+          </function>
+          <function xml:id="generateRandomSeed">
+            <args>
+              <arg>
+                <name>lowerLimit</name>
+                <val>0</val>
+              </arg>
+              <arg>
+                <name>upperLimit</name>
+              </arg>
+            </args>
+            <def>
+              <!--<callfunc xlink:href="#xhr" args="$lowerLimit, $upperLimit" />-->
+              <callfunc xlink:href="#xhr" opts="{ method: post, hello: [ goodbye, whatever ] }">
+                <![CDATA[
+                  Content-type: text/plain; charset=utf-8
+                  Content: blah
+                ]]>
+              </callfunc>
+            </def>
+          </function>
+          <var>
+            <name>randomSeed</name>
+            <val>
+              <callfunc xlink:href="#generateRandomSeed" args="0, 1000" />
+              <operator>||</operator>
+              <val>0</val>
+            </val>
+          </var>
           <test>
             <!-- if ( ( randomSeed > 400 ) || ( randomSeed < 200 ) ) { goto(#the-end); } -->
             <if>
@@ -226,7 +261,7 @@
                 <condition var="randomSeed" operator="&lt;">200</condition>
               </conditions>
               <statements>
-                <goto xlink:href="#the-end" />
+                <goto xlink:href="#the-end" /><!-- Goto is equivalent to return -->
               </statements>
             </if>
             <elseif>
