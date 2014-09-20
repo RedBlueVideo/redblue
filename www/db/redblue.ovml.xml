@@ -192,6 +192,12 @@
           <mime>image/jpeg</mime>
         </codec>
       </file>
+      <file xml:id="easter-egg-1080p" label="easter-egg" xlink:href="media/bitmap/easter-egg.png">
+        <codec>
+          <name>PNG</name>
+          <mime>image/png</mime>
+        </codec>
+      </file>
       <!-- For simple or prexisting playlists, you may link to an M3U instead, with @xlink:href="/path/to/playlist.m3u8". The mime type will be assumed M3U if server does not respond appropriately. -->
 
       <!-- linear|nonlinear, default linear. Processed in order w/branching; maybe doesn't need "nonlinear", though may be useful for queuing up relevant processes or letting the user know that this is interactive. Perhaps nonlinear prevents the playlist from executing sequentially. -->
@@ -211,69 +217,6 @@
           <!-- @action="play" is default, "pause" alternate. May leave up to specific implementations to decide which to do; maybe set with playlist/@gotoActionDefault. -->
           
           <!-- TBD: @action or possibly @method COULD be a freeform attribute that is up to implementations to decide what to do with it. for instance, you could define some custom javascript function. -->
-
-          <!-- Logic -->
-          <function xml:id="xhr">
-            <opts>
-              <opt>
-                <name>method</name>
-                <val>post</val>
-              </opt>
-            </opts>
-            <def>
-              <!-- ... -->
-            </def>
-          </function>
-          <function xml:id="generateRandomSeed">
-            <args>
-              <arg>
-                <name>lowerLimit</name>
-                <val>0</val>
-              </arg>
-              <arg>
-                <name>upperLimit</name>
-              </arg>
-            </args>
-            <def>
-              <!--<callfunc xlink:href="#xhr" args="$lowerLimit, $upperLimit" />-->
-              <callfunc xlink:href="#xhr" opts="{ method: post, hello: [ goodbye, whatever ] }">
-                <![CDATA[
-                  Content-type: text/plain; charset=utf-8
-                  Content: blah
-                ]]>
-              </callfunc>
-            </def>
-          </function>
-          <var>
-            <name>randomSeed</name>
-            <val>
-              <callfunc xlink:href="#generateRandomSeed" args="0, 1000" />
-              <operator>||</operator>
-              <val>0</val>
-            </val>
-          </var>
-          <test>
-            <!-- if ( ( randomSeed > 400 ) || ( randomSeed < 200 ) ) { goto(#the-end); } -->
-            <if>
-              <conditions>
-                <condition var="randomSeed" operator="&gt;">400</condition>
-                <operator>||</operator>
-                <condition var="randomSeed" operator="&lt;">200</condition>
-              </conditions>
-              <statements>
-                <goto xlink:href="#the-end" /><!-- Goto is equivalent to return -->
-              </statements>
-            </if>
-            <elseif>
-              <conditions></conditions>
-              <statements></statements>
-            </elseif>
-            <else>
-              <statements></statements>
-            </else>
-          </test>
-          <!-- End Logic -->
-
           <goto on="durationEnd" xlink:href="#red-pill-or-blue-pill" />
         </media>
         <choices xml:id="red-pill-or-blue-pill">
@@ -286,6 +229,20 @@
           </choice>
           <choice xml:id="blue">
             <name>Blue Pill</name>
+
+            <!-- This will call the function with the same name as the xml:id, i.e. redblue.playlistActions.blue(), onClick -->
+            <playlistAction xlink:actuate="onRequest" />
+            <!-- If playlistAction returns a goto command, nothing else will execute. If it returns false, the rest will execute in sequence until a goto is encountered (as an element or return value), or the end of the nodeset, whichever comes first. -->
+
+            <!--<playlistAction method="doSomethingElse" />-->
+
+            <!-- This will call redblue.playlistActions.blue(); immediately (onLoad) -->   
+            <!--<playlistAction />-->         
+
+            <!-- This will call redblue.playlistActions.green(); -->
+            <!--<playlistAction method="green" />-->
+
+            <!-- If run returns false, use default: -->
             <goto xlink:actuate="onRequest" xlink:href="#stays-in-the-matrix" />
           </choice>
         </choices>
@@ -296,6 +253,7 @@
           <goto xlink:href="#the-end" />
         </media>
         <media xml:id="the-end" xlink:href="#xpointer(//file[@label='credits'])" />
+        <media xml:id="easter-egg" xlink:href="#xpointer(//file[@label='easter-egg'])" />
       </playlist>
     </presentation>
   </video>
