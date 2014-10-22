@@ -40,10 +40,12 @@ var redblue = {
       
     },
     "red": function () {
-
+      alert( 'Playlist Action "red" called!' );
     },
     "blue": function () {
       /* If you choose Blue Pill and are lucky, you get the alternate ending. */
+      alert( 'Playlist Action "blue" called!' );
+
       if ( redblue.data.seed >= 50 ) {
         return new redblue.commands.goto( '#easter-egg' );
       }

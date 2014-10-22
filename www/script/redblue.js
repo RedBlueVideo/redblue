@@ -1,6 +1,6 @@
 /*jshint laxcomma:true, smarttabs:true */
-//(function () {
-//"use strict";
+(function () {
+"use strict";
 
 var DEBUG_MODE = true;
 //var DEBUG_MEDIA = 'mp4';
@@ -34,7 +34,9 @@ var xmlDoc;
 var xmlLoaded = false;
 var evaluator = new XPathEvaluator();
 var nsResolver;
-var ns = {};
+var ns = {
+  "xml": "http://www.w3.org/XML/1998/namespace"
+};
 var fileTypePreferences = [];
 
 if ( DEBUG_MEDIA === 'mp4' ) {
@@ -71,7 +73,7 @@ var totalVideos;
 var duration = 0;
 var bufferLoading = false;
 var video = document.getElementById( 'v' );
-var duration;
+//var duration;
 var mediaSource = new MediaSource();
 var mediaQueueHistory = [];
 //var mediaQueue;
@@ -102,7 +104,7 @@ function onSourceOpen( videoTag, event ) {
   //videoTag.addEventListener('seeking', onSeeking.bind(videoTag, mediaSource));
   //videoTag.addEventListener('progress', onProgress.bind(videoTag, mediaSource));
 
-  var initSegment = GetNextMediaSegment();
+  var initSegment = getNextMediaSegment();
 
   if ( initSegment === null ) {
     // Error fetching the initialization segment. Signal end of stream with an error.
@@ -175,8 +177,8 @@ function readPlaylistItem( uInt8Array, type ) {
   reader.readAsArrayBuffer( file );
 }
 
-function GetNextMediaSegment() { // GetInitializationSegment
-  console.log('--GetNextMediaSegment--');
+function getNextMediaSegment() { // GetInitializationSegment
+  console.log('--getNextMediaSegment--');
   var buffer = buffers[0];
   buffers = buffers.slice(1);
   console.log('Got video #' + ( totalVideos - buffers.length ) + ' of ' + totalVideos);
@@ -190,7 +192,7 @@ function HaveMoreMediaSegments() {
   return bool;
 }
 
-//var GetNextMediaSegment = GetInitializationSegment;
+//var getNextMediaSegment = GetInitializationSegment;
 
 function GET( url, type, callback ) {
   var xhr = new XMLHttpRequest();
@@ -296,7 +298,7 @@ function readXML() {
   ns.defaultNS = xmlDoc.documentElement.getAttribute( 'xmlns' );
   ns.ovml = xmlDoc.documentElement.getAttribute( 'xmlns:ovml' );
   ns.xlink = xmlDoc.documentElement.getAttribute( 'xmlns:xlink' );
-  ns.xml = 'http://www.w3.org/XML/1998/namespace';
+  //ns.xml = 'http://www.w3.org/XML/1998/namespace';
 
   // WTFXML? The hackiest bullshit I have ever seen.
   // if ( ns.defaultNS ) {
@@ -320,7 +322,7 @@ function readXML() {
 }
 
 function getXLink( node ) {
-  console.log( node );
+  console.log( 'getXLink called on', node );
   return node.getAttributeNS( ns.xlink, 'href' );
 }
 
@@ -384,6 +386,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
   var xlinkHref;
   var mediaFile;
   var mediaElement;
+  var file;
   var fileElement;
   var container;
   var query;
@@ -391,6 +394,9 @@ function parseNonlinearPlaylistItems( playlistItems ) {
   var choices;
   var choice;
   var choicesHTML = '<ul>';
+  var playlistActions = [];
+  var playlistActionElements;
+  var playlistActionElement;
 
   //console.log( playlistItem.getAttribute('xml:id') );
   
@@ -491,7 +497,25 @@ function parseNonlinearPlaylistItems( playlistItems ) {
       // http://stackoverflow.com/a/19457115/214325
 
       while ( choice ) {
+        playlistActionElements = getNodes( 'playlistAction', choice );
+        playlistActionElement = playlistActionElements.iterateNext();
+
+        while ( playlistActionElement ) {
+          var playlistActionMethod = playlistActionElement.getAttribute( 'method' );
+          
+          if ( playlistActionMethod ) {
+            playlistActions.push( playlistActionMethod );
+          } else {
+            playlistActions.push( choice.getAttributeNS( ns.xml, 'id' ) );
+          }
+
+          playlistActionElement = playlistActionElements.iterateNext();
+        }
+
         gotoElement = getNodes( 'goto', choice ).iterateNext();
+
+        console.log( 'gotoElement', gotoElement );
+
         xlinkHref = getXLink( gotoElement );
         query = parseXPointer( xlinkHref );
 
@@ -504,7 +528,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
         var choiceLetter = String.fromCharCode( 64 + choicesCounter ).toLowerCase();
         
         choicesHTML += '<li>' +
-          '<a id="choice-' + choicesContainerCounter + choiceLetter + '" class="choice choice-' + choiceLetter + '" href="javascript:void(0);" data-goto="' + xlinkHref + '" data-play="' + getXLink( fileElement ) + '" data-type="' + fileMime + '">' +
+          '<a id="choice-' + choicesContainerCounter + choiceLetter + '" class="choice choice-' + choiceLetter + '" href="javascript:void(0);" data-actions="[\'' + playlistActions.join("','") + '\']" data-goto="' + xlinkHref + '" data-play="' + getXLink( fileElement ) + '" data-type="' + fileMime + '">' +
             getNodes( 'name', choice ).iterateNext().textContent +
           '</a>' +
         '</li>';
@@ -540,7 +564,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
         break;
 
         default:
-          console.log('didnt happen');
+          console.log('Choice background image file type "' + fileMime + '" not supported.');
       }
     break;
   }
@@ -609,6 +633,7 @@ function appendBufferWhenReady( mediaSegment ) {
 
   checkStatusBuffer = setInterval(function () {
     var ready = isMediaSourceReady();
+    var firstSegmentDuration;
 
     console.log( 'isMediaSourceReady', ready );
 
@@ -701,6 +726,7 @@ function importXML( xmlFile ) {
 }
 
 function presentChoice( event ) {
+  //var choiceContainer = document.getElementById( 'choice-' + choicesContainerCounter );
   //console.log(this.duration);
 
   //console.log( +this.currentTime.toFixed(0), +this.duration.toFixed(0) );
@@ -710,10 +736,25 @@ function presentChoice( event ) {
   // Imprecision may not matter if it's going to be an overlay onto bg video.
   if ( +this.currentTime.toFixed(0) === +this.duration.toFixed(0) ) {
   //if ( this.currentTime === this.duration ) {
+    console.log( choicesContainerCounter );
+
+    console.log( 'currentTime', this.currentTime );
+    console.log( 'duration', this.duration );
+
     console.log( 'choice presented' );
-    choiceContainer.removeAttribute('hidden');
+
+    console.log( choiceContainer );
+    console.log( 'choiceContainer[@hidden]', choiceContainer.getAttribute('hidden') );
+    console.log( 'choiceContainer.hidden', choiceContainer.hidden );
+
+    choiceContainer.removeAttribute( 'hidden' );
     choiceContainer.hidden = false;
-    this.removeEventListener('timeupdate', presentChoice);
+
+    console.log( 'choiceContainer[@hidden]', choiceContainer.getAttribute('hidden') );
+    console.log( 'choiceContainer.hidden', choiceContainer.hidden );
+
+    // @todo: This could stay here if there were a reliable way to dynamically re-attach (not saying there isn't; just not sure why it's not already happpening)
+    //this.removeEventListener( 'timeupdate', presentChoice );
   }
   
   // if ( this.currentTime === lastSegmentDuration ) {
@@ -749,6 +790,8 @@ function choiceClicked( event ) {
 
     // if data-goto
 
+    console.log( eval( link.getAttribute( 'data-actions' ) ) );
+
     parseNonlinearPlaylistItems( getNodes( parseXPointer( link.getAttribute('data-goto') ) ).iterateNext() );
 
     getAndPlay();
@@ -769,6 +812,7 @@ function getAndPlay() {
   }
 
   var buffer = 0;
+  var type;
 
   GET( mediaQueue[0].path, mediaQueue[0].type, function ( uInt8Array ) {
     type = mediaQueue[0].type || DEBUG_BUFFER_TYPE; //'video/webm';
@@ -797,4 +841,4 @@ function getAndPlay() {
 }
 
 initLibrary();
-//})();
+})();
