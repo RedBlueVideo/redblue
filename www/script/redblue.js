@@ -823,10 +823,25 @@ function choiceClicked( event ) {
 
     if ( link.getAttribute( 'data-timeline' ) === 'replace' ) {
       window.mediaSource.endOfStream();
+
+      // all of this is an init function or reset function
+      // this mostly works but for some reason double-append of intro at the beginning
+      choicesCounter = 0;
+      duration = 0;
+      choicesContainerCounter = 0;
+      choicesContainer.innerHTML = '';
       
-      var mediaSource = new MediaSource();
+      mediaSource = new MediaSource();
       
       video.src = window.URL.createObjectURL( mediaSource );
+      video.pause();
+      //video.src = 'media/mp4/intro-1080p.mp4';
+
+      choicesContainer.addEventListener( 'click', choiceClicked, false );
+
+      mediaSource.addEventListener( 'sourceopen', mediaSourceOnSourceOpen, false );
+
+      mediaSource.addEventListener( 'sourceended', mediaSourceOnSourceEnded, false );
     }
 
     parseNonlinearPlaylistItems(
