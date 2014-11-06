@@ -1,6 +1,16 @@
-/*jshint laxcomma:true, smarttabs:true */
-(function () {
+/*jshint laxcomma:true, smarttabs:true, globalstrict: true */
+//(function () {
 "use strict";
+
+if ( typeof console == "undefined" ) {
+  var console = {
+    log: function () {}
+  };
+}
+
+if ( typeof alert == "undefined" ) {
+  var alert = function () {};
+}
 
 var DEBUG_MODE = true;
 //var DEBUG_MEDIA = 'mp4';
@@ -121,11 +131,11 @@ function onSourceOpen( videoTag, event ) {
     sourceBuffer.removeEventListener('updateend', firstAppendHandler);
 
     // Append some initial media data.
-    appendNextMediaSegment(mediaSource);
+    //appendNextMediaSegment(mediaSource);
   };
 
-  sourceBuffer.addEventListener('updateend', firstAppendHandler);
-  sourceBuffer.appendBuffer(initSegment);
+  sourceBuffer.addEventListener( 'updateend', firstAppendHandler );
+  sourceBuffer.appendBuffer( initSegment );
 }
 
 function onSeeking( mediaSource, event ) {
@@ -143,12 +153,12 @@ function onSeeking( mediaSource, event ) {
   //console.log(video.currentTime);
 
   // Append a media segment from the new playback position.
-  appendNextMediaSegment(mediaSource);
+  //appendNextMediaSegment(mediaSource);
 }
 
 function onProgress( mediaSource, e ) {
   console.log('--onProgress--');
-  appendNextMediaSegment(mediaSource);
+  //appendNextMediaSegment(mediaSource);
 }
 
 function readPlaylistItem( uInt8Array, type ) {
@@ -518,6 +528,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
         xlinkHref = getXLink( gotoElement );
         query = parseXPointer( xlinkHref );
+        var timeline = gotoElement.getAttribute( 'timeline' );
 
         mediaElement = getNodes( query ).iterateNext();
 
@@ -527,11 +538,21 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
         var choiceLetter = String.fromCharCode( 64 + choicesCounter ).toLowerCase();
         
-        choicesHTML += '<li>' +
-          '<a id="choice-' + choicesContainerCounter + choiceLetter + '" class="choice choice-' + choiceLetter + '" href="javascript:void(0);" data-actions="[\'' + playlistActions.join("','") + '\']" data-goto="' + xlinkHref + '" data-play="' + getXLink( fileElement ) + '" data-type="' + fileMime + '">' +
-            getNodes( 'name', choice ).iterateNext().textContent +
-          '</a>' +
-        '</li>';
+        // @todo: Instead of storing in the DOM, just keep track of the damn things (right?)
+        choicesHTML += [
+          '<li>',
+            '<a id="choice-', choicesContainerCounter, choiceLetter, '"',
+              ' class="choice choice-', choiceLetter, '"',
+              ' href="javascript:void(0);"',
+              ' data-actions="[\'', playlistActions.join("','"), '\']"',
+              ' data-goto="', xlinkHref, '"',
+              ' data-play="', getXLink( fileElement ), '"',
+              ' data-type="', fileMime, '"',
+              ( timeline ? ' data-timeline="' + timeline + '"' : '' ),
+              '>', getNodes( 'name', choice ).iterateNext().textContent,
+            '</a>',
+          '</li>'
+        ].join('');
 
         choice = choices.iterateNext();
         ++choicesCounter;
@@ -675,14 +696,16 @@ function appendBufferWhenReady( mediaSegment ) {
 }
 
 function mediaSourceOnSourceEnded( event ) {
-  console.log('mediaSource readyState: ' + this.readyState);
+  var mediaSource = event.target;
+  console.log('mediaSource readyState: ' + mediaSource.readyState);
 }
 
 function initLibrary() {
   // https://html5-demos.appspot.com/static/media-source.html
   window.MediaSource = window.MediaSource || window.WebKitMediaSource;
-  if (!!!window.MediaSource) {
-    alert('MediaSource API is not available');
+  
+  if ( !!!window.MediaSource ) {
+    alert( 'MediaSource API is not available.' );
   }
 
   video.src = window.URL.createObjectURL( mediaSource );
@@ -734,12 +757,16 @@ function presentChoice( event ) {
   // toFixed works around a Firefox bug but makes it slightly less accurate
   // @todo: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
   // Imprecision may not matter if it's going to be an overlay onto bg video.
-  if ( +this.currentTime.toFixed(0) === +this.duration.toFixed(0) ) {
+  var videoPlayer = event.target; // this
+  var currentTime = +videoPlayer.currentTime.toFixed(0);
+  var currentDuration = +videoPlayer.duration.toFixed(0);
+
+  if ( currentTime === currentDuration ) {
   //if ( this.currentTime === this.duration ) {
     console.log( choicesContainerCounter );
 
-    console.log( 'currentTime', this.currentTime );
-    console.log( 'duration', this.duration );
+    console.log( 'currentTime', currentTime );
+    console.log( 'duration', currentDuration );
 
     console.log( 'choice presented' );
 
@@ -769,11 +796,10 @@ function presentChoice( event ) {
 function choiceClicked( event ) {
   event.preventDefault();
 
-  var id = event.target.id;
+  var link = event.target;
+  var id = link.id;
 
-  if ( !firstChoiceSelected ) {
-    var link = event.target;
-
+  //if ( !firstChoiceSelected ) {
     choiceContainer.setAttribute('hidden', 'hidden');
     choiceContainer.hidden = true;
     firstChoiceSelected = true;
@@ -790,12 +816,30 @@ function choiceClicked( event ) {
 
     // if data-goto
 
-    console.log( eval( link.getAttribute( 'data-actions' ) ) );
+    console.log(
+      //eval( link.getAttribute( 'data-actions' ) )
+      //JSON.parse( link.getAttribute( 'data-actions' ) )
+    );
 
-    parseNonlinearPlaylistItems( getNodes( parseXPointer( link.getAttribute('data-goto') ) ).iterateNext() );
+    if ( link.getAttribute( 'data-timeline' ) === 'replace' ) {
+      window.mediaSource.endOfStream();
+      
+      var mediaSource = new MediaSource();
+      
+      video.src = window.URL.createObjectURL( mediaSource );
+    }
+
+    parseNonlinearPlaylistItems(
+      getNodes(
+        parseXPointer(
+          link.getAttribute( 'data-goto' )
+        ) // parseXPointer
+      ) // getNodes
+      .iterateNext()
+    ); // parseNonlinearPlaylistItems
 
     getAndPlay();
-  }
+  //}
 }
 
 function getAndPlay() {
@@ -841,4 +885,4 @@ function getAndPlay() {
 }
 
 initLibrary();
-})();
+//})();

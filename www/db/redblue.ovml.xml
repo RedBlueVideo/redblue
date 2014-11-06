@@ -267,7 +267,8 @@
           <choice xml:id="start-over">
             <name>Start Over</name>
             <!-- @todo: Due to a bug, this will probably make the timeline loop and just get longer. -->
-            <goto xlink:actuate="onRequest" xlink:href="#intro" />
+            <!-- Should be the option to add-on or re-do -->
+            <goto xlink:actuate="onRequest" xlink:href="#intro" timeline="replace" /><!-- timeline = replace | restart? could be a do over that does not replace the entire timeline, like an undo | continue [default] -->
           </choice>
           <!-- @todo: be able to load another webpage -->
           <!--choice xml:id="randomness-example">
