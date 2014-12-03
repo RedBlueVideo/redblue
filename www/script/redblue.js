@@ -84,9 +84,9 @@ var duration = 0;
 var bufferLoading = false;
 var video = document.getElementById( 'v' );
 //var duration;
-var mediaSource = new MediaSource();
+var mediaSource; //= new MediaSource();
+var mediaSegment;
 var mediaQueueHistory = [];
-//var mediaQueue;
 var checkStatus;
 var checkStatusBuffer; // Do we really need 2?
 var choiceContainer;
@@ -101,64 +101,40 @@ var gotoElement;
 var fileMime;
 var obj;
 var endOfStream = false;
+//var replacing = false;
 
-function onSourceOpen( videoTag, event ) {
-  var mediaSource = event.target;
+function initVars() {
+  //mediaQueue = [];
+  choicesContainer = document.getElementById( 'choices-container' );
+  choicesCounter = 0;
 
-  if ( mediaSource.sourceBuffers.length > 0 ) {
-    return;
-  }
-
-  var sourceBuffer = mediaSource.addSourceBuffer( DEBUG_BUFFER_TYPE );
-
-  //videoTag.addEventListener('seeking', onSeeking.bind(videoTag, mediaSource));
-  //videoTag.addEventListener('progress', onProgress.bind(videoTag, mediaSource));
-
-  var initSegment = getNextMediaSegment();
-
-  if ( initSegment === null ) {
-    // Error fetching the initialization segment. Signal end of stream with an error.
-    console.log( "Error fetching the initialization segment." );
-    mediaSource.endOfStream( "network" );
-    return;
-  }
-
-  // Append the initialization segment.
-  var firstAppendHandler = function ( event ) {
-    console.log('--firstAppendHandler--');
-
-    var sourceBuffer = event.target;
-    sourceBuffer.removeEventListener('updateend', firstAppendHandler);
-
-    // Append some initial media data.
-    //appendNextMediaSegment(mediaSource);
-  };
-
-  sourceBuffer.addEventListener( 'updateend', firstAppendHandler );
-  sourceBuffer.appendBuffer( initSegment );
-}
-
-function onSeeking( mediaSource, event ) {
-  console.log('--onSeeking--');
-  var video = event.target;
-
-  if (mediaSource.readyState == "open") {
-    // Abort current segment append.
-    mediaSource.sourceBuffers[0].abort();
-  }
-
-  // Notify the media segment loading code to start fetching data at the
-  // new playback position.
-  //SeekToMediaSegmentAt(video.currentTime);
-  //console.log(video.currentTime);
-
-  // Append a media segment from the new playback position.
-  //appendNextMediaSegment(mediaSource);
-}
-
-function onProgress( mediaSource, e ) {
-  console.log('--onProgress--');
-  //appendNextMediaSegment(mediaSource);
+  // http://www.w3.org/TR/media-source/#examples
+  // https://github.com/jbochi/media-source-playground/blob/master/test.html
+  buffers = [];
+  totalVideos = null;
+  duration = 0;
+  bufferLoading = false;
+  video = document.getElementById( 'v' );
+  //duration;
+  //mediaSource = new MediaSource();
+  mediaSegment = null;
+  //mediaQueueHistory = [];
+  checkStatus = null;
+  checkStatusBuffer = null; // Do we really need 2?
+  choiceContainer = null;
+  choicesContainerCounter = 0;
+  choices = document.querySelectorAll( '.choice' );
+  choicesName = null;
+  firstChoiceSelected = false;
+  firstSegmentAppended = false;
+  lastSegmentAppended = false;
+  sourceBuffer = null;
+  gotoElement = null;
+  fileMime = null;
+  obj = null;
+  endOfStream = false;
+  //replacing = false;
+  xmlLoaded = false;
 }
 
 function readPlaylistItem( uInt8Array, type ) {
@@ -187,24 +163,8 @@ function readPlaylistItem( uInt8Array, type ) {
   reader.readAsArrayBuffer( file );
 }
 
-function getNextMediaSegment() { // GetInitializationSegment
-  console.log('--getNextMediaSegment--');
-  var buffer = buffers[0];
-  buffers = buffers.slice(1);
-  console.log('Got video #' + ( totalVideos - buffers.length ) + ' of ' + totalVideos);
-  return buffer;
-}
-
-function HaveMoreMediaSegments() {
-  console.log('--HaveMoreMediaSegments--');
-  var bool = buffers.length > 0;
-  console.log(bool + ', remaining buffers: ' + buffers.length);
-  return bool;
-}
-
-//var getNextMediaSegment = GetInitializationSegment;
-
 function GET( url, type, callback ) {
+  console.log( '--GET()--' );
   var xhr = new XMLHttpRequest();
   xhr.open( 'GET', url, true );
   xhr.responseType = 'arraybuffer';
@@ -218,37 +178,6 @@ function GET( url, type, callback ) {
     callback( new Uint8Array( xhr.response ) );
   };
 }
-
-// function loadM3Uplaylist( url, callback ) {
-//   var xhr = new XMLHttpRequest();
-//   xhr.addEventListener('load', function ( event ) {
-
-//     if ( xhr.status !== 200 ) {
-//       console.log( "Unexpected status code " + xhr.status + " for " + url );
-//       return false;
-//     }
-
-//     var regex = /^[^#].*$/mg;
-//     var urls = [];
-//     var result;
-
-//     while ((result = regex.exec(xhr.response))) {
-//       urls.push(result[0]);
-//     }
-
-//     console.log(urls);
-//     console.log('Playlist loaded');
-//     totalVideos = urls.length;
-//     callback(urls);
-//   });
-
-//   xhr.addEventListener('error', function() {
-//     console.log('Playlist load error');
-//   });
-
-//   xhr.open("GET", url);
-//   xhr.send();
-// }
 
 function getNodes( xpath, refNode, xpathType ) {
   refNode = refNode || xmlDoc;
@@ -374,6 +303,8 @@ function parseXPointer( xlinkHref ) {
 }
 
 function parseNonlinearPlaylistItems( playlistItems ) {
+  console.log( '--parseNonlinearPlaylistItems()--' );
+  console.log( 'playlistItems', playlistItems );
   // console.log( playlistItems );
   // console.log( playlistItems.localName );
   // console.log( playlistItems.children );
@@ -384,10 +315,10 @@ function parseNonlinearPlaylistItems( playlistItems ) {
   // hasOwnProperty('children') does not work in Firefox
   if ( ( playlistItems.localName === 'playlist' ) && playlistItems.children && playlistItems.children.length > 0 ) {
     playlistItem = playlistItems.children[0];
-    console.log( playlistItem );
+    console.log( 'playlistItem', playlistItem );
   } else {
     playlistItem = playlistItems;
-    console.log( playlistItem );
+    console.log( 'playlistItem', playlistItem );
   }
 
   var i;
@@ -487,7 +418,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 
         // console.log( mediaQueue );
         endOfStream = true;
-        playNextWhenReady(489);
+        playNextWhenReady(529);
       }
     break;
 
@@ -592,6 +523,7 @@ function parseNonlinearPlaylistItems( playlistItems ) {
 }
 
 function mediaSourceOnSourceOpen( event ) {
+  console.log( '--mediaSourceOnSourceOpen()--' );
   //var sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
 
   // Why would sourceopen even fire again after the first time???
@@ -603,96 +535,114 @@ function mediaSourceOnSourceOpen( event ) {
     return false;
   }
 
-  // Load playlist
-  importXML( 'db/redblue.ovml.xml' );
+  if ( !xmlLoaded ) {
+    // Load playlist
+    importXML( 'db/redblue.ovml.xml' );
+  } else {
+    console.log( '--XML already loaded--' );
+    GET( mediaQueue[0].path, mediaQueue[0].type, GET_MediaQueueCallback );
+    //parseNonlinearPlaylistItems(  );
+  }
 }
 
 function isMediaSourceReady() {
   if ( !mediaSource.sourceBuffers[0] ) {
+    console.log( 'NOT READY: !mediaSource.sourceBuffers[0]' );
     return false;
   }
 
   if ( mediaSource.sourceBuffers[0].updating ) {
-    console.log('still appending');
+    console.log('NOT READY: mediaSource.sourceBuffers[0].updating');
     return false;
   }
 
   if ( mediaSource.readyState !== "open" ) {
+    console.log( 'NOT READY: mediaSource.readyState !== "open"', mediaSource.readyState );
     return false;
   }
 
   if ( mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
+    console.log( 'NOT READY: mediaSource.sourceBuffers[0].mode == PARSING_MEDIA_SEGMENT' );
     return false;
   }
 
   if ( mediaQueue.length === 0 ) {
+    console.log( 'NOT READY: mediaQueue.length === 0' );
     return false;
   }
 
+  console.log( 'READY' );
   return true;
 }
 
-function playNextWhenReady(line) {
-  console.log(line);
-  clearInterval( checkStatus );
+function checkStatusInterval() {
+  console.log( '--getAndPlay() l:578--' );
+  var appended = getAndPlay();
 
-  checkStatus = setInterval(function checkStatusInterval() {
-    var appended = getAndPlay();
+  if ( appended ) {
+    clearInterval( checkStatus );
 
-    if ( appended ) {
-      clearInterval( checkStatus );
-
-      // if ( endOfStream ) {
-      //   mediaSource.endOfStream();
-      // }
-    }
-  }, POLLING_INTERVAL);
+    // if ( endOfStream ) {
+    //   mediaSource.endOfStream();
+    // }
+  }
 }
 
-function appendBufferWhenReady( mediaSegment ) {
+function playNextWhenReady(line) {
+  console.log( '--playNextWhenReady() l:' + line + '--' );
+
+  clearInterval( checkStatus );
+
+  checkStatus = setInterval( checkStatusInterval, POLLING_INTERVAL );
+}
+
+function checkStatusBufferInterval() {
+  var ready = isMediaSourceReady();
+  var firstSegmentDuration;
+
+  console.log( 'isMediaSourceReady', ready );
+
+  if ( ready ) {
+    clearInterval( checkStatusBuffer );
+
+    duration = mediaSource.duration || 0;
+
+    console.log('Duration: ' + duration);
+
+    sourceBuffer.timestampOffset = duration;
+    //mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
+
+    sourceBuffer.appendBuffer( mediaSegment );
+
+    if ( !firstSegmentAppended ) {
+      firstSegmentDuration = duration;
+
+      //console.log( video.duration );
+      //console.log( mediaSegment );
+      //console.log( sourceBuffer );
+
+      video.addEventListener( 'timeupdate', presentChoice );
+
+      firstSegmentAppended = true;
+    }
+
+    if ( video.paused ) {
+      video.play(); // Start playing after 1st chunk is appended.
+    }
+    
+    mediaQueue = mediaQueue.slice( 1 );
+
+    if ( mediaQueue.length > 0 ) {
+      playNextWhenReady(744);
+    }
+  }
+}
+
+function appendBufferWhenReady() {
+  console.log( '--appendBufferWhenReady()--' );
   clearInterval( checkStatusBuffer );
 
-  checkStatusBuffer = setInterval(function () {
-    var ready = isMediaSourceReady();
-    var firstSegmentDuration;
-
-    console.log( 'isMediaSourceReady', ready );
-
-    if ( ready ) {
-      clearInterval( checkStatusBuffer );
-
-      duration = mediaSource.duration || 0;
-
-      console.log('Duration: ' + duration);
-
-      sourceBuffer.timestampOffset = duration;
-      //mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
-
-      sourceBuffer.appendBuffer( mediaSegment );
-
-      if ( !firstSegmentAppended ) {
-        firstSegmentDuration = duration;
-
-        //console.log( video.duration );
-        //console.log( mediaSegment );
-        //console.log( sourceBuffer );
-
-        video.addEventListener( 'timeupdate', presentChoice );
-
-        firstSegmentAppended = true;
-      }
-
-      if ( video.paused ) {
-        video.play(); // Start playing after 1st chunk is appended.
-      }
-      
-      mediaQueue = mediaQueue.slice( 1 );
-
-      if ( mediaQueue.length > 0 ) {
-        playNextWhenReady(654);
-      }
-    }
-  }, POLLING_INTERVAL);
+  checkStatusBuffer = setInterval( checkStatusBufferInterval, POLLING_INTERVAL );
 }
 
 function mediaSourceOnSourceEnded( event ) {
@@ -700,25 +650,41 @@ function mediaSourceOnSourceEnded( event ) {
   console.log('mediaSource readyState: ' + mediaSource.readyState);
 }
 
-function initLibrary() {
-  // https://html5-demos.appspot.com/static/media-source.html
+function mediaSourceAvailable() {
   window.MediaSource = window.MediaSource || window.WebKitMediaSource;
   
   if ( !!!window.MediaSource ) {
     alert( 'MediaSource API is not available.' );
+    return false;
   }
 
+  return true;
+}
+
+function initLibrary( skipEventListeners ) {
+  console.log( '--initLibrary()--' );
+  // https://html5-demos.appspot.com/static/media-source.html
+  
+  mediaSource = new MediaSource();
   video.src = window.URL.createObjectURL( mediaSource );
   video.pause();
 
-  choicesContainer.addEventListener( 'click', choiceClicked, false );
+  choicesContainer.innerHTML = '';
+  choicesContainer.removeEventListener( 'click', choiceClicked, false );
+  choicesContainerCounter = 0;
+  choicesCounter = 0;
 
-  mediaSource.addEventListener( 'sourceopen', mediaSourceOnSourceOpen, false );
+  //if ( !skipEventListeners ) {
+    choicesContainer.addEventListener( 'click', choiceClicked, false );
 
-  mediaSource.addEventListener( 'sourceended', mediaSourceOnSourceEnded, false );
+    mediaSource.addEventListener( 'sourceopen', mediaSourceOnSourceOpen, false );
+
+    mediaSource.addEventListener( 'sourceended', mediaSourceOnSourceEnded, false );
+  //}
 }
 
 function importXML( xmlFile ) {
+  console.log( '--importXML()--' );
   var xhr = new XMLHttpRequest();
 
   xhr.open( 'GET', xmlFile, true );
@@ -730,12 +696,13 @@ function importXML( xmlFile ) {
         readXML();
 
         //console.log(buffers);
-        console.log( mediaQueue );
+        console.log( 'mediaQueue', mediaQueue );
 
         for ( var i = mediaQueue.length - 1; i >= 0; --i ) {
           GET( mediaQueue[i].path, mediaQueue[i].type, readPlaylistItem );
         }
 
+        console.log( '--getAndPlay() l:696--');
         getAndPlay();
 
         // video.addEventListener('progress', function ( event ) {
@@ -763,22 +730,23 @@ function presentChoice( event ) {
 
   if ( currentTime === currentDuration ) {
   //if ( this.currentTime === this.duration ) {
-    console.log( choicesContainerCounter );
+    // console.log( choicesContainerCounter );
 
-    console.log( 'currentTime', currentTime );
-    console.log( 'duration', currentDuration );
+    // console.log( 'currentTime', currentTime );
+    // console.log( 'duration', currentDuration );
 
     console.log( 'choice presented' );
 
-    console.log( choiceContainer );
-    console.log( 'choiceContainer[@hidden]', choiceContainer.getAttribute('hidden') );
-    console.log( 'choiceContainer.hidden', choiceContainer.hidden );
+    // console.log( choiceContainer );
+    // console.log( 'choiceContainer[@hidden]', choiceContainer.getAttribute('hidden') );
+    // console.log( 'choiceContainer.hidden', choiceContainer.hidden );
 
     choiceContainer.removeAttribute( 'hidden' );
     choiceContainer.hidden = false;
 
-    console.log( 'choiceContainer[@hidden]', choiceContainer.getAttribute('hidden') );
-    console.log( 'choiceContainer.hidden', choiceContainer.hidden );
+    console.log( choiceContainer );
+    // console.log( 'choiceContainer[@hidden]', choiceContainer.getAttribute('hidden') );
+    // console.log( 'choiceContainer.hidden', choiceContainer.hidden );
 
     // @todo: This could stay here if there were a reliable way to dynamically re-attach (not saying there isn't; just not sure why it's not already happpening)
     //this.removeEventListener( 'timeupdate', presentChoice );
@@ -794,10 +762,13 @@ function presentChoice( event ) {
 }
 
 function choiceClicked( event ) {
+  console.log( '--choiceClicked()--' );
   event.preventDefault();
 
   var link = event.target;
   var id = link.id;
+
+  console.log( 'clicked choice:', link );
 
   //if ( !firstChoiceSelected ) {
     choiceContainer.setAttribute('hidden', 'hidden');
@@ -821,27 +792,18 @@ function choiceClicked( event ) {
       //JSON.parse( link.getAttribute( 'data-actions' ) )
     );
 
-    if ( link.getAttribute( 'data-timeline' ) === 'replace' ) {
-      window.mediaSource.endOfStream();
+    var replaceTimeline = ( link.getAttribute( 'data-timeline' ) === 'replace' );
 
-      // all of this is an init function or reset function
+    if ( replaceTimeline ) {
+      console.log ( '--Replacing stream--' );
+      //window.mediaSource.endOfStream();
+
       // this mostly works but for some reason double-append of intro at the beginning
-      choicesCounter = 0;
-      duration = 0;
-      choicesContainerCounter = 0;
-      choicesContainer.innerHTML = '';
-      
-      mediaSource = new MediaSource();
-      
-      video.src = window.URL.createObjectURL( mediaSource );
-      video.pause();
-      //video.src = 'media/mp4/intro-1080p.mp4';
+      //initVars();
 
-      choicesContainer.addEventListener( 'click', choiceClicked, false );
+      xmlLoaded = true;
 
-      mediaSource.addEventListener( 'sourceopen', mediaSourceOnSourceOpen, false );
-
-      mediaSource.addEventListener( 'sourceended', mediaSourceOnSourceEnded, false );
+      initLibrary();
     }
 
     parseNonlinearPlaylistItems(
@@ -852,52 +814,68 @@ function choiceClicked( event ) {
       ) // getNodes
       .iterateNext()
     ); // parseNonlinearPlaylistItems
-
+    
+    console.log( '--getAndPlay() l:809--' );
     getAndPlay();
-  //}
+}
+
+function readerOnload( event ) {
+  console.log( '--reader.onload--');
+  mediaSegment = new Uint8Array( event.target.result );
+  // console.log( mediaQueueHistory[ mediaQueueHistory.length - 1 ].path );
+  // console.log( mediaQueue[0].path );   
+  // if ( !replacing ) {
+    appendBufferWhenReady();
+  // } else {
+
+  // }
+}
+
+function GET_MediaQueueCallback( uInt8Array ) {
+  console.log( '--GET callback--');
+  var buffer = 0;
+  var type = mediaQueue[0].type || DEBUG_BUFFER_TYPE; //'video/webm';
+
+  var file = new Blob(
+    [uInt8Array],
+    {
+      type: type
+    }
+  );
+
+  var reader = new FileReader();
+
+  // Reads aren't guaranteed to finish in the same order they're started in,
+  // so we need to read + append the next chunk after the previous reader
+  // is done (onload is fired).
+  reader.onload = readerOnload;
+
+  reader.readAsArrayBuffer( file );
 }
 
 function getAndPlay() {
+  //console.log( '--getAndPlay()--' );
   // Make sure the previous append is not still pending.
   var ready = isMediaSourceReady();
+  //console.log( 'ready', ready );
 
   if ( !ready ) {
     return false;
   }
+
+  console.log( 'mediaQueue.length', mediaQueue.length );
 
   // This is already checked in isMediaSourceReady. Am I going insane?
   if ( mediaQueue.length === 0 ) {
     return false;
   }
 
-  var buffer = 0;
-  var type;
-
-  GET( mediaQueue[0].path, mediaQueue[0].type, function ( uInt8Array ) {
-    type = mediaQueue[0].type || DEBUG_BUFFER_TYPE; //'video/webm';
-
-    var file = new Blob(
-      [uInt8Array],
-      {
-        type: type
-      }
-    );
-
-    var reader = new FileReader();
-
-    // Reads aren't guaranteed to finish in the same order they're started in,
-    // so we need to read + append the next chunk after the previous reader
-    // is done (onload is fired).
-    reader.onload = function ( event ) {
-      var mediaSegment = new Uint8Array( event.target.result );
-      appendBufferWhenReady( mediaSegment );
-    };
-
-    reader.readAsArrayBuffer( file );
-  });
+  GET( mediaQueue[0].path, mediaQueue[0].type, GET_MediaQueueCallback );
 
   return true;
 }
 
-initLibrary();
+if ( mediaSourceAvailable() ) {
+  initLibrary();
+}
 //})();
