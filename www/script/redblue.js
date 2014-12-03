@@ -822,13 +822,7 @@ function choiceClicked( event ) {
 function readerOnload( event ) {
   console.log( '--reader.onload--');
   mediaSegment = new Uint8Array( event.target.result );
-  // console.log( mediaQueueHistory[ mediaQueueHistory.length - 1 ].path );
-  // console.log( mediaQueue[0].path );   
-  // if ( !replacing ) {
-    appendBufferWhenReady();
-  // } else {
-
-  // }
+  appendBufferWhenReady();
 }
 
 function GET_MediaQueueCallback( uInt8Array ) {
