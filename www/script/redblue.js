@@ -819,7 +819,7 @@ function choiceClicked( event ) {
     getAndPlay();
 }
 
-// Testing post-receive hook--again
+// Testing post-receive hook--again and again
 function readerOnload( event ) {
   console.log( '--reader.onload--');
   mediaSegment = new Uint8Array( event.target.result );
