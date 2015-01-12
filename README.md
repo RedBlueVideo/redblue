@@ -1,12 +1,12 @@
 # redblue
-HTML5 Interactive Video Framework
+Open-Source Interactive Video Framework
 
 ## Uses
 - “Choose Your Own Adventure” video experiences
 - Hotspots within the video window that trigger an action such as jumping to a chapter marker, learning more about a topic, buying a product/service, etc.
 
 ## Support
-This framework utilizes the developing [Media Source Extensions API](http://w3c.github.io/media-source/), which means all current implementations are experimental.
+This framework utilizes the developing HTML5 [Media Source Extensions API](http://w3c.github.io/media-source/), which means all current implementations are experimental.
 
 So far, it has the best support in Blink-based browsers such as Google Chrome, which is being used as the reference implementation for this project.
 
