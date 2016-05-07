@@ -2,7 +2,7 @@
 Open-Source Interactive Video Framework
 
 ## Uses
-- “Choose Your Own Adventure” video experiences
+- “Choose Your Own Story” video experiences
 - Hotspots within the video window that trigger an action such as jumping to a chapter marker, learning more about a topic, buying a product/service, etc.
 
 ## Support
