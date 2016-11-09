@@ -1,0 +1,7 @@
+{
+  "name": "redblue",
+  "short_name": "redblue",
+  "description": "Interactive video player",
+  "start_url": "/",
+  "display": "standalone"
+}

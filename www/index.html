@@ -1,17 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Interactive Video</title>
-  <link rel="stylesheet" href="style/style.css" />
-</head>
-<body>
-  <h1>Choose Your Own Adventure</h1>
-  <article class="video-container res-640p">
-    <video id="v" autoplay controls muted></video>
-    <div id="choices-container"></div>
-  </article>
-  <script src="db/playlist.js"></script>
-  <script src="script/redblue.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>redblue</title>
+    <meta name="description" content="redblue description">
+
+    <!-- See https://goo.gl/OOhYW5 -->
+    <link rel="manifest" href="/manifest.json">
+
+    <script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="/src/components/layouts/redblue-app/redblue-app.html">
+  </head>
+  <body>
+    <redblue-app></redblue-app>
+  </body>
 </html>

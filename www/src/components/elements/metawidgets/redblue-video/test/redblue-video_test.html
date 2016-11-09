@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>redblue-video test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../redblue-video.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <redblue-video></redblue-video>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('redblue-video', function() {
+        test('instantiating the element works', function() {
+          var element = fixture('basic');
+          assert.equal(element.is, 'redblue-video');
+        });
+      });
+    </script>
+  </body>
+</html>

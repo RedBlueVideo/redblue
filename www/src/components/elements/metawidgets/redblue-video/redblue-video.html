@@ -1,0 +1,71 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`redblue-video`
+Interactive video
+
+@demo demo/index.html 
+-->
+
+<dom-module id="redblue-video">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .video-container {
+        position: relative;
+      }
+
+      video {
+        max-width: 100%;
+      }
+
+      .res-1080p {
+        width: 1920px;
+        height: 1080px;
+      }
+
+      .res-720p {
+        width: 1280px;
+        height: 720px;
+      }
+
+      .res-640p {
+        width: 1138px;
+        height: 640px;
+      }
+
+      .res-360p {
+        width: 640px;
+        height: 360px;
+      }
+    </style>
+    <article class="video-container res-640p">
+      <video
+        id="v"
+        autoplay
+        controls
+        muted
+        src="/src/assets/video/intro-1080p.mp4">
+      </video>
+      <div id="choices-container"></div>
+    </article>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'redblue-video',
+
+      properties: {
+        prop1: {
+          type: String,
+          value: 'redblue-video',
+        },
+      },
+
+    });
+  </script>
+</dom-module>
