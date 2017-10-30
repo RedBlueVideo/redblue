@@ -29,7 +29,11 @@
     "interactive-courseware",
     "nonlinear"
   ],
-  "author": "Hugh Guiney",
+  "author": {
+    "name": "Hugh Guiney",
+    "email": "hello@hughguiney.com",
+    "url": "https://hughguiney.com"
+  },
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/RedBlueVideo/redblue/issues"
