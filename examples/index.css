@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 300;
+  min-height: 150vh;
+}
+
+textarea {
+  /* white-space: pre-wrap; */
+  display: block;
+  /* overflow: scroll; */
+  padding: .5rem;
+  font-size: .75rem;
+}
+
+hgroup {
+  text-align: center;
+}
+
+hgroup > :first-child {
+  margin-bottom: 0;
+}
+
+hgroup > :last-child {
+  margin-top: 0;
+}

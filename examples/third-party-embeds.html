@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RedBlue Annotations: Third-Party Embeds</title>
+    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/solarized-light.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/xml.min.js"></script>
+  </head>
+  <body>
+    <hgroup>
+      <h1>RedBlue Annotations</h1>
+      <h2>Third-Party Embeds</h2>
+    </hgroup>
+    <article>
+      <h2>Hotspot Over YouTube Video</h2>
+
+      <h4>Code</h4>
+      <!-- <textarea id="code" rows="20" readonly="readonly"></textarea> -->
+      <pre><code id="code" class="xml"></code></pre>
+
+      <h4>Result</h4>
+      <redblue-video id="redblue-youtube" aspect-ratio="16:9">
+        <hvml
+          xmlns="https://hypervideo.tech/hvml#"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xml:lang="en-US"
+          hidden="hidden"
+        >
+          <video type="personal" xml:id="ep-23">
+            <title>Overnight Dance Party at the Museum of Fine Arts Boston</title>
+            <episode>23</episode>
+            <recorded>2016-09-17</recorded>
+            <description type="xhtml">
+              <div xmlns="http://www.w3.org/1999/xhtml">
+                <p>Full Facebook Live stream: http://hugh.today/2016-09-17/live</p>
+                <p>#mfaNOW #mfaLateNites</p>
+              </div>
+            </description>
+            <showing scope="release" type="internet" admission="private">
+              <venue type="site">
+                <entity site="https://www.youtube.com/">YouTube</entity>
+                <uri>https://www.youtube.com/watch?v=nWdWq3hMwao</uri>
+                <title>Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites</title>
+              </venue>
+            </showing>
+            <presentation>
+              <choice xml:id="full-stream">
+                <name>Go to <code>hugh.today/2016-09-17/live</code> for the full stream</name>
+                <goto
+                  on="duration"
+                  start="517.292107" startX="50%" startY="-1%"
+                  end="518.856514" endX="" endY=""
+                  xlink:actuate="onRequest"
+                  xlink:href="http://hugh.today/2016-09-17/live">
+                </goto>
+              </choice>
+            </presentation>
+          </video>
+        </hvml>
+      </redblue-video>
+      <!-- <h3>Auto-generated</h3> -->
+    </article>
+    <div id="scripts">
+      <script id="debug">
+        'use strict';
+
+        document.addEventListener( 'keydown', ( event ) => {
+          switch ( event.key ) {
+            case ',':
+            case '.':
+              console.log( player.getCurrentTime() );
+            break;
+          }
+        } );
+      </script>
+      <script id="redblue-video">
+        'use strict';
+
+        class RedBlueVideo extends HTMLElement {
+          static get is() {
+            return 'redblue-video';
+          }
+
+          static get template() {
+            return `
+              <template id="${RedBlueVideo.is}">
+                <style>
+                  :host {
+                    position: relative;
+                    display: block;
+                    border: 1px solid black;
+                    /* width: 100%; */
+                    /* max-width: 100%; */
+                  }
+
+                  :host([aspect-ratio="16:9"]) {
+                    /* max-width: 853px; */
+                    /* max-height: 853px; */
+                  }
+
+                  .redblue-player-wrapper {
+                    position: relative;
+                    overflow: hidden;
+                    /* max-width: 100%; */
+                  }
+
+                  :host([aspect-ratio="16:9"]) .redblue-player-wrapper {
+                    padding-bottom: 56.25%; /* 16:9 */
+                    height: 0;
+                  }
+
+                  .redblue-player {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                  }
+
+                  .redblue-content {
+                    /* max-width: 100%; */
+                  }
+
+                  .redblue-description {
+                    overflow: auto;
+                  }
+
+                  .redblue-player {
+                    /* max-width: 100%; */
+                  }
+
+                  .redblue-annotations {
+                    width: 0;
+                    height: 0;
+                  }
+
+                  .redblue-annotations__link {
+                    position: absolute;
+                    border: 1px solid transparent;
+                    background-color: yellow;
+                    background-color: hsla(60, 100%, 50%, 0.5);
+                    border-radius: 3px;
+                    display: inline-flex;
+                    text-align: center;
+                    align-items: center;
+                    justify-content: center;
+                    width: 70%;
+                    height: 14%;
+                    left: 15%;
+                    transition: 1.564407s bottom linear;
+                  }
+
+                  .redblue-annotations__link.redblue-annotations__link--start {
+                    bottom: -14%;
+                  }
+
+                  .redblue-annotations__link.redblue-annotations__link--end {
+                    bottom: 10%;
+                  }
+                </style>
+                <div class="redblue-content">
+                  <div class="redblue-player-wrapper">
+                    <iframe id="embed" class="redblue-player"
+                      src=""
+                      frameborder="0"
+                      allow="autoplay; encrypted-media"
+                      allowfullscreen="allowfullscreen">
+                    </iframe>
+                    <nav id="annotations" class="redblue-annotations"></nav>
+                  </div>
+                  <div class="redblue-description">
+                    <p>Full Facebook Live stream: http://hugh.today/2016-09-17/live</p>
+                    <p>#mfaNOW #mfaLateNites</p>
+                  </div>
+                </div>
+              </template>
+            `;
+          }
+
+          constructor() {
+            super();
+
+            window.RedBlue = ( window.RedBlue || {} );
+
+            this.setAttribute( 'class', 'redblue-video' );
+            this.setAttribute( 'role', 'application' );
+
+            this.$template = this.parseHTML( RedBlueVideo.template ).children[RedBlueVideo.is];
+
+            // console.log( 'this.$template', [this.$template] );
+          } // constructor
+
+          connectedCallback() {
+            if ( !this.shadowRoot ) {
+              this.attachShadow( { "mode": "open" } );
+              this.shadowRoot.appendChild(
+                document.importNode( this.$template.content, true )
+              );
+            }
+
+            this.$   = {};
+            this.$$  = this.shadowRoot.querySelector.bind( this.shadowRoot );
+            this.$$$ = this.shadowRoot.querySelectorAll.bind( this.shadowRoot );
+            this.$id = this.shadowRoot.getElementById.bind( this.shadowRoot );
+
+            // The order here is important
+            this.loadData();
+            this.setUpYouTubeIframeAPI();
+            this.annotations = this.getAnnotations();
+            this.createHotspots();
+            this.highlightCode();
+
+            this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1';
+            this.$embed = this.shadowRoot.getElementById( 'embed' );
+            this.$embed.src = this.getEmbedUri();
+          } // connectedCallback
+
+          parseHTML( string ) {
+            return document.createRange().createContextualFragment( string );
+          }
+
+          highlightCode() {
+            const $code = document.getElementById( 'code' );
+
+            $code.textContent = document.getElementById( 'redblue-youtube' ).outerHTML.replace( /\n\s{8}/gi, '\n    ' ).replace( /\n\s*(<\/redblue-video>)/gi, '\n$1' );
+            // $code.style.width = $youtubeEmbed.getAttribute( 'width' ) + 'px';
+            // $code.style.height = ( parseInt( $code.style.width.replace( 'px', '' ), 10 ) / 2 ) + 'px';
+
+            hljs.initHighlighting();
+          }
+
+          setUpYouTubeIframeAPI() {
+            /*
+              YouTube Player API:
+              • Embedded players must have a viewport that is at least 200px by 200px.
+              • If the player displays controls, it must be large enough to fully
+                display the controls without shrinking the viewport below the minimum size.
+              • We recommend 16:9 players be at least 480 pixels wide and 270 pixels tall.
+            */
+            const tag = document.createElement( 'script' );
+            tag.id = 'youtube-iframe-api';
+            tag.src = 'https://www.youtube.com/iframe_api';
+            tag.async = true;
+            const firstScriptTag = document.getElementsByTagName( 'script' )[0];
+            firstScriptTag.parentNode.insertBefore( tag, firstScriptTag );
+
+            window.onYouTubeIframeAPIReady = () => {
+              // console.log( 'YT.Player', YT.Player );
+
+              this.player = new YT.Player( this.$id( 'embed' ), {
+                "events": {
+                  "onReady": this.onPlayerReady.bind( this )
+                  // "onStateChange": onPlayerStateChange
+                }
+              } );
+
+              // console.log( 'this.player', this.player );
+            };
+          }
+
+          onPlayerReady( event ) {
+            // console.log( 'onPlayerReady' );
+            this.$id( 'embed' ).style.borderColor = '#FF6D00';
+            this.player.mute();
+            requestAnimationFrame( this.updatePlayback.bind( this ) );
+          }
+
+          addLeadingZeroes( number ) {
+            return number.toString().padStart( 2, '0' );
+          }
+
+          // http://aphall.com/2014/03/animate-video-sync/
+          // the youtube API sends no events at all on seek,
+          // so unfortunately we have to poll the video if
+          // we want to react to when the user seeks manually. :(
+          updatePlayback() {
+            if ( this.player && this.player.getCurrentTime ) {
+              // Returns the elapsed time in seconds since the video started playing
+              const time = this.player.getCurrentTime(); /* * 1000*/
+              const state = this.player.getPlayerState();
+              // const floored = Math.floor( time );
+
+              // hidden: 517.292107
+              // peeking out: 517.355699
+              // end: 518.856514
+
+              // https://stackoverflow.com/a/9882349/214325
+              if ( state == YT.PlayerState.PLAYING ) {
+                let i = this.annotations.length;
+                // console.log( i );
+
+                while ( i-- ) {
+                  let annotation = this.annotations[i];
+
+                  switch ( annotation.type ) {
+                    case 'choice':
+                      let id = `annotation-${this.addLeadingZeroes( i + 1 )}`;
+                      let $link = this.$id( id );
+                      // console.log( `${id}`, $link );
+                      if ( !$link.classList.contains( 'redblue-annotations__link--end' ) ) {
+                        console.log( 'Starting transition at: ', time );
+                        $link.classList.add( 'redblue-annotations__link--end' );
+                        this.annotations.splice( i, 1 ); // @todo: this makes it one-time use
+                      }
+                    break;
+                  }
+                }
+              }
+            }
+
+            requestAnimationFrame( this.updatePlayback.bind( this ) );
+          }
+
+          loadData() {
+            for ( let i = 0; i < this.children.length; i++ ) {
+              let child = this.children[i];
+
+              switch ( child.nodeName.toLowerCase() ) {
+                case 'hvml':
+                  this.hvml = child;
+                  this._hvmlParser = 'xml';
+                  return;
+                break;
+
+                case 'script':
+                  if ( child.hasAttribute( 'type' ) && ( child.type === 'application/ld+json' ) ) {
+                    this.hvml = child;
+                    this._hvmlParser = 'json';
+                    return;
+                  }
+                break;
+              } // switch
+            } // for
+          }
+
+          find( xpathExpression,  ) {
+            return document.evaluate(
+              xpathExpression,
+              this.hvml, // contextNode
+              function ( prefix ) {
+                const ns = {
+                  "hvml": "https://hypervideo.tech/hvml#",
+                  "html": "http://www.w3.org/1999/xhtml"
+                };
+
+                return ( ns[prefix] || ns.html );
+              }, // namespaceResolver
+              // XPathResult.ANY_TYPE, // resultType
+              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+              null // result
+            )
+          }
+
+          getEmbedUriFromXML() {
+            /*
+              <showing scope="release" type="internet" admission="private">
+                <venue type="site">
+                  <entity site="https://www.youtube.com/">YouTube</entity>
+                  <uri>https://www.youtube.com/watch?v=nWdWq3hMwao</uri>
+                  <title>Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites</title>
+                </venue>
+              </showing>
+            */
+            // https://www.youtube.com/embed/nWdWq3hMwao?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1
+            // console.log( 'this.hvml', [this.hvml] );
+
+            try {
+              let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., 'https://www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
+
+              // console.log( 'youtubeUrl', youtubeUrl );
+
+              if ( youtubeUrl ) {
+                // console.log( 'youtubeUrl', [youtubeUrl] );
+                // console.log( 'typeof youtubeUrl', typeof youtubeUrl );
+                return youtubeUrl.textContent.replace( /https:\/\/www\.youtube\.com\/watch\?v=([^&?]+)/i, `https://www.youtube.com/embed/$1${this.embedParameters}` );
+              }
+
+              throw 'No YouTube URL found';
+            } catch ( error ) {
+              console.error( error );
+            }
+          }
+
+          getEmbedUriFromJSON() {}
+
+          getEmbedUri() {
+            switch ( this._hvmlParser ) {
+              case 'xml':
+                return this.getEmbedUriFromXML();
+              break;
+
+              case 'json':
+                return this.getEmbedUriFromJSON();
+              break;
+            }
+          }
+
+          createHotspots() {
+            for ( let i = 0; i < this.annotations.length; i++ ) {
+              let annotation = this.annotations[i];
+
+              this.createHotspot( annotation, i );
+            }
+          }
+
+          createHotspot( annotation, index ) {
+            let $annotation = this.parseHTML(
+              `<a
+                id="annotation-${this.addLeadingZeroes( index + 1 )}"
+                class="redblue-annotations__link redblue-annotations__link--start"
+                href="${annotation.goto['xlink:href']}"
+                target="_blank"
+               >
+                 <span>${annotation.name}</span>
+              </a>`
+            );
+
+            this.$id( 'annotations' ).appendChild( $annotation );
+          }
+
+          getAnnotationsFromJSON() {}
+
+          getAnnotationsFromXML() {
+            const annotations = [];
+            const $presentation = this.find( `.//presentation[1]` ).snapshotItem(0);
+
+            for ( let i = 0, length = $presentation.children.length; i < length; i++ ) {
+              let child = $presentation.children[i];
+              let nodeName = child.nodeName.toLowerCase();
+
+              switch ( nodeName ) {
+                case 'choice':
+                  let choice = {};
+
+                  for ( let i = 0; i < child.children.length; i++ ) {
+                    let grandchild = child.children[i];
+                    let nodeName = grandchild.nodeName.toLowerCase();
+
+                    switch ( nodeName ) {
+                      case 'name':
+                        // console.log( 'grandchild', [grandchild] );
+                        choice[nodeName] = ( grandchild.nodeValue || grandchild.innerHTML );
+                      break;
+
+                      case 'goto':
+                        let attributes = Array.from( grandchild.attributes ).map( ( attribute ) => {
+                          const object = {};
+                          object[attribute.nodeName] = attribute.nodeValue;
+                          return object;
+                        } ).reduce( ( accumulator, keyValuePair ) => {
+                          const key = Object.keys( keyValuePair )[0];
+                          const value = keyValuePair[key];
+
+                          accumulator[key] = value;
+
+                          return accumulator;
+                        }, {} );
+
+                        choice[nodeName] = attributes;
+                      break;
+                    }
+                  }
+
+                  choice.type = nodeName;
+
+                  console.log( 'choice', choice );
+                  annotations.push( choice );
+                break;
+
+                /*
+                  <goto
+                    xlink:actuate="onRequest"
+                    on="duration | durationStart | durationEnd"
+                    start="517"
+                    end="527"
+                    xlink:href="http://hugh.today/2016-09-17/live"
+                  />
+                */
+                case 'goto':
+                // break;
+                case 'playlistAction':
+                // break;
+                case 'choices':
+                // break;
+                case 'media':
+                // break;
+                default:
+                  console.log( 'not `choice`', nodeName );
+              }
+            }
+
+            return annotations;
+          }
+
+          getAnnotations() {
+            if ( !this.hvml ) {
+              return null;
+            }
+
+            switch ( this._hvmlParser ) {
+              case 'xml':
+                return this.getAnnotationsFromXML();
+              break;
+
+              case 'json':
+                return this.getAnnotationsFromJSON();
+              break;
+            } // switch
+          } // getAnnotations
+        }
+
+        customElements.define( RedBlueVideo.is, RedBlueVideo );
+      </script>
+    </div>
+  </body>
+</html>
+<!-- <script type="application/ld+json">
+  {
+    "@context": "https://hypervideo.tech/hvml#",
+    "@type": "video"
+  }
+</script> -->
+<!--
+  Design considerations:
+  • Does `playlist` make sense to mark up annotations *within* a video,
+    or is it only for “meta-videos”, i.e. those that embed other videos?
+  • `playlist type="nonlinear"` is only required if sibling actions
+    (`goto`, `playlistAction`, `media`) are not guranteed to execute.
+  • `playlist type="linear"` means that all actions are guaranteed to
+    execute provided the user encounters their triggers (typically duration)
+  • If a video only has one action, is `playlist` required?
+-->
