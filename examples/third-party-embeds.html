@@ -50,12 +50,9 @@
             <presentation>
               <choice xml:id="full-stream">
                 <name>Go to <code>hugh.today/2016-09-17/live</code> for the full stream</name>
-                <goto
-                  on="duration"
-                  start="517.292107" startX="50%" startY="-1%"
-                  end="518.856514" endX="" endY=""
-                  xlink:actuate="onRequest"
-                  xlink:href="http://hugh.today/2016-09-17/live">
+                <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live">
+                  <keyframe startTime="517.292107" endTime="518.872131" startX="" startY="" endX="" endY=""></keyframe>
+                  <keyframe startTime="523.373882" endTime="524.873404" startX="" startY="" endX="" endY=""></keyframe>
                 </goto>
               </choice>
             </presentation>
@@ -65,18 +62,6 @@
       <!-- <h3>Auto-generated</h3> -->
     </article>
     <div id="scripts">
-      <script id="debug">
-        'use strict';
-
-        document.addEventListener( 'keydown', ( event ) => {
-          switch ( event.key ) {
-            case ',':
-            case '.':
-              console.log( player.getCurrentTime() );
-            break;
-          }
-        } );
-      </script>
       <script id="redblue-video">
         'use strict';
 
@@ -155,11 +140,15 @@
                   }
 
                   .redblue-annotations__link.redblue-annotations__link--start {
-                    bottom: -14%;
+                    bottom: -15%;
                   }
 
-                  .redblue-annotations__link.redblue-annotations__link--end {
+                  .redblue-annotations__link.redblue-annotations__link--keyframe-0-end {
                     bottom: 10%;
+                  }
+
+                  .redblue-annotations__link.redblue-annotations__link--keyframe-1-end {
+                    bottom: -15%;
                   }
                 </style>
                 <div class="redblue-content">
@@ -214,7 +203,7 @@
             this.createHotspots();
             this.highlightCode();
 
-            this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1';
+            this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1';
             this.$embed = this.shadowRoot.getElementById( 'embed' );
             this.$embed.src = this.getEmbedUri();
           } // connectedCallback
@@ -258,6 +247,14 @@
                 }
               } );
 
+              document.addEventListener( 'keydown', ( event ) => {
+                switch ( event.key ) {
+                  case 'm':
+                    console.log( this.player.getCurrentTime() );
+                  break;
+                }
+              } );
+
               // console.log( 'this.player', this.player );
             };
           }
@@ -290,21 +287,68 @@
 
               // https://stackoverflow.com/a/9882349/214325
               if ( state == YT.PlayerState.PLAYING ) {
-                let i = this.annotations.length;
-                // console.log( i );
+                let annotationIndex = this.annotations.length;
 
-                while ( i-- ) {
-                  let annotation = this.annotations[i];
+                while ( annotationIndex-- ) {
+                  let annotation = this.annotations[annotationIndex];
 
                   switch ( annotation.type ) {
                     case 'choice':
-                      let id = `annotation-${this.addLeadingZeroes( i + 1 )}`;
+                      // let annotationIndex = this.addLeadingZeroes( i + 1 );
+                      let id = `annotation-${annotationIndex}`;
                       let $link = this.$id( id );
-                      // console.log( `${id}`, $link );
-                      if ( !$link.classList.contains( 'redblue-annotations__link--end' ) ) {
-                        console.log( 'Starting transition at: ', time );
-                        $link.classList.add( 'redblue-annotations__link--end' );
-                        this.annotations.splice( i, 1 ); // @todo: this makes it one-time use
+                      let transitionDuration = parseFloat( getComputedStyle( $link ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
+                      // console.log( 'transitionDuration', transitionDuration );
+
+                      if ( annotation.goto.keyframes.length ) {
+                        for ( let keyframeIndex = 0, totalKeyframes = annotation.goto.keyframes.length; keyframeIndex < totalKeyframes; keyframeIndex++ ) {
+                          // let keyframeIndex = this.addLeadingZeroes( i + 1 );
+                          let endClass = `redblue-annotations__link--keyframe-${keyframeIndex}-end`;
+                          let keyframe = annotation.goto.keyframes[keyframeIndex];
+
+                          if ( ( time >= keyframe.starttime ) && ( time <= keyframe.endtime ) && !$link.classList.contains( endClass ) ) {
+                            console.log( '---------' );
+
+                            let drift = Math.abs( time - keyframe.starttime );
+                            // if ( drift > 0.001 ) {
+                            // // if ( Math.floor( drift ) > 0.01 ) {
+                            //   let correctedDuration = ( transitionDuration - drift );
+                            //   console.log( 'transitionDuration', transitionDuration );
+                            //   console.log( 'correctedDuration', correctedDuration );
+                            //   $link.style.transitionDuration = correctedDuration + 's';
+                            // } else {
+                            //   $link.style.removeProperty( 'transition-duration' );
+                            // }
+
+                            if ( keyframeIndex == 0 ) {
+                              $link.classList.remove( `redblue-annotations__link--start` );
+                            } else {
+                              $link.classList.remove( `redblue-annotations__link--keyframe-${keyframeIndex - 1}-end` );
+                            }
+
+                            $link.classList.add( endClass );
+
+                            console.log( `Starting annotation #${annotationIndex}, transition #${keyframeIndex} at: `, time );
+                            console.log( 'Should be: ', keyframe.starttime );
+                            console.log( 'Drift: ', drift );
+
+                            if ( keyframeIndex == ( totalKeyframes - 1 ) ) {
+                              // this.annotations.splice( annotationIndex, 1 ); // @todo: this makes it one-time use
+                              console.log( '---------' );
+                              console.log( 'No more keyframes' );
+                              console.log( 'this.annotations', this.annotations );
+
+                              setTimeout( () => {
+                                console.log( 'timeout' );
+
+                                while ( totalKeyframes-- ) {
+                                  $link.classList.remove( `redblue-annotations__link--keyframe-${totalKeyframes}-end` );
+                                }
+                                $link.classList.add( `redblue-annotations__link--start` );
+                              }, transitionDuration * 1000 );
+                            }
+                          }
+                        }
                       }
                     break;
                   }
@@ -410,7 +454,7 @@
           createHotspot( annotation, index ) {
             let $annotation = this.parseHTML(
               `<a
-                id="annotation-${this.addLeadingZeroes( index + 1 )}"
+                id="annotation-${index}"
                 class="redblue-annotations__link redblue-annotations__link--start"
                 href="${annotation.goto['xlink:href']}"
                 target="_blank"
@@ -420,6 +464,25 @@
             );
 
             this.$id( 'annotations' ).appendChild( $annotation );
+          }
+
+          mapAttributeToKeyValuePair( attribute ) {
+            const object = {};
+            object[attribute.nodeName] = attribute.nodeValue;
+            return object;
+          }
+
+          flattenKeyValuePairs( accumulator, keyValuePair ) {
+            const key = Object.keys( keyValuePair )[0];
+            const value = keyValuePair[key];
+
+            accumulator[key] = value;
+
+            return accumulator;
+          }
+
+          nodeAttributesToJSON( attributes ) {
+            return Array.from( attributes ).map( this.mapAttributeToKeyValuePair ).reduce( this.flattenKeyValuePairs, {} );
           }
 
           getAnnotationsFromJSON() {}
@@ -447,20 +510,18 @@
                       break;
 
                       case 'goto':
-                        let attributes = Array.from( grandchild.attributes ).map( ( attribute ) => {
-                          const object = {};
-                          object[attribute.nodeName] = attribute.nodeValue;
-                          return object;
-                        } ).reduce( ( accumulator, keyValuePair ) => {
-                          const key = Object.keys( keyValuePair )[0];
-                          const value = keyValuePair[key];
+                        choice[nodeName] = this.nodeAttributesToJSON( grandchild.attributes );
 
-                          accumulator[key] = value;
+                        choice[nodeName].keyframes = Array.from( grandchild.children ).filter( ( gotoChild ) => {
+                          const nodeName = gotoChild.nodeName.toLowerCase();
 
-                          return accumulator;
-                        }, {} );
-
-                        choice[nodeName] = attributes;
+                          switch ( nodeName ) {
+                            case 'keyframe':
+                              return true;
+                          }
+                        } ).map( ( keyframeElement ) => {
+                          return this.nodeAttributesToJSON( keyframeElement.attributes );
+                        } );
                       break;
                     }
                   }
