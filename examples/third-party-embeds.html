@@ -201,6 +201,8 @@
             this.setUpYouTubeIframeAPI();
             this.annotations = this.getAnnotations();
             this.createHotspots();
+            this.timelineTriggers = this.getTimelineTriggers();
+            console.log( 'this.timelineTriggers', this.timelineTriggers );
             this.highlightCode();
 
             this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1';
@@ -242,8 +244,8 @@
 
               this.player = new YT.Player( this.$id( 'embed' ), {
                 "events": {
-                  "onReady": this.onPlayerReady.bind( this )
-                  // "onStateChange": onPlayerStateChange
+                  "onReady": this.onPlayerReady.bind( this ),
+                  "onStateChange": this.onStateChange.bind( this )
                 }
               } );
 
@@ -263,6 +265,9 @@
             // console.log( 'onPlayerReady' );
             this.$id( 'embed' ).style.borderColor = '#FF6D00';
             this.player.mute();
+          }
+
+          onStateChange() {
             requestAnimationFrame( this.updatePlayback.bind( this ) );
           }
 
@@ -275,84 +280,69 @@
           // so unfortunately we have to poll the video if
           // we want to react to when the user seeks manually. :(
           updatePlayback() {
+            // console.log( 'updatePlayback' );
+
             if ( this.player && this.player.getCurrentTime ) {
+              // console.log( 'player' );
               // Returns the elapsed time in seconds since the video started playing
               const time = this.player.getCurrentTime(); /* * 1000*/
               const state = this.player.getPlayerState();
               // const floored = Math.floor( time );
 
-              // hidden: 517.292107
-              // peeking out: 517.355699
-              // end: 518.856514
-
               // https://stackoverflow.com/a/9882349/214325
               if ( state == YT.PlayerState.PLAYING ) {
-                let annotationIndex = this.annotations.length;
+                // let annotationIndex = this.annotations.length;
+                  // console.log( 'playing' );
+                // let totalTriggers =
+                for ( let startTime in this.timelineTriggers ) {
+                  startTime  = parseFloat( startTime );
+                  let trigger = this.timelineTriggers[startTime];
+                  let endTime = trigger.endtime;
+                  let totalKeyframes = this.annotations[trigger.annotationIndex].goto.keyframes.length;
 
-                while ( annotationIndex-- ) {
-                  let annotation = this.annotations[annotationIndex];
+                  // console.log( 'typeof timecode', typeof timecode );
+                  if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
+                    // console.log( 'Triggered: ', this.timelineTriggers[timecode] );
+                    console.log( '---------' );
+                    let drift = Math.abs( time - trigger.starttime );
 
-                  switch ( annotation.type ) {
-                    case 'choice':
-                      // let annotationIndex = this.addLeadingZeroes( i + 1 );
-                      let id = `annotation-${annotationIndex}`;
-                      let $link = this.$id( id );
-                      let transitionDuration = parseFloat( getComputedStyle( $link ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
-                      // console.log( 'transitionDuration', transitionDuration );
+                    if ( trigger.keyframeIndex == 0 ) {
+                      trigger.$ui.classList.remove( trigger.startClass );
+                    } else {
+                      trigger.$ui.classList.remove( trigger.previousEndClass );
+                    }
 
-                      if ( annotation.goto.keyframes.length ) {
-                        for ( let keyframeIndex = 0, totalKeyframes = annotation.goto.keyframes.length; keyframeIndex < totalKeyframes; keyframeIndex++ ) {
-                          // let keyframeIndex = this.addLeadingZeroes( i + 1 );
-                          let endClass = `redblue-annotations__link--keyframe-${keyframeIndex}-end`;
-                          let keyframe = annotation.goto.keyframes[keyframeIndex];
+                    trigger.$ui.classList.add( trigger.endClass );
 
-                          if ( ( time >= keyframe.starttime ) && ( time <= keyframe.endtime ) && !$link.classList.contains( endClass ) ) {
-                            console.log( '---------' );
+                    console.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.keyframeIndex} at: `, time );
+                    console.log( 'Should be: ', trigger.starttime );
+                    console.log( 'Drift: ', drift );
 
-                            let drift = Math.abs( time - keyframe.starttime );
-                            // if ( drift > 0.001 ) {
-                            // // if ( Math.floor( drift ) > 0.01 ) {
-                            //   let correctedDuration = ( transitionDuration - drift );
-                            //   console.log( 'transitionDuration', transitionDuration );
-                            //   console.log( 'correctedDuration', correctedDuration );
-                            //   $link.style.transitionDuration = correctedDuration + 's';
-                            // } else {
-                            //   $link.style.removeProperty( 'transition-duration' );
-                            // }
+                    if ( trigger.keyframeIndex == ( totalKeyframes - 1 ) ) {
+                      let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
+                      // this.annotations.splice( annotationIndex, 1 ); // @todo: this makes it one-time use
+                      console.log( '---------' );
+                      console.log( 'No more keyframes' );
+                      console.log( 'this.annotations', this.annotations );
 
-                            if ( keyframeIndex == 0 ) {
-                              $link.classList.remove( `redblue-annotations__link--start` );
-                            } else {
-                              $link.classList.remove( `redblue-annotations__link--keyframe-${keyframeIndex - 1}-end` );
-                            }
+                      setTimeout( () => {
+                        console.log( 'timeout' );
 
-                            $link.classList.add( endClass );
-
-                            console.log( `Starting annotation #${annotationIndex}, transition #${keyframeIndex} at: `, time );
-                            console.log( 'Should be: ', keyframe.starttime );
-                            console.log( 'Drift: ', drift );
-
-                            if ( keyframeIndex == ( totalKeyframes - 1 ) ) {
-                              // this.annotations.splice( annotationIndex, 1 ); // @todo: this makes it one-time use
-                              console.log( '---------' );
-                              console.log( 'No more keyframes' );
-                              console.log( 'this.annotations', this.annotations );
-
-                              setTimeout( () => {
-                                console.log( 'timeout' );
-
-                                while ( totalKeyframes-- ) {
-                                  $link.classList.remove( `redblue-annotations__link--keyframe-${totalKeyframes}-end` );
-                                }
-                                $link.classList.add( `redblue-annotations__link--start` );
-                              }, transitionDuration * 1000 );
-                            }
-                          }
+                        // Remove all previous keyframe classes
+                        while ( totalKeyframes-- ) {
+                          trigger.$ui.classList.remove(
+                            trigger.endClass.replace( /-[0-9]+-/, `-${totalKeyframes}-` )
+                            // `redblue-annotation`
+                          );
                         }
-                      }
-                    break;
+
+                        trigger.$ui.classList.add( trigger.startClass );
+                      }, transitionDuration * 1000 );
+                    }
                   }
                 }
+              } else {
+                  // console.log( 'not playing' );
               }
             }
 
@@ -572,6 +562,39 @@
               break;
             } // switch
           } // getAnnotations
+
+          getTimelineTriggers() {
+            if ( !this.annotations ) {
+              return null;
+            }
+
+            let triggers = {};
+
+            for ( let annotationIndex = 0; annotationIndex  < this.annotations.length; annotationIndex++ ) {
+              let annotation = this.annotations[annotationIndex ];
+
+              for ( let keyframeIndex = 0, totalKeyframes = annotation.goto.keyframes.length; keyframeIndex < totalKeyframes; keyframeIndex++ ) {
+                let keyframe = annotation.goto.keyframes[keyframeIndex];
+
+                triggers[keyframe.starttime] = {
+                  ...keyframe,
+                  annotationIndex,
+                  keyframeIndex,
+                  "name": annotation.name,
+                  "$ui": this.$id( `annotation-${annotationIndex}` ),
+                  "startClass": "redblue-annotations__link--start",
+                  "endClass": `redblue-annotations__link--keyframe-${keyframeIndex}-end`,
+                  "previousEndClass": ""
+                };
+
+                if ( keyframeIndex > 0 ) {
+                  triggers[keyframe.starttime].previousEndClass = `redblue-annotations__link--keyframe-${keyframeIndex - 1}-end`;
+                }
+              }
+            }
+
+            return triggers;
+          }
         }
 
         customElements.define( RedBlueVideo.is, RedBlueVideo );
