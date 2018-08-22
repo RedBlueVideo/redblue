@@ -23,6 +23,7 @@
       <pre><code id="code" class="xml"></code></pre>
 
       <h4>Result</h4>
+      <!-- XML -->
       <redblue-video id="redblue-youtube" aspect-ratio="16:9">
         <hvml
           xmlns="https://hypervideo.tech/hvml#"
@@ -51,15 +52,28 @@
               <choice xml:id="full-stream">
                 <name>Go to <code>hugh.today/2016-09-17/live</code> for the full stream</name>
                 <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live">
-                  <keyframe startTime="517.292107" endTime="518.872131" startX="" startY="" endX="" endY=""></keyframe>
-                  <keyframe startTime="523.373882" endTime="524.873404" startX="" startY="" endX="" endY=""></keyframe>
+                  <keyframe startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></keyframe>
+                  <keyframe startTime="523.373882" endTime="524.873404" startX="15%" startY="10%" endX="15%" endY="-15%"></keyframe>
+                  <!--
+                    @todo: Potentially should be split up/renamed.
+                    A keyframe can only represent one state. Two pairs of
+                    timecode + X/Y coordinates constitute a tween.
+                  -->
+                  <!--
+                    <keyframe time="517.292107" x="15%" y="-15%"></keyframe>
+                    <keyframe time="518.872131" x="15%" y="10%"></keyframe>
+                    <keyframe time="523.373882" x="15%" y="10%"></keyframe>
+                    <keyframe time="524.873404" x="15%" y="-15%"></keyframe>
+                    // OR
+                    <tween startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></tween>
+                    // ...
+                  -->
                 </goto>
               </choice>
             </presentation>
           </video>
         </hvml>
       </redblue-video>
-      <!-- <h3>Auto-generated</h3> -->
     </article>
     <div id="scripts">
       <script id="redblue-video">
@@ -135,20 +149,6 @@
                     justify-content: center;
                     width: 70%;
                     height: 14%;
-                    left: 15%;
-                    transition: 1.564407s bottom linear;
-                  }
-
-                  .redblue-annotations__link.redblue-annotations__link--start {
-                    bottom: -15%;
-                  }
-
-                  .redblue-annotations__link.redblue-annotations__link--keyframe-0-end {
-                    bottom: 10%;
-                  }
-
-                  .redblue-annotations__link.redblue-annotations__link--keyframe-1-end {
-                    bottom: -15%;
                   }
                 </style>
                 <div class="redblue-content">
@@ -200,6 +200,7 @@
             this.loadData();
             this.setUpYouTubeIframeAPI();
             this.annotations = this.getAnnotations();
+            this.setupAnimations();
             this.createHotspots();
             this.timelineTriggers = this.getTimelineTriggers();
             console.log( 'this.timelineTriggers', this.timelineTriggers );
@@ -209,6 +210,44 @@
             this.$embed = this.shadowRoot.getElementById( 'embed' );
             this.$embed.src = this.getEmbedUri();
           } // connectedCallback
+
+          setupAnimations() {
+            const $style = this.$$( 'style' );
+            // const sheet = $style.sheet;
+
+            for ( let annotationIndex = 0; annotationIndex < this.annotations.length; annotationIndex++ ) {
+              console.log( 'annotation' );
+
+              for ( let keyframeIndex = 0; keyframeIndex < this.annotations[annotationIndex].goto.keyframes.length; keyframeIndex++ ) {
+                console.log( 'keyframe' );
+
+                let keyframe = this.annotations[annotationIndex].goto.keyframes[keyframeIndex];
+
+                if ( keyframeIndex === 0 ) {
+                  $style.sheet.insertRule( `
+                    .redblue-annotations__link.redblue-annotations__link--${annotationIndex} {
+                      transition: ${keyframe.endtime - keyframe.starttime}s bottom linear;
+                    }`, ( $style.sheet.rules.length )
+                  );
+
+                  // was: 1.564407s
+                  $style.sheet.insertRule( `
+                    .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-start {
+                      left: ${keyframe.startx};
+                      bottom: ${keyframe.starty};
+                    }`, ( $style.sheet.rules.length )
+                  );
+                }
+
+                $style.sheet.insertRule( `
+                  .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-keyframe-${keyframeIndex}-end {
+                    left: ${keyframe.startx};
+                    bottom: ${keyframe.endy};
+                  }`, ( $style.sheet.rules.length )
+                );
+              }
+            } // for
+          }
 
           parseHTML( string ) {
             return document.createRange().createContextualFragment( string );
@@ -331,7 +370,7 @@
                         // Remove all previous keyframe classes
                         while ( totalKeyframes-- ) {
                           trigger.$ui.classList.remove(
-                            trigger.endClass.replace( /-[0-9]+-/, `-${totalKeyframes}-` )
+                            trigger.endClass.replace( /keyframe-[0-9]+-/, `keyframe-${totalKeyframes}-` )
                             // `redblue-annotation`
                           );
                         }
@@ -445,7 +484,7 @@
             let $annotation = this.parseHTML(
               `<a
                 id="annotation-${index}"
-                class="redblue-annotations__link redblue-annotations__link--start"
+                class="redblue-annotations__link redblue-annotations__link--${index} redblue-annotations__link--${index}-start"
                 href="${annotation.goto['xlink:href']}"
                 target="_blank"
                >
@@ -582,9 +621,9 @@
                   keyframeIndex,
                   "name": annotation.name,
                   "$ui": this.$id( `annotation-${annotationIndex}` ),
-                  "startClass": "redblue-annotations__link--start",
-                  "endClass": `redblue-annotations__link--keyframe-${keyframeIndex}-end`,
-                  "previousEndClass": ""
+                  "startClass": `redblue-annotations__link--${annotationIndex}-start`,
+                  "endClass": `redblue-annotations__link--${annotationIndex}-keyframe-${keyframeIndex}-end`,
+                  // "previousEndClass": ""
                 };
 
                 if ( keyframeIndex > 0 ) {
