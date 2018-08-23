@@ -27,3 +27,7 @@ hgroup > :first-child {
 hgroup > :last-child {
   margin-top: 0;
 }
+
+code {
+  height: 25vh;
+}
