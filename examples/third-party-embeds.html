@@ -52,8 +52,8 @@
               <choice xml:id="full-stream">
                 <name>Go to <code>hugh.today/2016-09-17/live</code> for the full stream</name>
                 <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live">
-                  <keyframe startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></keyframe>
-                  <keyframe startTime="523.373882" endTime="524.873404" startX="15%" startY="10%" endX="15%" endY="-15%"></keyframe>
+                  <animate startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></animate>
+                  <animate startTime="523.373882" endTime="524.873404" startX="15%" startY="10%" endX="15%" endY="-15%"></animate>
                   <!--
                     @todo: Potentially should be split up/renamed.
                     A keyframe can only represent one state. Two pairs of
@@ -67,6 +67,8 @@
                     // OR
                     <tween startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></tween>
                     // ...
+                    // OR
+                    <animate startTime="">
                   -->
                 </goto>
               </choice>
@@ -218,31 +220,31 @@
             for ( let annotationIndex = 0; annotationIndex < this.annotations.length; annotationIndex++ ) {
               console.log( 'annotation' );
 
-              for ( let keyframeIndex = 0; keyframeIndex < this.annotations[annotationIndex].goto.keyframes.length; keyframeIndex++ ) {
-                console.log( 'keyframe' );
+              for ( let animateIndex = 0; animateIndex < this.annotations[annotationIndex].goto.animations.length; animateIndex++ ) {
+                console.log( 'animate' );
 
-                let keyframe = this.annotations[annotationIndex].goto.keyframes[keyframeIndex];
+                let animate = this.annotations[annotationIndex].goto.animations[animateIndex];
 
-                if ( keyframeIndex === 0 ) {
+                if ( animateIndex === 0 ) {
                   $style.sheet.insertRule( `
                     .redblue-annotations__link.redblue-annotations__link--${annotationIndex} {
-                      transition: ${keyframe.endtime - keyframe.starttime}s bottom linear;
+                      transition: ${animate.endtime - animate.starttime}s bottom linear;
                     }`, ( $style.sheet.rules.length )
                   );
 
                   // was: 1.564407s
                   $style.sheet.insertRule( `
                     .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-start {
-                      left: ${keyframe.startx};
-                      bottom: ${keyframe.starty};
+                      left: ${animate.startx};
+                      bottom: ${animate.starty};
                     }`, ( $style.sheet.rules.length )
                   );
                 }
 
                 $style.sheet.insertRule( `
-                  .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-keyframe-${keyframeIndex}-end {
-                    left: ${keyframe.startx};
-                    bottom: ${keyframe.endy};
+                  .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end {
+                    left: ${animate.startx};
+                    bottom: ${animate.endy};
                   }`, ( $style.sheet.rules.length )
                 );
               }
@@ -337,7 +339,7 @@
                   startTime  = parseFloat( startTime );
                   let trigger = this.timelineTriggers[startTime];
                   let endTime = trigger.endtime;
-                  let totalKeyframes = this.annotations[trigger.annotationIndex].goto.keyframes.length;
+                  let totalAnimations = this.annotations[trigger.annotationIndex].goto.animations.length;
 
                   // console.log( 'typeof timecode', typeof timecode );
                   if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
@@ -345,7 +347,7 @@
                     console.log( '---------' );
                     let drift = Math.abs( time - trigger.starttime );
 
-                    if ( trigger.keyframeIndex == 0 ) {
+                    if ( trigger.animateIndex == 0 ) {
                       trigger.$ui.classList.remove( trigger.startClass );
                     } else {
                       trigger.$ui.classList.remove( trigger.previousEndClass );
@@ -353,24 +355,24 @@
 
                     trigger.$ui.classList.add( trigger.endClass );
 
-                    console.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.keyframeIndex} at: `, time );
+                    console.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.animateIndex} at: `, time );
                     console.log( 'Should be: ', trigger.starttime );
                     console.log( 'Drift: ', drift );
 
-                    if ( trigger.keyframeIndex == ( totalKeyframes - 1 ) ) {
+                    if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
                       let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
                       // this.annotations.splice( annotationIndex, 1 ); // @todo: this makes it one-time use
                       console.log( '---------' );
-                      console.log( 'No more keyframes' );
+                      console.log( 'No more animations' );
                       console.log( 'this.annotations', this.annotations );
 
                       setTimeout( () => {
                         console.log( 'timeout' );
 
-                        // Remove all previous keyframe classes
-                        while ( totalKeyframes-- ) {
+                        // Remove all previous animate classes
+                        while ( totalAnimations-- ) {
                           trigger.$ui.classList.remove(
-                            trigger.endClass.replace( /keyframe-[0-9]+-/, `keyframe-${totalKeyframes}-` )
+                            trigger.endClass.replace( /animate-[0-9]+-/, `animate-${totalAnimations}-` )
                             // `redblue-annotation`
                           );
                         }
@@ -541,15 +543,15 @@
                       case 'goto':
                         choice[nodeName] = this.nodeAttributesToJSON( grandchild.attributes );
 
-                        choice[nodeName].keyframes = Array.from( grandchild.children ).filter( ( gotoChild ) => {
+                        choice[nodeName].animations = Array.from( grandchild.children ).filter( ( gotoChild ) => {
                           const nodeName = gotoChild.nodeName.toLowerCase();
 
                           switch ( nodeName ) {
-                            case 'keyframe':
+                            case 'animate':
                               return true;
                           }
-                        } ).map( ( keyframeElement ) => {
-                          return this.nodeAttributesToJSON( keyframeElement.attributes );
+                        } ).map( ( animateElement ) => {
+                          return this.nodeAttributesToJSON( animateElement.attributes );
                         } );
                       break;
                     }
@@ -612,22 +614,22 @@
             for ( let annotationIndex = 0; annotationIndex  < this.annotations.length; annotationIndex++ ) {
               let annotation = this.annotations[annotationIndex ];
 
-              for ( let keyframeIndex = 0, totalKeyframes = annotation.goto.keyframes.length; keyframeIndex < totalKeyframes; keyframeIndex++ ) {
-                let keyframe = annotation.goto.keyframes[keyframeIndex];
+              for ( let animateIndex = 0, totalAnimations = annotation.goto.animations.length; animateIndex < totalAnimations; animateIndex++ ) {
+                let animate = annotation.goto.animations[animateIndex];
 
-                triggers[keyframe.starttime] = {
-                  ...keyframe,
+                triggers[animate.starttime] = {
+                  ...animate,
                   annotationIndex,
-                  keyframeIndex,
+                  animateIndex,
                   "name": annotation.name,
                   "$ui": this.$id( `annotation-${annotationIndex}` ),
                   "startClass": `redblue-annotations__link--${annotationIndex}-start`,
-                  "endClass": `redblue-annotations__link--${annotationIndex}-keyframe-${keyframeIndex}-end`,
+                  "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`,
                   // "previousEndClass": ""
                 };
 
-                if ( keyframeIndex > 0 ) {
-                  triggers[keyframe.starttime].previousEndClass = `redblue-annotations__link--keyframe-${keyframeIndex - 1}-end`;
+                if ( animateIndex > 0 ) {
+                  triggers[animate.starttime].previousEndClass = `redblue-annotations__link--animate-${animateIndex - 1}-end`;
                 }
               }
             }
