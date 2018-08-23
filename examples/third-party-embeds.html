@@ -55,22 +55,6 @@
                 <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live" width="70%" height="13%" css:font-size="calc(384 / 150 * 1vw)" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap" css:overflow="hidden">
                   <animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"></animate>
                   <animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"></animate>
-                  <!--
-                    @todo: Potentially should be split up/renamed.
-                    A keyframe can only represent one state. Two pairs of
-                    timecode + X/Y coordinates constitute a tween.
-                  -->
-                  <!--
-                    <keyframe time="517.292107" x="15%" y="-15%"></keyframe>
-                    <keyframe time="518.872131" x="15%" y="10%"></keyframe>
-                    <keyframe time="523.373882" x="15%" y="10%"></keyframe>
-                    <keyframe time="524.873404" x="15%" y="-15%"></keyframe>
-                    // OR
-                    <tween startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></tween>
-                    // ...
-                    // OR
-                    <animate startTime="">
-                  -->
                 </goto>
               </choice>
             </presentation>
@@ -95,19 +79,11 @@
                     position: relative;
                     display: block;
                     border: 1px solid black;
-                    /* width: 100%; */
-                    /* max-width: 100%; */
-                  }
-
-                  :host([aspect-ratio="16:9"]) {
-                    /* max-width: 853px; */
-                    /* max-height: 853px; */
                   }
 
                   .redblue-player-wrapper {
                     position: relative;
                     overflow: hidden;
-                    /* max-width: 100%; */
                   }
 
                   :host([aspect-ratio="16:9"]) .redblue-player-wrapper {
@@ -123,17 +99,13 @@
                     height: 100%;
                   }
 
-                  .redblue-content {
-                    /* max-width: 100%; */
-                  }
+                  .redblue-content {}
 
                   .redblue-description {
                     overflow: auto;
                   }
 
-                  .redblue-player {
-                    /* max-width: 100%; */
-                  }
+                  .redblue-player {}
 
                   .redblue-fullscreen-context {
                     width: 100%;
@@ -147,8 +119,6 @@
                   .redblue-annotations__link {
                     position: absolute;
                     border: 1px solid transparent;
-                    /*background-color: yellow;
-                    background-color: hsla(60, 100%, 50%, 0.5);*/
                     border-radius: 3px;
                     display: inline-flex;
                     text-align: center;
@@ -191,8 +161,6 @@
             this.setAttribute( 'role', 'application' );
 
             this.$template = this.parseHTML( RedBlueVideo.template ).children[RedBlueVideo.is];
-
-            // console.log( 'this.$template', [this.$template] );
           } // constructor
 
           connectedCallback() {
@@ -221,7 +189,6 @@
             this.setupAnimations();
             this.createHotspots();
             this.timelineTriggers = this.getTimelineTriggers();
-            console.log( 'this.timelineTriggers', this.timelineTriggers );
             this.highlightCode();
 
             this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1&amp;fs=0';
@@ -314,7 +281,6 @@
                     }`, ( stylesheetRules.length )
                   );
 
-                  // was: 1.564407s
                   stylesheet.insertRule( `
                     .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-start {
                       left: ${animate.startx};
@@ -339,11 +305,7 @@
 
           highlightCode() {
             const $code = document.getElementById( 'code' );
-
             $code.textContent = document.getElementById( 'redblue-youtube' ).outerHTML.replace( /\n\s{8}/gi, '\n    ' ).replace( /\n\s*(<\/redblue-video>)/gi, '\n$1' );
-            // $code.style.width = $youtubeEmbed.getAttribute( 'width' ) + 'px';
-            // $code.style.height = ( parseInt( $code.style.width.replace( 'px', '' ), 10 ) / 2 ) + 'px';
-
             hljs.initHighlighting();
           }
 
@@ -363,8 +325,6 @@
             firstScriptTag.parentNode.insertBefore( tag, firstScriptTag );
 
             window.onYouTubeIframeAPIReady = () => {
-              // console.log( 'YT.Player', YT.Player );
-
               this.player = new YT.Player( this.$id( 'embed' ), {
                 "events": {
                   "onReady": this.onPlayerReady.bind( this ),
@@ -379,13 +339,10 @@
                   break;
                 }
               } );
-
-              // console.log( 'this.player', this.player );
             };
           }
 
           onPlayerReady( event ) {
-            // console.log( 'onPlayerReady' );
             this.$id( 'embed' ).style.borderColor = '#FF6D00';
             this.player.mute();
           }
@@ -403,29 +360,20 @@
           // so unfortunately we have to poll the video if
           // we want to react to when the user seeks manually. :(
           updatePlayback() {
-            // console.log( 'updatePlayback' );
-
             if ( this.player && this.player.getCurrentTime ) {
-              // console.log( 'player' );
               // Returns the elapsed time in seconds since the video started playing
               const time = this.player.getCurrentTime(); /* * 1000*/
               const state = this.player.getPlayerState();
-              // const floored = Math.floor( time );
 
               // https://stackoverflow.com/a/9882349/214325
               if ( state == YT.PlayerState.PLAYING ) {
-                // let annotationIndex = this.annotations.length;
-                  // console.log( 'playing' );
-                // let totalTriggers =
                 for ( let startTime in this.timelineTriggers ) {
                   startTime  = parseFloat( startTime );
                   let trigger = this.timelineTriggers[startTime];
                   let endTime = trigger.endtime;
                   let totalAnimations = this.annotations[trigger.annotationIndex].goto.animations.length;
 
-                  // console.log( 'typeof timecode', typeof timecode );
                   if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
-                    // console.log( 'Triggered: ', this.timelineTriggers[timecode] );
                     console.log( '---------' );
                     let drift = Math.abs( time - trigger.starttime );
 
@@ -443,7 +391,7 @@
 
                     if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
                       let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
-                      // this.annotations.splice( annotationIndex, 1 ); // @todo: this makes it one-time use
+
                       console.log( '---------' );
                       console.log( 'No more animations' );
                       console.log( 'this.annotations', this.annotations );
@@ -455,7 +403,6 @@
                         while ( totalAnimations-- ) {
                           trigger.$ui.classList.remove(
                             trigger.endClass.replace( /animate-[0-9]+-/, `animate-${totalAnimations}-` )
-                            // `redblue-annotation`
                           );
                         }
 
@@ -465,7 +412,7 @@
                   }
                 }
               } else {
-                  // console.log( 'not playing' );
+                // console.log( 'not playing' );
               }
             }
 
@@ -523,16 +470,10 @@
               </showing>
             */
             // https://www.youtube.com/embed/nWdWq3hMwao?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1
-            // console.log( 'this.hvml', [this.hvml] );
-
             try {
               let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., 'https://www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
 
-              // console.log( 'youtubeUrl', youtubeUrl );
-
               if ( youtubeUrl ) {
-                // console.log( 'youtubeUrl', [youtubeUrl] );
-                // console.log( 'typeof youtubeUrl', typeof youtubeUrl );
                 return youtubeUrl.textContent.replace( /https:\/\/www\.youtube\.com\/watch\?v=([^&?]+)/i, `https://www.youtube.com/embed/$1${this.embedParameters}` );
               }
 
@@ -618,7 +559,6 @@
 
                     switch ( nodeName ) {
                       case 'name':
-                        // console.log( 'grandchild', [grandchild] );
                         choice[nodeName] = ( grandchild.nodeValue || grandchild.innerHTML );
                       break;
 
@@ -706,8 +646,7 @@
                   "name": annotation.name,
                   "$ui": this.$id( `annotation-${annotationIndex}` ),
                   "startClass": `redblue-annotations__link--${annotationIndex}-start`,
-                  "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`,
-                  // "previousEndClass": ""
+                  "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`
                 };
 
                 if ( animateIndex > 0 ) {
