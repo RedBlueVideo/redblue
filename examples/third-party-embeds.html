@@ -52,7 +52,7 @@
             <presentation>
               <choice xml:id="full-stream">
                 <name>Go to: <code style="font-family: inherit; font-weight: bold;">hugh.today/2016-09-17/live</code> for the full stream</name>
-                <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live" width="70%" height="13.75%" css:font-size="calc(384 / 150 * 1vw)" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap" css:overflow="hidden">
+                <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live" width="70%" height="13%" css:font-size="calc(384 / 150 * 1vw)" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap" css:overflow="hidden">
                   <animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"></animate>
                   <animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"></animate>
                   <!--
@@ -147,13 +147,15 @@
                   .redblue-annotations__link {
                     position: absolute;
                     border: 1px solid transparent;
-                    background-color: yellow;
-                    background-color: hsla(60, 100%, 50%, 0.5);
+                    /*background-color: yellow;
+                    background-color: hsla(60, 100%, 50%, 0.5);*/
                     border-radius: 3px;
                     display: inline-flex;
                     text-align: center;
                     align-items: center;
                     justify-content: center;
+                    color: transparent;
+                    border: 3px solid rgba(139,157,195,1);
                   }
 
                   .redblue-fullscreen-button {
