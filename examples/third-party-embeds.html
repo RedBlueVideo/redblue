@@ -135,6 +135,10 @@
                     /* max-width: 100%; */
                   }
 
+                  .redblue-fullscreen-context {
+                    width: 100%;
+                  }
+
                   .redblue-annotations {
                     width: 0;
                     height: 0;
@@ -151,15 +155,20 @@
                     align-items: center;
                     justify-content: center;
                   }
+
+                  .redblue-fullscreen-button {
+                    position: absolute;
+                  }
                 </style>
                 <div class="redblue-content">
-                  <div class="redblue-player-wrapper">
+                  <div id="fullscreen-context" class="redblue-player-wrapper redblue-fullscreen-context">
                     <iframe id="embed" class="redblue-player"
                       src=""
                       frameborder="0"
                       allow="autoplay; encrypted-media"
                       allowfullscreen="allowfullscreen">
                     </iframe>
+                    <button id="fullscreen-button" class="redblue-fullscreen-button">Toggle Fullscreen</button>
                     <nav id="annotations" class="redblue-annotations"></nav>
                   </div>
                   <div class="redblue-description">
@@ -197,6 +206,11 @@
             this.$$$ = this.shadowRoot.querySelectorAll.bind( this.shadowRoot );
             this.$id = this.shadowRoot.getElementById.bind( this.shadowRoot );
 
+            this.$.fullscreenButton = this.$id( 'fullscreen-button' );
+            this.$.fullscreenContext = this.$id( 'fullscreen-context' );
+
+            this.$.fullscreenButton.addEventListener( 'click', this.toggleFullscreen.bind( this ) );
+
             // The order here is important
             this.loadData();
             this.setUpYouTubeIframeAPI();
@@ -208,10 +222,28 @@
             console.log( 'this.timelineTriggers', this.timelineTriggers );
             this.highlightCode();
 
-            this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1';
+            this.embedParameters = '?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1&amp;fs=0';
             this.$embed = this.shadowRoot.getElementById( 'embed' );
             this.$embed.src = this.getEmbedUri();
           } // connectedCallback
+
+          // https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API
+          toggleFullscreen( event ) {
+            if ( document.fullscreenElement ) {
+              document.exitFullscreen();
+            } else if ( document.webkitFullscreenElement ) {
+              document.webkitExitFullscreen();
+            } else if ( document.mozFullScreenElement ) {
+              document.mozCancelFullScreen();
+            // -----------------------------------------------------------------
+            } else if ( 'requestFullscreen' in this.$.fullscreenContext ) {
+              this.$.fullscreenContext.requestFullscreen();
+            } else if ( 'webkitRequestFullscreen' in this.$.fullscreenContext ) {
+              this.$.fullscreenContext.webkitRequestFullscreen();
+            } else if ( 'mozRequestFullScreen' in this.$.fullscreenContext ) {
+              this.$.fullscreenContext.mozRequestFullScreen();
+            }
+          }
 
           getCSSNamespacePrefixFromXML() {
             for ( let i = 0; i < this.hvml.attributes.length; i++ ) {
@@ -248,8 +280,8 @@
           }
 
           setupAnimations() {
-            const $style = this.$$( 'style' );
-            // const sheet = $style.sheet;
+            const stylesheet = this.$$( 'style' ).sheet;
+            const stylesheetRules = ( stylesheet.cssRules || stylesheet.rules );
 
             for ( let annotationIndex = 0; annotationIndex < this.annotations.length; annotationIndex++ ) {
               let annotation = this.annotations[annotationIndex];
@@ -273,27 +305,27 @@
                     }
                   }
 
-                  $style.sheet.insertRule( `
+                  stylesheet.insertRule( `
                     .redblue-annotations__link.redblue-annotations__link--${annotationIndex} {
                       ${styleProperties}
                       transition: ${animate.endtime - animate.starttime}s bottom linear;
-                    }`, ( $style.sheet.rules.length )
+                    }`, ( stylesheetRules.length )
                   );
 
                   // was: 1.564407s
-                  $style.sheet.insertRule( `
+                  stylesheet.insertRule( `
                     .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-start {
                       left: ${animate.startx};
                       bottom: ${animate.starty};
-                    }`, ( $style.sheet.rules.length )
+                    }`, ( stylesheetRules.length )
                   );
                 }
 
-                $style.sheet.insertRule( `
+                stylesheet.insertRule( `
                   .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end {
                     left: ${animate.startx};
                     bottom: ${animate.endy};
-                  }`, ( $style.sheet.rules.length )
+                  }`, ( stylesheetRules.length )
                 );
               }
             } // for
