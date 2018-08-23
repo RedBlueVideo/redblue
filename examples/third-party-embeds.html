@@ -28,6 +28,7 @@
         <hvml
           xmlns="https://hypervideo.tech/hvml#"
           xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:css="https://www.w3.org/TR/CSS/"
           xml:lang="en-US"
           hidden="hidden"
         >
@@ -50,10 +51,10 @@
             </showing>
             <presentation>
               <choice xml:id="full-stream">
-                <name>Go to <code>hugh.today/2016-09-17/live</code> for the full stream</name>
-                <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live">
-                  <animate startTime="517.292107" endTime="518.872131" startX="15%" startY="-15%" endX="15%" endY="10%"></animate>
-                  <animate startTime="523.373882" endTime="524.873404" startX="15%" startY="10%" endX="15%" endY="-15%"></animate>
+                <name>Go to: <code style="font-family: inherit; font-weight: bold;">hugh.today/2016-09-17/live</code> for the full stream</name>
+                <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live" width="70%" height="13.75%" css:font-size="130%" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap">
+                  <animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"></animate>
+                  <animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"></animate>
                   <!--
                     @todo: Potentially should be split up/renamed.
                     A keyframe can only represent one state. Two pairs of
@@ -149,8 +150,6 @@
                     text-align: center;
                     align-items: center;
                     justify-content: center;
-                    width: 70%;
-                    height: 14%;
                   }
                 </style>
                 <div class="redblue-content">
@@ -202,6 +201,7 @@
             this.loadData();
             this.setUpYouTubeIframeAPI();
             this.annotations = this.getAnnotations();
+            this._cssNamespacePrefix = this.getCSSNamespacePrefix();
             this.setupAnimations();
             this.createHotspots();
             this.timelineTriggers = this.getTimelineTriggers();
@@ -213,21 +213,69 @@
             this.$embed.src = this.getEmbedUri();
           } // connectedCallback
 
+          getCSSNamespacePrefixFromXML() {
+            for ( let i = 0; i < this.hvml.attributes.length; i++ ) {
+              let attribute = this.hvml.attributes[i].nodeName;
+              let namespaceAttribute = attribute.match( /^xmlns:([^=]+)/i );
+
+              if (
+                namespaceAttribute
+                && ( this.hvml.getAttribute( attribute ).match( /https?:\/\/(www\.)?w3\.org\/TR\/CSS\/?/i ) )
+              ) {
+                return namespaceAttribute[1];
+              }
+            }
+
+            return null;
+          }
+
+          getCSSNamespacePrefix() {
+            if ( !this.hvml ) {
+              return null;
+            }
+
+            const defaultPrefix = 'css';
+
+            switch ( this._hvmlParser ) {
+              case 'xml':
+                return ( this.getCSSNamespacePrefixFromXML() || defaultPrefix );
+              break;
+
+              case 'json':
+                return ( this.getCSSNamespacePrefixFromJSON() || defaultPrefix );
+              break;
+            }
+          }
+
           setupAnimations() {
             const $style = this.$$( 'style' );
             // const sheet = $style.sheet;
 
             for ( let annotationIndex = 0; annotationIndex < this.annotations.length; annotationIndex++ ) {
-              console.log( 'annotation' );
+              let annotation = this.annotations[annotationIndex];
 
               for ( let animateIndex = 0; animateIndex < this.annotations[annotationIndex].goto.animations.length; animateIndex++ ) {
-                console.log( 'animate' );
-
                 let animate = this.annotations[annotationIndex].goto.animations[animateIndex];
 
                 if ( animateIndex === 0 ) {
+                  let styleProperties = '';
+
+                  for ( let attribute in annotation.goto ) {
+                    if ( ( attribute === 'height' ) || ( attribute === 'width' ) ) {
+                      styleProperties += `${attribute}: ${annotation.goto[attribute]};\n`;
+                    } else {
+                      let cssAttributeRegex = new RegExp( `^${this._cssNamespacePrefix}:([^=]+)`, 'i' );
+                      let cssAttribute = attribute.match( cssAttributeRegex );
+
+                      if ( cssAttribute ) {
+                        styleProperties += `${cssAttribute[1]}: ${annotation.goto[attribute]};`;
+                      }
+                    }
+                  }
+
                   $style.sheet.insertRule( `
                     .redblue-annotations__link.redblue-annotations__link--${annotationIndex} {
+                      ${styleProperties}
                       transition: ${animate.endtime - animate.starttime}s bottom linear;
                     }`, ( $style.sheet.rules.length )
                   );
