@@ -31,3 +31,11 @@ hgroup > :last-child {
 code {
   height: 25vh;
 }
+
+.tab {
+  display: none
+}
+
+.tab:target {
+  display: block;
+}
