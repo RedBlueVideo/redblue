@@ -39,3 +39,4 @@ Thumbs.db
 # Repo-specific
 www/media/lossless/
 _internal/
+node_modules/
