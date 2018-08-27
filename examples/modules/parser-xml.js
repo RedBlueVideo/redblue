@@ -26,33 +26,9 @@ const RedBlueXMLParser = ( superClass ) => {
       return defaultPrefix;
     }
 
-    getEmbedUriFromXML() {
-      /*
-        <showing scope="release" type="internet" admission="private">
-          <venue type="site">
-            <entity site="https://www.youtube.com/">YouTube</entity>
-            <uri>https://www.youtube.com/watch?v=nWdWq3hMwao</uri>
-            <title>Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites</title>
-          </venue>
-        </showing>
-      */
-      // https://www.youtube.com/embed/nWdWq3hMwao?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1
-      try {
-        let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
-
-        if ( youtubeUrl ) {
-          return youtubeUrl.textContent.replace( /https?:\/\/www\.youtube\.com\/watch\?v=([^&?]+)/i, `//www.youtube.com/embed/$1${this.embedParameters}` );
-        }
-
-        throw 'No YouTube URL found';
-      } catch ( error ) {
-        console.error( error );
-      }
-    }
-
     getAnnotationsFromXML() {
       const annotations = [];
-      const $presentation = this.findInXML( `.//presentation[1]` ).snapshotItem(0);
+      const $presentation = this.find( `.//presentation[1]` ).snapshotItem(0);
 
       for ( let i = 0, length = $presentation.children.length; i < length; i++ ) {
         let child = $presentation.children[i];
@@ -90,7 +66,6 @@ const RedBlueXMLParser = ( superClass ) => {
 
             choice.type = nodeName;
 
-            console.log( 'choice', choice );
             annotations.push( choice );
           break;
 
