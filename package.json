@@ -1,7 +1,7 @@
 {
   "name": "redblue",
   "version": "0.0.0",
-  "description": "Open-Source Interactive Video Framework",
+  "description": "Open-Source Hypervideo Framework",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -31,8 +31,8 @@
   ],
   "author": {
     "name": "Hugh Guiney",
-    "email": "hello@hughguiney.com",
-    "url": "https://hughguiney.com"
+    "email": "hugh@redblue.video",
+    "url": "https://redblue.video"
   },
   "license": "GPL-3.0",
   "bugs": {
