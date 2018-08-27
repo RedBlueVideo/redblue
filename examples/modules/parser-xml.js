@@ -10,7 +10,7 @@ const RedBlueXMLParser = ( superClass ) => {
       return true;
     }
 
-    getCSSNamespacePrefixFromXML() {
+    resolveCSSNamespacePrefixFromXML( defaultPrefix = 'css' ) {
       for ( let i = 0; i < this.hvml.attributes.length; i++ ) {
         let attribute = this.hvml.attributes[i].nodeName;
         let namespaceAttribute = attribute.match( /^xmlns:([^=]+)/i );
@@ -23,7 +23,7 @@ const RedBlueXMLParser = ( superClass ) => {
         }
       }
 
-      return null;
+      return defaultPrefix;
     }
 
     getEmbedUriFromXML() {

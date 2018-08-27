@@ -131,8 +131,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       this.loadData();
       this.setUpYouTubeIframeAPI();
       this.annotations = this.getAnnotations();
-      this._cssNamespacePrefix = this.getCSSNamespacePrefix();
-      this.setupAnimations();
+      this.resolveCSSNamespacePrefix().then( ( prefix ) => {
+        this._cssNamespacePrefix = prefix;
+        console.log( 'this._cssNamespacePrefix', this._cssNamespacePrefix );
+        this.setupAnimations();
+      } );
       this.createHotspots();
       this.timelineTriggers = this.getTimelineTriggers();
       // -----------------------------------------------------------------------
@@ -162,32 +165,30 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  getCSSNamespacePrefix() {
+  async resolveCSSNamespacePrefix() {
     if ( !this.hvml ) {
       return null;
     }
-
-    const defaultPrefix = 'css';
 
     switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {
           throw this.MISSING_XML_PARSER_ERROR;
         }
-        return ( this.getCSSNamespacePrefixFromXML() || defaultPrefix );
+        return this.resolveCSSNamespacePrefixFromXML();
       break;
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
           throw this.MISSING_JSONLD_PARSER_ERROR;
         }
-        return ( this.getCSSNamespacePrefixFromJSONLD() || defaultPrefix );
+        return await this.resolveCSSNamespacePrefixFromJSONLD();
       break;
     }
   }
 
   setupAnimations() {
-    if ( this._hvmlParser === 'json-ld' ) {
+    if ( !this.annotations || !this.annotations.length ) {
       return false;
     }
 
@@ -239,6 +240,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         );
       }
     } // for
+
+    return true;
   }
 
   parseHTML( string ) {
@@ -246,9 +249,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   setUpYouTubeIframeAPI() {
-    if ( this._hvmlParser === 'json-ld' ) {
-      return false;
-    }
     /*
       YouTube Player API:
       • Embedded players must have a viewport that is at least 200px by 200px.
@@ -371,7 +371,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
         case 'script':
           if ( child.hasAttribute( 'type' ) && ( child.type === 'application/ld+json' ) ) {
-            this.hvml = child;
+            this.hvml = JSON.parse( child.textContent );
             this._hvmlParser = 'json-ld';
             return;
           }
@@ -399,7 +399,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   createHotspots() {
-    if ( this._hvmlParser === 'json-ld' ) {
+    if ( !this.annotations || !this.annotations.length ) {
       return false;
     }
 
@@ -408,6 +408,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
       this.createHotspot( annotation, i );
     }
+
+    return true;
   }
 
   createHotspot( annotation, index ) {
