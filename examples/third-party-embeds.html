@@ -75,10 +75,147 @@
 
         <redblue-video id="redblue-youtube-json-ld" aspect-ratio="16:9">
           <script type="application/ld+json">
-            {
-              "@context": "https://hypervideo.tech/hvml#",
-              "@type": "video"
+          {
+            "@context": {
+              "@vocab": "https://hypervideo.tech/hvml#",
+              "xml": "http://www.w3.org/XML/1998/namespace",
+              "xml:id": "https://www.w3.org/TR/xml-id/",
+              "html": "http://www.w3.org/1999/xhtml#",
+              "dom": "https://dom.spec.whatwg.org/#",
+              "xlink": "http://www.w3.org/1999/xlink",
+              "xlink-spec": "http://www.w3.org/TR/xlink/#",
+              "xsd": "http://www.w3.org/2001/XMLSchema-datatypes#",
+              "css": "https://www.w3.org/TR/CSS/#",
+              "css-values": "https://www.w3.org/TR/css-values/#",
+              "css-fonts": "https://www.w3.org/TR/css-fonts/#",
+              "vlog": "https://hugh.today/",
+              "recorded": {
+                "@id": "https://hypervideo.tech/hvml#recorded",
+                "@type": "xsd:dateTime"
+              },
+              "children": {
+                "@id": "dom:dom-parentnode-children",
+                "@container": "@list"
+              },
+              "childNodes": {
+                "@id": "dom:dom-node-childnodes",
+                "@container": "@list"
+              },
+              "textContent": "dom:dom-node-textcontent",
+              "div": "html:div",
+              "p": "html:p",
+              "xlink:actuate": "xlink-spec:actuate-att",
+              "xlink:href": "xlink-spec:link-locators",
+              "css:percentage": "css-values:percentages",
+              "width": {
+                "@type": "css:percentage"
+              },
+              "height": {
+                "@type": "css:percentage"
+              },
+              "startX": {
+                "@type": "css:percentage"
+              },
+              "startY": {
+                "@type": "css:percentage"
+              },
+              "endX": {
+                "@type": "css:percentage"
+              },
+              "endY": {
+                "@type": "css:percentage"
+              },
+              "css:font-size": "css-fonts:font-size-prop",
+              "css:font-family": "css-fonts:font-family-prop",
+              "html:div": "html:div",
+              "nodeName": "dom:dom-node-nodename",
+              "style": {
+                "@id": "html:style"
+              },
+              "code": {
+                "@id": "html:code"
+              }
+            },
+            "@type": "video",
+            "@id":  "vlog:2016-09-17",
+            "xml:id": "ep-23",
+            "type": "personal",
+            "title": "Overnight Dance Party at the Museum of Fine Arts Boston",
+            "episode": 23,
+            "recorded": "2016-09-17",
+            "description": {
+              "html:div": {
+                "childNodes": [
+                  {
+                    "@type": "p",
+                    "@value": "Full Facebook Live stream: http://hugh.today/2016-09-17/live"
+                  },
+                  {
+                    "@type": "p",
+                    "@value": "#mfaNOW #mfaLateNites"
+                  }
+                ]
+              }
+            },
+            "showing": {
+              "scope": "release",
+              "type": "internet",
+              "admission": "private",
+              "venue": {
+                "type": "site",
+                "entity": [
+                  {
+                    "site": "https://www.youtube.com/"
+                  },
+                  "YouTube"
+                ],
+                "uri": "https://www.youtube.com/watch?v=nWdWq3hMwao",
+                "title": "Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites"
+              }
+            },
+            "presentation": {
+              "choice": {
+                "name": [
+                  "Go to: ",
+                  {
+                    "@type": "code",
+                    "style": "font-family: inherit; font-weight: bold;",
+                    "textContent": "hugh.today/2016-09-17/live"
+                  },
+                  " for the full stream"
+                ],
+                "goto": {
+                  "on": "duration",
+                  "xlink:actuate": "onRequest",
+                  "xlink:href": "http://hugh.today/2016-09-17/live",
+                  "width": "70%",
+                  "height": "13%",
+                  "css:font-size": "calc(384 / 150 * 1vw)",
+                  "css:font-family": "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif",
+                  "css:white-space": "nowrap",
+                  "css:overflow": "hidden",
+                  "animate": [
+                    {
+                      "startTime": "517.292107",
+                      "endTime": "518.872131",
+                      "startX": "14.9%",
+                      "startY": "-15%",
+                      "endX": "15%",
+                      "endY": "10%"
+                    },
+                    {
+                      "startTime": "523.373882",
+                      "endTime": "524.873404",
+                      "startX": "14.9%",
+                      "startY": "10%",
+                      "endX": "15%",
+                      "endY": "-15%"
+                    }
+                  ]
+                }
+              }
             }
+          }
           </script>
         </redblue-video>
       </article>
@@ -91,11 +228,25 @@
         const highlightCode = () => {
           const $codeXML = document.getElementById( 'code-xml' );
           const $codeJSONLD = document.getElementById( 'code-json-ld' );
-          const extraWhitespace = /\n\s{8}/gi;
+          const extraWhitespace8 = /\n\s{8}/gi;
+          const extraWhitespace6 = /\n\s{6}/gi;
           const closingTag = /\n\s*(<\/redblue-video>)/gi;
 
-          $codeXML.textContent = document.getElementById( 'redblue-youtube-xml' ).outerHTML.replace( extraWhitespace, '\n    ' ).replace( closingTag, '\n$1' );
-          $codeJSONLD.textContent = document.getElementById( 'redblue-youtube-json-ld' ).outerHTML.replace( extraWhitespace, '\n    ' ).replace( closingTag, '\n$1' );
+          if ( $codeXML ) {
+            $codeXML.textContent = document.getElementById( 'redblue-youtube-xml' ).outerHTML
+              .replace( extraWhitespace8, '\n    ' )
+              .replace( extraWhitespace6, '\n   ' )
+              .replace( closingTag, '\n$1' )
+            ;
+          }
+
+          if ( $codeJSONLD ) {
+            $codeJSONLD.textContent = document.getElementById( 'redblue-youtube-json-ld' ).outerHTML
+              .replace( extraWhitespace8, '\n    ' )
+              .replace( extraWhitespace6, '\n   ' )
+              .replace( closingTag, '\n$1' )
+            ;
+          }
 
           hljs.initHighlighting();
         };
