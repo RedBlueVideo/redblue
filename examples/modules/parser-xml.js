@@ -38,7 +38,7 @@ const RedBlueXMLParser = ( superClass ) => {
       */
       // https://www.youtube.com/embed/nWdWq3hMwao?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1
       try {
-        let youtubeUrl = this.findInXML( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
+        let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
 
         if ( youtubeUrl ) {
           return youtubeUrl.textContent.replace( /https?:\/\/www\.youtube\.com\/watch\?v=([^&?]+)/i, `//www.youtube.com/embed/$1${this.embedParameters}` );

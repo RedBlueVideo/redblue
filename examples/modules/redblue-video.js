@@ -141,7 +141,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       // -----------------------------------------------------------------------
       this.embedParameters = `?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1&amp;fs=0&amp;origin=${encodeURIComponent(window.location.href)}`;
       this.$embed = this.shadowRoot.getElementById( 'embed' );
-      this.$embed.src = ( ( this._hvmlParser === 'json-ld' ) ? '' : this.getEmbedUri() );
+      this.$embed.src = this.getEmbedUri();
     } catch ( error ) {
       console.error( error );
     }
@@ -381,20 +381,31 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getEmbedUri() {
-    switch ( this._hvmlParser ) {
-      case 'xml':
-        if ( !this.hasXMLParser ) {
-          throw this.MISSING_XML_PARSER_ERROR;
-        }
-        return this.getEmbedUriFromXML();
-      break;
+    // switch ( this._hvmlParser ) {
+    //   case 'xml':
+    //     if ( !this.hasXMLParser ) {
+    //       throw this.MISSING_XML_PARSER_ERROR;
+    //     }
+    //     return this.getEmbedUriFromXML();
+    //   break;
+    //
+    //   case 'json-ld':
+    //     if ( !this.hasJSONLDParser ) {
+    //       throw this.MISSING_JSONLD_PARSER_ERROR;
+    //     }
+    //     return this.getEmbedUriFromJSONLD();
+    //   break;
+    // }
+    try {
+      let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
 
-      case 'json-ld':
-        if ( !this.hasJSONLDParser ) {
-          throw this.MISSING_JSONLD_PARSER_ERROR;
-        }
-        return this.getEmbedUriFromJSONLD();
-      break;
+      if ( youtubeUrl ) {
+        return youtubeUrl.textContent.replace( /https?:\/\/www\.youtube\.com\/watch\?v=([^&?]+)/i, `//www.youtube.com/embed/$1${this.embedParameters}` );
+      }
+
+      throw 'No YouTube URL found';
+    } catch ( error ) {
+      console.error( error );
     }
   }
 
@@ -498,6 +509,24 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
 
     return triggers;
+  }
+
+  find( query ) {
+    switch ( this._hvmlParser ) {
+      case 'xml':
+        if ( !this.hasXMLParser ) {
+          throw this.MISSING_XML_PARSER_ERROR;
+        }
+        return this.findInXML( query );
+      break;
+
+      case 'json-ld':
+        if ( !this.hasJSONLDParser ) {
+          throw this.MISSING_JSONLD_PARSER_ERROR;
+        }
+        return this.findInJSONLD( query );
+      break;
+    }
   }
 }
 

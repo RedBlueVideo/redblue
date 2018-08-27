@@ -204,11 +204,24 @@
         highlightCode();
       // })();
       </script>
+      <!-- Omni-Parser Config (XML + JSON-LD) -->
       <script type="module">
         import RedBlueVideo from './modules/redblue-video-omni.js';
-
         customElements.define( RedBlueVideo.is, RedBlueVideo );
       </script>
+      <!-- Omni-Parser Config with Custom JSON Search -->
+      <!-- <script type="module">
+        import RedBlueVideo from './modules/redblue-video.js';
+        import RedBlueXMLParser from './modules/parser-xml.js';
+        import RedBlueJSONLDParser from './modules/parser-json-ld.js';
+        RedBlueJSONLDParser.customJSONSearchUtility = function ( xpathExpression, contextNode, namespaceResolver, resultType, result ) {
+          const params = { xpathExpression, contextNode, namespaceResolver, resultType, result };
+          console.log( 'params', params );
+          return params;
+        };
+        const RedBlueVideoOmni = RedBlueJSONLDParser( RedBlueXMLParser( RedBlueVideo ) );
+        customElements.define( RedBlueVideoOmni.is, RedBlueVideoOmni );
+      </script> -->
     </div>
   </body>
 </html>
