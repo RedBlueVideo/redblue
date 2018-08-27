@@ -99,7 +99,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     window.RedBlue = ( window.RedBlue || {} );
 
-    this.$template = this.parseHTML( RedBlueVideo.template ).children[RedBlueVideo.is];
+    this.embedID = ( new Date().getTime() );
+    this.$template = this.parseHTML( RedBlueVideo.template.replace( 'id="embed"', `id="embed-${this.embedID}"` ) ).children[RedBlueVideo.is];
 
     this.MISSING_XML_PARSER_ERROR = 'Can’t process; XML mixin class has not been applied.';
     this.MISSING_JSONLD_PARSER_ERROR = 'Can’t process; JSON-LD mixin class has not been applied.';
@@ -139,8 +140,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       this.createHotspots();
       this.timelineTriggers = this.getTimelineTriggers();
       // -----------------------------------------------------------------------
-      this.embedParameters = `?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1&amp;fs=0&amp;origin=${encodeURIComponent(window.location.href)}`;
-      this.$embed = this.shadowRoot.getElementById( 'embed' );
+      this.embedParameters = `?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1&amp;fs=0&amp;origin=${encodeURIComponent(window.location.origin)}`;
+      // &amp;origin=${encodeURIComponent(window.location.origin)}
+      this.$embed = this.shadowRoot.getElementById( `embed-${this.embedID}` );
       this.$embed.src = this.getEmbedUri();
     } catch ( error ) {
       console.error( error );
@@ -248,6 +250,23 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return document.createRange().createContextualFragment( string );
   }
 
+  initializeYoutubePlayer() {
+    this.player = new YT.Player( this.$embed, {
+      "events": {
+        "onReady": this.onPlayerReady.bind( this ),
+        "onStateChange": this.onStateChange.bind( this )
+      }
+    } );
+
+    document.addEventListener( 'keydown', ( event ) => {
+      switch ( event.key ) {
+        case 'm':
+          console.log( this.player.getCurrentTime() );
+        break;
+      }
+    } );
+  }
+
   setUpYouTubeIframeAPI() {
     /*
       YouTube Player API:
@@ -256,37 +275,43 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         display the controls without shrinking the viewport below the minimum size.
       • We recommend 16:9 players be at least 480 pixels wide and 270 pixels tall.
     */
-    const tag = document.createElement( 'script' );
-    tag.id = 'youtube-iframe-api';
-    tag.src = '//www.youtube.com/iframe_api';
-    tag.async = true;
-    const firstScriptTag = document.getElementsByTagName( 'script' )[0];
-    firstScriptTag.parentNode.insertBefore( tag, firstScriptTag );
+    if ( !( 'onYouTubeIframeAPIReady' in window ) ) {
+      const tag = document.createElement( 'script' );
+      tag.id = 'youtube-iframe-api';
+      tag.src = '//www.youtube.com/iframe_api';
+      tag.async = true;
+      const firstScriptTag = document.getElementsByTagName( 'script' )[0];
+      firstScriptTag.parentNode.insertBefore( tag, firstScriptTag );
 
-    window.onYouTubeIframeAPIReady = () => {
-      this.player = new YT.Player( this.$id( 'embed' ), {
-        "events": {
-          "onReady": this.onPlayerReady.bind( this ),
-          "onStateChange": this.onStateChange.bind( this )
+      window.onYouTubeIframeAPIReady = () => {
+        this.initializeYoutubePlayer();
+      };
+    } else {
+      // let time = ( new Date() ).getTime();
+      let interval = setInterval( () => {
+        if ( ( 'YT' in window ) && YT.Player ) {
+          // console.log( 'YT found after ', ( new Date() ).getTime() - time, ' seconds' );
+          clearInterval( interval );
+          this.initializeYoutubePlayer();
         }
-      } );
-
-      document.addEventListener( 'keydown', ( event ) => {
-        switch ( event.key ) {
-          case 'm':
-            console.log( this.player.getCurrentTime() );
-          break;
-        }
-      } );
-    };
+      }, 0 );
+      // Kill the check for YT after n minutes
+      setTimeout( () => {
+        // console.log( 'YT NOT found after ', ( new Date() ).getTime() - time, ' seconds' );
+        clearInterval( interval );
+        console.error( 'Couldn’t find YouTube Iframe API' );
+      }, ( 1000 * 60 * 1.25 ) ); // 1 minute 15 seconds
+    }
   }
 
   onPlayerReady( event ) {
-    this.$id( 'embed' ).style.borderColor = '#FF6D00';
+    console.log( 'ready' );
+    this.$embed.style.borderColor = '#FF6D00';
     this.player.mute();
   }
 
   onStateChange() {
+    console.log( 'statechange' );
     requestAnimationFrame( this.updatePlayback.bind( this ) );
   }
 
