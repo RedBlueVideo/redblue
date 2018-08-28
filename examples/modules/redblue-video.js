@@ -420,21 +420,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getEmbedUri() {
-    // switch ( this._hvmlParser ) {
-    //   case 'xml':
-    //     if ( !this.hasXMLParser ) {
-    //       throw this.MISSING_XML_PARSER_ERROR;
-    //     }
-    //     return this.getEmbedUriFromXML();
-    //   break;
-    //
-    //   case 'json-ld':
-    //     if ( !this.hasJSONLDParser ) {
-    //       throw this.MISSING_JSONLD_PARSER_ERROR;
-    //     }
-    //     return this.getEmbedUriFromJSONLD();
-    //   break;
-    // }
     try {
       let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
 

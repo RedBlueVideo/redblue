@@ -121,11 +121,6 @@ const RedBlueJSONLDParser = ( superClass ) => {
       return defaultPrefix;
     }
 
-    getEmbedUriFromJSONLD() {
-
-      // https://www.youtube.com/embed/nWdWq3hMwao?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=0&amp;modestbranding=1
-    }
-
     getAnnotationsFromJSONLD() {}
 
     /*
