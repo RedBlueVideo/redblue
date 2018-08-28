@@ -86,6 +86,19 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     `;
   }
 
+  static reCamelCase( nodeName ) {
+    const map = {
+      "endtime": "endTime",
+      "endx": "endX",
+      "endy": "endY",
+      "starttime": "startTime",
+      "startx": "startX",
+      "starty": "startY"
+    };
+
+    return ( map[nodeName] || nodeName );
+  }
+
   get HVML_SOLO_ELEMENTS() {
     return [
       "presentation"
@@ -231,22 +244,22 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           stylesheet.insertRule( `
             .redblue-annotations__link.redblue-annotations__link--${annotationIndex} {
               ${styleProperties}
-              transition: ${animate.endtime - animate.starttime}s bottom linear;
+              transition: ${animate.endTime - animate.startTime}s bottom linear;
             }`, ( stylesheetRules.length )
           );
 
           stylesheet.insertRule( `
             .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-start {
-              left: ${animate.startx};
-              bottom: ${animate.starty};
+              left: ${animate.startX};
+              bottom: ${animate.startY};
             }`, ( stylesheetRules.length )
           );
         }
 
         stylesheet.insertRule( `
           .redblue-annotations__link.redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end {
-            left: ${animate.startx};
-            bottom: ${animate.endy};
+            left: ${animate.startX};
+            bottom: ${animate.endY};
           }`, ( stylesheetRules.length )
         );
       }
@@ -355,12 +368,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         for ( let startTime in this.timelineTriggers ) {
           startTime  = parseFloat( startTime );
           let trigger = this.timelineTriggers[startTime];
-          let endTime = trigger.endtime;
+          let endTime = trigger.endTime;
           let totalAnimations = this.annotations[trigger.annotationIndex].goto.animate.length;
 
           if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
             console.log( '---------' );
-            let drift = Math.abs( time - trigger.starttime );
+            let drift = Math.abs( time - trigger.startTime );
 
             if ( trigger.animateIndex == 0 ) {
               trigger.$ui.classList.remove( trigger.startClass );
@@ -371,7 +384,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             trigger.$ui.classList.add( trigger.endClass );
 
             console.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.animateIndex} at: `, time );
-            console.log( 'Should be: ', trigger.starttime );
+            console.log( 'Should be: ', trigger.startTime );
             console.log( 'Drift: ', drift );
 
             if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
@@ -471,7 +484,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   mapAttributeToKeyValuePair( attribute ) {
     const object = {};
-    object[attribute.nodeName] = attribute.nodeValue;
+    object[RedBlueVideo.reCamelCase(attribute.nodeName)] = attribute.nodeValue;
     return object;
   }
 
@@ -523,7 +536,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       for ( let animateIndex = 0, totalAnimations = annotation.goto.animate.length; animateIndex < totalAnimations; animateIndex++ ) {
         let animate = annotation.goto.animate[animateIndex];
 
-        triggers[animate.starttime] = {
+        triggers[animate.startTime] = {
           ...animate,
           annotationIndex,
           animateIndex,
@@ -534,7 +547,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         };
 
         if ( animateIndex > 0 ) {
-          triggers[animate.starttime].previousEndClass = `redblue-annotations__link--animate-${animateIndex - 1}-end`;
+          triggers[animate.startTime].previousEndClass = `redblue-annotations__link--animate-${animateIndex - 1}-end`;
         }
       }
     }
