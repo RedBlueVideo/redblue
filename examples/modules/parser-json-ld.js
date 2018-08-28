@@ -122,7 +122,9 @@ const RedBlueJSONLDParser = ( superClass ) => {
     }
 
     getAnnotationsFromJSONLD() {
-
+      const annotations = [];
+      const $presentation = this.find( `.//presentation[1]` ).snapshotItem(0);
+      console.log( '$presentation', $presentation );
     }
 
     /*
@@ -148,6 +150,7 @@ const RedBlueJSONLDParser = ( superClass ) => {
       const xpathRegex__rootDescendants = /^\/\//i;
       const xpathRegex__localDescendants = /\.\/\//i;
       const xpathRegex__withAttribute = /[^\[\]]+\[@[^=]+=(['"]).*\1\]/i;
+      const xpathRegex__withIndex = /[^\[\]]+\[[0-9]+\]/i;
       const xpathRegex__text = /text()/i;
       const xpathRegex__brackets = /[\[\]]/i;
 
@@ -199,14 +202,41 @@ const RedBlueJSONLDParser = ( superClass ) => {
       while ( atoms.length > 0 ) {
         atom = atoms.shift();
 
-        if ( xpathRegex__withAttribute.test( atom ) ) {
+        if ( xpathRegex__withIndex.test( atom ) ) {
+          let subatomicParticles = atom.split( xpathRegex__brackets );
+              subatomicParticles.pop();
+              subatomicParticles[1] = ( parseInt( subatomicParticles[1], 10 ) - 1 );
+
+          if ( ( subatomicParticles[1] === 0 ) && this.HVML_SOLO_ELEMENTS.indexOf( subatomicParticles[0] ) !== -1 ) {
+            if ( lastDatum ) {
+              console.log( `lastDatum[${subatomicParticles[0]}]`, lastDatum[subatomicParticles[0]] );
+              datum = lastDatum[subatomicParticles[0]];
+            } else {
+              console.log( `contextNode[${subatomicParticles[0]}];`, contextNode[subatomicParticles[0]] );
+              datum = contextNode[subatomicParticles[0]];
+            }
+          } else {
+            if ( lastDatum ) {
+              // console.log( `lastDatum[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
+              datum = lastDatum[subatomicParticles[0]][subatomicParticles[1]];
+            } else {
+              // console.log( 'contextNode', contextNode );
+              // console.log( `contextNode[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
+              datum = contextNode[subatomicParticles[0]][subatomicParticles[1]];
+            }
+          }
+
+          if ( !datum ) {
+            return new JSONXPathResult();
+          }
+        } else if ( xpathRegex__withAttribute.test( atom ) ) {
           let subatomicParticles = atom.split( xpathRegex__brackets );
               subatomicParticles.pop();
 
           if ( lastDatum ) {
             datum = lastDatum[subatomicParticles[0]];
           } else {
-            datum = this.hvml[subatomicParticles[0]];
+            datum = contextNode[subatomicParticles[0]];
           }
 
           if ( !datum ) {
@@ -228,7 +258,7 @@ const RedBlueJSONLDParser = ( superClass ) => {
           if ( lastDatum ) {
             datum = lastDatum[subatomicParticles[0]];
           } else {
-            datum = this.hvml[subatomicParticles[0]];
+            datum = contextNode[subatomicParticles[0]];
           }
 
           if ( !datum ) {
@@ -243,7 +273,7 @@ const RedBlueJSONLDParser = ( superClass ) => {
         } else if ( xpathRegex__text.test( atom ) ) {
           datum = lastDatum;
         } else {
-          datum = this.hvml[atom];
+          datum = contextNode[atom];
 
           if ( !datum ) {
             return new JSONXPathResult();
@@ -254,10 +284,27 @@ const RedBlueJSONLDParser = ( superClass ) => {
           lastAtom = atom;
           lastDatum = datum;
         } else {
+          if ( lastDatum === null ) {
+            lastDatum = datum;
+          }
+
+          let snapshotItem;
+
+          switch ( typeof lastDatum ) {
+            case 'string':
+              snapshotItem = {};
+              snapshotItem.textContent = lastDatum;
+            break;
+
+            case 'object':
+            default:
+              snapshotItem = { ...lastDatum };
+              // snapshotItem.textContent = JSON.stringify( lastDatum );
+              snapshotItem.textContent = null;
+          }
+
           return new JSONXPathResult( {
-            "snapshotItems": [ {
-              "textContent": lastDatum.toString()
-            } ],
+            "snapshotItems": [ snapshotItem ],
             "snapshotLength": 1
           } );
         }

@@ -86,6 +86,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     `;
   }
 
+  get HVML_SOLO_ELEMENTS() {
+    return [
+      "presentation"
+    ];
+  }
+
   get hasXMLParser() {
     return false;
   }
