@@ -110,6 +110,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.setAttribute( 'class', 'redblue-video' );
     this.setAttribute( 'role', 'application' );
 
+    this.debug = this.hasAttribute( 'debug' );
+
     if ( !this.shadowRoot ) {
       this.attachShadow( { "mode": "open" } );
       this.shadowRoot.appendChild(
@@ -287,20 +289,32 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         this.initializeYoutubePlayer();
       };
     } else {
-      // let time = ( new Date() ).getTime();
+      if ( this.debug ) {
+        var time = ( new Date() ).getTime();
+        var counter = 0;
+      }
       let interval = setInterval( () => {
         if ( ( 'YT' in window ) && YT.Player ) {
-          // console.log( 'YT found after ', ( new Date() ).getTime() - time, ' seconds' );
           clearInterval( interval );
           this.initializeYoutubePlayer();
+          if ( this.debug ) {
+            console.log( `YouTube Iframe API found after ${counter} tries in ${( new Date() ).getTime() - time } seconds` );
+          }
+        }
+        if ( this.debug ) {
+          counter++;
         }
       }, 0 );
       // Kill the check for YT after n minutes
       setTimeout( () => {
         // console.log( 'YT NOT found after ', ( new Date() ).getTime() - time, ' seconds' );
         clearInterval( interval );
-        console.error( 'Couldn’t find YouTube Iframe API' );
-      }, ( 1000 * 60 * 1.25 ) ); // 1 minute 15 seconds
+        if ( this.debug ) {
+          console.error( `Couldn’t find YouTube Iframe API after ${counter} tries in ${( new Date() ).getTime() - time} seconds'` );
+        } else {
+          console.error( `Couldn’t find YouTube Iframe API` );
+        }
+      }, ( 1000 * 60 * 2.5 ) ); // 2 minutes 30 seconds
     }
   }
 
