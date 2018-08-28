@@ -124,7 +124,35 @@ const RedBlueJSONLDParser = ( superClass ) => {
     getAnnotationsFromJSONLD() {
       const annotations = [];
       const $presentation = this.find( `.//presentation[1]` ).snapshotItem(0);
-      console.log( '$presentation', $presentation );
+
+      for ( let nodeName in $presentation ) {
+        switch ( nodeName ) {
+          case 'choice':
+            for ( let grandchildNodeName in $presentation[nodeName] ) {
+              switch ( grandchildNodeName ) {
+                case 'name':
+                  $presentation[nodeName][grandchildNodeName] = $presentation[nodeName][grandchildNodeName].reduce( ( previous, current ) => {
+                    switch ( typeof current ) {
+                      case 'string':
+                        return previous + current;
+                      break;
+
+                      case 'object':
+                        return previous + `<${current['@type']} style="${current.style}">${current.textContent}</${current['@type']}>`;
+                      break;
+                    }
+                  } );
+                break;
+              }
+            }
+
+            $presentation[nodeName].type = 'choice';
+            annotations.push( $presentation[nodeName] );
+          break;
+        }
+      }
+
+      return annotations;
     }
 
     /*

@@ -140,6 +140,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       this.loadData();
       this.setUpYouTubeIframeAPI();
       this.annotations = this.getAnnotations();
+      console.log( `annotations - ${this._hvmlParser}`, this.annotations );
       this.resolveCSSNamespacePrefix().then( ( prefix ) => {
         this._cssNamespacePrefix = prefix;
         console.log( 'this._cssNamespacePrefix', this._cssNamespacePrefix );
@@ -208,8 +209,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     for ( let annotationIndex = 0; annotationIndex < this.annotations.length; annotationIndex++ ) {
       let annotation = this.annotations[annotationIndex];
 
-      for ( let animateIndex = 0; animateIndex < this.annotations[annotationIndex].goto.animations.length; animateIndex++ ) {
-        let animate = this.annotations[annotationIndex].goto.animations[animateIndex];
+      for ( let animateIndex = 0; animateIndex < this.annotations[annotationIndex].goto.animate.length; animateIndex++ ) {
+        let animate = this.annotations[annotationIndex].goto.animate[animateIndex];
 
         if ( animateIndex === 0 ) {
           let styleProperties = '';
@@ -355,7 +356,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           startTime  = parseFloat( startTime );
           let trigger = this.timelineTriggers[startTime];
           let endTime = trigger.endtime;
-          let totalAnimations = this.annotations[trigger.annotationIndex].goto.animations.length;
+          let totalAnimations = this.annotations[trigger.annotationIndex].goto.animate.length;
 
           if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
             console.log( '---------' );
@@ -519,8 +520,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     for ( let annotationIndex = 0; annotationIndex  < this.annotations.length; annotationIndex++ ) {
       let annotation = this.annotations[annotationIndex ];
 
-      for ( let animateIndex = 0, totalAnimations = annotation.goto.animations.length; animateIndex < totalAnimations; animateIndex++ ) {
-        let animate = annotation.goto.animations[animateIndex];
+      for ( let animateIndex = 0, totalAnimations = annotation.goto.animate.length; animateIndex < totalAnimations; animateIndex++ ) {
+        let animate = annotation.goto.animate[animateIndex];
 
         triggers[animate.starttime] = {
           ...animate,

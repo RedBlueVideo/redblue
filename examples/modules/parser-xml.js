@@ -50,7 +50,7 @@ const RedBlueXMLParser = ( superClass ) => {
                 case 'goto':
                   choice[nodeName] = this.nodeAttributesToJSON( grandchild.attributes );
 
-                  choice[nodeName].animations = Array.from( grandchild.children ).filter( ( gotoChild ) => {
+                  choice[nodeName].animate = Array.from( grandchild.children ).filter( ( gotoChild ) => {
                     const nodeName = gotoChild.nodeName.toLowerCase();
 
                     switch ( nodeName ) {
