@@ -121,7 +121,9 @@ const RedBlueJSONLDParser = ( superClass ) => {
       return defaultPrefix;
     }
 
-    getAnnotationsFromJSONLD() {}
+    getAnnotationsFromJSONLD() {
+
+    }
 
     /*
       Note: In order to minimize dependencies, this does not currently process
@@ -260,22 +262,6 @@ const RedBlueJSONLDParser = ( superClass ) => {
           } );
         }
       }
-
-      // return document.evaluate(
-      //   xpathExpression,
-      //   this.hvml, // contextNode
-      //   function ( prefix ) {
-      //     const ns = {
-      //       "hvml": "https://hypervideo.tech/hvml#",
-      //       "html": "http://www.w3.org/1999/xhtml"
-      //     };
-      //
-      //     return ( ns[prefix] || ns.html );
-      //   }, // namespaceResolver
-      //   // XPathResult.ANY_TYPE, // resultType
-      //   XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-      //   null // result
-      // )
     }
   }
 };
