@@ -7,7 +7,7 @@ body {
   font-weight: 300;
   min-height: 150vh;
   width: 90%;
-  max-width: 853px;
+  max-width: 1920px;
   margin: 0 auto;
   padding: 0;
 }
@@ -33,7 +33,7 @@ hgroup > :last-child {
 }
 
 .full-example {
-  height: 25vh;
+  max-height: 50vh;
 }
 
 .tab {
@@ -61,7 +61,7 @@ dd {
 }
 
 .step + dd:not(.step) {
-  margin-top: .25rem;
+  margin-top: .5rem;
 }
 
 
@@ -72,7 +72,7 @@ dd {
 .instructions dd:not(.step)::before {
   content: '➡';
   margin-right: .5rem;
-  margin-left: -1.3rem;
+  margin-left: -1.35rem;
   display: inline-block;
   /* display: list-item;
   list-style-type: square; */
@@ -126,9 +126,25 @@ section + .tab {
   margin-top: 0;
 }
 
-p, dl, ul, ol {
+p, dl, ul, ol, h1, h2, h3, h4, h5, h6, footer, nav, pre {
   line-height: 1.75;
+  max-width: 39rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
 }
+
+/* pre,
+.step.step--code {
+  width: 80vw;
+  max-width: 100%;
+} */
+
+/* pre > code {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 90%;
+} */
 
 p > code,
 dd > code {
@@ -143,7 +159,7 @@ code {
 
 main
 {
-  max-width: 39em;
+  /* max-width: 39em; */
   margin-left: auto;
   margin-right: auto;
 }
@@ -160,4 +176,10 @@ footer {
 footer > p {
   margin: 0;
   text-align: center;
+}
+
+@media only screen and ( max-width: 25em ) {
+  pre {
+    white-space: pre-line;
+  }
 }
