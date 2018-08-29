@@ -3,9 +3,13 @@
 }
 
 body {
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
   font-weight: 300;
   min-height: 150vh;
+  width: 90%;
+  max-width: 853px;
+  margin: 0 auto;
+  padding: 0;
 }
 
 textarea {
@@ -17,18 +21,18 @@ textarea {
 }
 
 hgroup {
-  text-align: center;
+  margin-top: -1rem;
 }
 
-hgroup > :first-child {
-  margin-bottom: 0;
+hgroup > * {
+  margin: 0;
 }
 
 hgroup > :last-child {
-  margin-top: 0;
+  font-weight: normal;
 }
 
-code {
+.full-example {
   height: 25vh;
 }
 
@@ -38,4 +42,116 @@ code {
 
 .tab:target {
   display: block;
+}
+
+/* .instructions {} */
+
+dt {
+  font-weight: bold;
+}
+
+dd {
+  margin-left: 1.3rem;
+}
+
+.step {
+  /* margin-left: 1rem; */
+  margin-left: 0;
+}
+
+.step + dd:not(.step) {
+  margin-top: .25rem;
+}
+
+
+.instructions dd:not(.step) {
+  padding-left: 1.3rem;
+}
+
+.instructions dd:not(.step)::before {
+  content: '➡';
+  margin-right: .5rem;
+  margin-left: -1.3rem;
+  display: inline-block;
+  /* display: list-item;
+  list-style-type: square; */
+}
+
+.step.step--code + .step {
+  margin-top: 1.5rem;
+}
+
+dt + .step {
+  margin-top: .75rem;
+}
+
+[role="banner"] {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+summary > h3 {
+  display: inline;
+}
+
+code ins {
+  text-decoration: none;
+  background: hsla(190, 100%, 50%, .25);
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  /* margin: .25rem 0; */
+  /* display: inline-block; */
+}
+
+/*
+  Font: Accord Alternate
+  Designer: Aakash Soneri <http://www.aakashsoneri.com/>
+  Licensed
+    by: FontSpring <http://www.fontspring.com>
+    to: Hugh Guiney <http://nospoon.tv>
+    on: November 12th, 2011
+    for: Unlimited domains
+*/
+
+article + article,
+section + section,
+section + article,
+article + section {
+  margin-top: 3rem;
+}
+
+article + .tab,
+section + .tab {
+  margin-top: 0;
+}
+
+p, dl, ul, ol {
+  line-height: 1.75;
+}
+
+p > code, dd > code {
+  font-size: 1.125rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+main
+{
+  max-width: 39em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+summary {
+  cursor: default;
+}
+
+footer {
+  padding: 3rem 0;
+  font-size: 0.9em;
+}
+
+footer > p {
+  margin: 0;
+  text-align: center;
 }

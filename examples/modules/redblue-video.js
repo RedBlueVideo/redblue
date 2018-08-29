@@ -68,12 +68,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         </style>
         <div class="redblue-content">
           <div id="fullscreen-context" class="redblue-player-wrapper redblue-fullscreen-context">
-            <iframe id="embed" class="redblue-player"
-              src=""
-              frameborder="0"
-              allow="autoplay; encrypted-media"
-              allowfullscreen="allowfullscreen">
-            </iframe>
+            <slot name="player">
+              <iframe id="embed" class="redblue-player"
+                src=""
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen="allowfullscreen">
+              </iframe>
+            </slot>
             <button id="fullscreen-button" class="redblue-fullscreen-button">Toggle Fullscreen</button>
             <nav id="annotations" class="redblue-annotations"></nav>
           </div>
