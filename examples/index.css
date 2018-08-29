@@ -130,10 +130,15 @@ p, dl, ul, ol {
   line-height: 1.75;
 }
 
-p > code, dd > code {
-  font-size: 1.125rem;
+p > code,
+dd > code {
+  /* font-size: 1.125rem; */
   font-weight: bold;
   white-space: nowrap;
+}
+
+code {
+  font-family: 'Courier Prime Code', 'Courier Prime', 'Courier New', Courier, monospace;
 }
 
 main
