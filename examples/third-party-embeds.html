@@ -377,27 +377,20 @@
         };
         const scrolled = false;
         const $tabLinks = document.getElementById( 'tab-links' );
+        const $xmlTab = document.getElementById( 'xml' );
+        const $jsonLdTab = document.getElementById( 'json-ld' );
 
         const scrollBack = function ( event ) {
           const offsets = [ window.pageXOffset, window.pageYOffset ];
           event.preventDefault();
-          window.location.hash = event.target.getAttribute( 'href' );
+          $xmlTab.classList.remove( 'tab--active' );
+          $jsonLdTab.classList.remove( 'tab--active' );
+          window.location.hash = ( event.target.getAttribute( 'href' ) || '' );
           window.scrollTo( offsets[0], offsets[1] );
         };
 
         if ( window.location.hash === '' ) {
-          setTimeout( () => {
-            scrollBack( {
-              "preventDefault": function () {},
-              "target": {
-                "getAttribute": function () {
-                  return '#xml';
-                }
-              }
-            } );
-          }, 1000 );
-        } else {
-          window.scrollTo( 0, 0 );
+          $xmlTab.classList.add( 'tab--active' );
         }
 
         $tabLinks.addEventListener( 'click', scrollBack, false );

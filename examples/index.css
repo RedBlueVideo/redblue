@@ -40,7 +40,8 @@ hgroup > :last-child {
   display: none
 }
 
-.tab:target {
+.tab:target,
+.tab.tab--active {
   display: block;
 }
 
