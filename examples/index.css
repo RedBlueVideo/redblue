@@ -5,11 +5,14 @@
 body {
   font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
   font-weight: 300;
-  min-height: 150vh;
+  min-height: 100vh;
   width: 90%;
   max-width: 1920px;
   margin: 0 auto;
   padding: 0;
+  /* background: url(funky-lines-25pc.png) repeat fixed; */
+  display: flex;
+  flex-direction: column;
 }
 
 textarea {
@@ -95,13 +98,24 @@ summary > h3 {
   display: inline;
 }
 
+pre > code,
+pre > .hljs {
+  border-radius: .5rem;
+  padding: 0.9rem;
+}
+
 code ins {
   text-decoration: none;
-  background: hsla(190, 100%, 50%, .25);
+  background: hsla(190, 100%, 50%, .125);
   padding: 0.25rem;
   border-radius: 0.25rem;
   /* margin: .25rem 0; */
   /* display: inline-block; */
+
+  text-decoration: none;
+  /* background: hsla(160, 130%, 50%, 0.9); */
+  padding: 0.3333333333333rem;
+  border-radius: 0.25rem;
 }
 
 /*
@@ -126,7 +140,7 @@ section + .tab {
   margin-top: 0;
 }
 
-p, dl, ul, ol, h1, h2, h3, h4, h5, h6, footer, nav, pre {
+p, dl, ul, ol, h1, h2, h3, h4, h5, h6, footer, pre, nav {
   line-height: 1.75;
   max-width: 39rem;
   margin-left: auto;
@@ -159,9 +173,12 @@ code {
 
 main
 {
-  /* max-width: 39em; */
+  max-width: 39em;
   margin-left: auto;
   margin-right: auto;
+  width: 90%;
+  width: 90vw;
+  flex: 1;
 }
 
 summary {
@@ -182,4 +199,9 @@ footer > p {
   pre {
     white-space: pre-line;
   }
+}
+
+.home {
+  color: inherit;
+  text-decoration: none;
 }

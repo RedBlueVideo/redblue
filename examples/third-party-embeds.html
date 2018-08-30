@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:image" content="https://redblue.video/img/redblue.png" />
     <title>RedBlue Annotations: Third-Party Embeds</title>
     <style>
       .logotype {
@@ -23,11 +24,15 @@
       }
     </style>
     <link rel="stylesheet" href="index.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/solarized-light.min.css" media="none" onload="if(media!=='all')media='all'" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/solarized-dark.min.css" media="none" onload="if(media!=='all')media='all'" />
+    <link rel="stylesheet" href="custom-code-colors.css" />
   </head>
   <body>
     <header role="banner">
-      <img src="redblue-logo.png" srcset="redblue-logo.png 1x, redblue-logo@2x.png 2x, redblue-logo@3x.png 3x" width="200" height="200" alt="RedBlue logo" />
+      <a class="home" href="https://redblue.video" title="Home">
+      <!-- <img src="redblue-logo.png" srcset="redblue-logo.png 1x, redblue-logo@2x.png 2x, redblue-logo@3x.png 3x" width="200" height="200" alt="RedBlue logo" /> -->
+        <img src="redblue-logo.svg" width="200" height="200" alt="RedBlue logo" />
+      </a>
       <hgroup>
         <h1 class="logotype">RedBlue <span>Annotations</span></h1>
         <h2>Third-Party Embeds</h2>
@@ -331,8 +336,8 @@
         &lt;choice&gt;
           &lt;name&gt;Go to: &lt;code&gt;hugh.today/2016-09-17/live&lt;/code&gt; for the full stream&lt;/name&gt;
           &lt;goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live"&gt;
-            <ins>&lt;animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"&gt;&lt;/animate&gt;
-            &lt;animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"&gt;&lt;/animate&gt;</ins>
+            <ins>&lt;animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"&gt;&lt;/animate&gt;</ins>
+            <ins>&lt;animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"&gt;&lt;/animate&gt;</ins>
           &lt;/goto&gt;
         &lt;/choice&gt;
       &lt;/presentation&gt;
@@ -346,6 +351,7 @@
     <div id="scripts">
       <script id="hljs" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
       <script id="hljs-xml" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/xml.min.js"></script>
+      <script id="hljs-xml" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/javascript.min.js"></script>
       <script id="page">
       // (function () {
         'use strict';
@@ -353,22 +359,28 @@
         const highlightCode = () => {
           const $codeXML = document.getElementById( 'code-xml' );
           const $codeJSONLD = document.getElementById( 'code-json-ld' );
-          const extraWhitespace8 = /\n\s{8}/gi;
-          const extraWhitespace6 = /\n\s{6}/gi;
+          const extraWhitespace10 = /\n\s{10}/gi;
+          // const extraWhitespace8 = /\n\s{8}/gi;
+          // const extraWhitespace6 = /\n\s{6}/gi;
+          // const extraWhitespace4 = /\n\s{4}/gi;
           const closingTag = /\n\s*(<\/redblue-video>)/gi;
 
           if ( $codeXML ) {
             $codeXML.textContent = document.getElementById( 'redblue-youtube-xml' ).outerHTML
-              .replace( extraWhitespace8, '\n    ' )
-              .replace( extraWhitespace6, '\n   ' )
+              .replace( extraWhitespace10, '\n  ' )
+              // .replace( extraWhitespace8, '\n    ' )
+              // .replace( extraWhitespace6, '\n   ' )
+              // .replace( extraWhitespace4, '\n  ' )
               .replace( closingTag, '\n$1' )
             ;
           }
 
           if ( $codeJSONLD ) {
             $codeJSONLD.textContent = document.getElementById( 'redblue-youtube-json-ld' ).outerHTML
-              .replace( extraWhitespace8, '\n    ' )
-              .replace( extraWhitespace6, '\n   ' )
+            .replace( extraWhitespace10, '\n  ' )
+            // .replace( extraWhitespace8, '\n    ' )
+            // .replace( extraWhitespace6, '\n   ' )
+            // .replace( extraWhitespace4, '\n  ' )
               .replace( closingTag, '\n$1' )
             ;
           }

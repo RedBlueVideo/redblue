@@ -1,0 +1,45 @@
+.hljs-number,
+.hljs-string,
+.hljs-meta .hljs-meta-string,
+.hljs-literal,
+.hljs-doctag,
+.hljs-regexp {
+  color: hsl(190, 60%, 50%);
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: hsl(205, 69%, 49%);
+}
+
+.hljs-attribute,
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-type {
+  /* color: hsl(290, 50%, 45%); */
+  color: hsl(310, 60%, 45%);
+}
+
+.hljs {
+  /* background: hsl(-110, 100%, 10%); */
+  /* color: hsl(196, 13%, 45%); */
+  color: hsl(-150, 70%, 40%)
+}
+
+.hljs-keyword, .hljs-selector-tag, .hljs-addition {
+  color: hsla(160, 130%, 50%, 0.9);
+}
+
+/* ins [class^="hljs"],
+ins {
+  color: hsla(200, 30%, 40%);
+} */
+
+ins {
+  /* white-space: pre-line; */
+}
