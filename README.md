@@ -10,7 +10,7 @@ Most hypervideo offerings are proprietary, requiring recurring payments and vend
 
 In conjunction, we develop this, the RedBlue JavaScript player, which brings the immersive features of HVML to any website—conveniently implemented as an HTML Custom Element.
 
-## Browser Support
+## Support
 
 ### “Choose Your Own Story” video experiences
 Choice-based narratives are implemented using the developing HTML5 [Media Source Extensions API](http://w3c.github.io/media-source/), which means all current implementations are experimental.
