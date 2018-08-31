@@ -8,7 +8,7 @@ Hypervideo opens up a world of immersive storytelling, such as choose-your-own-s
 
 Most hypervideo offerings are proprietary, requiring recurring payments and vendor lock-in to use. This hinders cash-strapped visual artists, and silos metadata that could be useful in search and beyond. RedBlue enables more people to produce hypervideo by democratizing the technology behind it. We author an open specification, [<dfn>HVML</dfn> (Hypervideo Markup Language)](https://hypervideo.tech/), which aims to be the HTML of video.
 
-In conjunction, we develop this, the RedBlue JavaScript player, which brings the immersive features of HVML to any website—conveniently implemented as an HTML Custom Element.
+In conjunction, we develop this, the RedBlue JavaScript player, which brings the immersive features of HVML to any website—conveniently implemented as a [Web Component](https://www.webcomponents.org/introduction) (i.e. Custom Element).
 
 ## Support
 
