@@ -33,6 +33,10 @@
 
         ga('create', 'UA-99429830-1', 'auto');
         ga('send', 'pageview');
+
+        if (window.history) {
+          history.replaceState({}, document.title, window.location.href.split('?')[0]);
+        }
       }
     </script>
   </head>
