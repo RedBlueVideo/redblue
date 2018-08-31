@@ -24,7 +24,7 @@ Internet Explorer introduces support in version 11 on Windows 8, but for MP4 vid
 This is not yet integrated into the Custom Element, but a [prototype](https://redbluevideo.github.io/redblue/www/) demoing this functionality is available for Chrome Desktop.
 
 ### Hotspots
-A preliminary version of hotspots are implemented for YouTube embeds. See the [Developer Guide](https://redblue.video/guide/third-party-embeds.html).
+A preliminary version of hotspots are implemented for YouTube embeds. See the [Developer Guide](https://redblue.video/guide/third-party-embeds.html?utm_source=readme&utm_medium=github&utm_content=hotspots).
 
 ## Stability
 ⚠️ The `master` branch currently represents an alpha pre-release. Features and syntax are subject to change at any time, so please don’t use it in production. Unless you’re some kind of daredevil.
@@ -45,7 +45,7 @@ Include an <abbr>HVML</abbr> code block as a child of `<redblue-video>`. <abbr>H
 </redblue-video>
 ```
 
-Populate the <abbr>HVML</abbr> data. RedBlue will render the appropriate video embed code and user interface. For an explanation of what this code does, see the [Developer Guide](https://redblue.video/guide/third-party-embeds.html).
+Populate the <abbr>HVML</abbr> data. RedBlue will render the appropriate video embed code and user interface. For an explanation of what this code does, see the [Developer Guide](https://redblue.video/guide/third-party-embeds.html?utm_source=readme&utm_medium=github&utm_content=usage).
 ```xml
 <redblue-video id="redblue-youtube-xml" aspect-ratio="16:9" debug="debug">
   <hvml xmlns="https://hypervideo.tech/hvml#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:css="https://www.w3.org/TR/CSS/" xml:lang="en-US" hidden="hidden">
@@ -87,3 +87,6 @@ As this is alpha software, we are not currently accepting Pull Requests, but you
 - Limited browser support
 - Choice-based narratives not in `master`
 - Hotspot animations do not respond to pauses or timeline seeking within their trigger range
+
+## Team
+RedBlue <abbr>Co.</abbr> is a small-time operation headed by Hugh Guiney (Twitter: [@LordPancreas](https://twitter.com/LordPancreas) & [@TurboHax](https://twitter.com/TurboHax), GitHub: [@hguiney](https://github.com/hguiney)), with help from his brother Austin (Twitter: [@SenorKoffey](https://twitter.com/SenorKoffey), GitHub: [@pyreking](https://github.com/pyreking)).
