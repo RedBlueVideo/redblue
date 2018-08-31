@@ -375,7 +375,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   onStateChange() {
     this.log( 'statechange' );
-    requestAnimationFrame( this.updatePlayback.bind( this ) );
+    requestAnimationFrame( this.updateYoutubePlayback.bind( this ) );
   }
 
   addLeadingZeroes( number ) {
@@ -386,64 +386,68 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   // the youtube API sends no events at all on seek,
   // so unfortunately we have to poll the video if
   // we want to react to when the user seeks manually. :(
-  updatePlayback() {
+  updateYoutubePlayback() {
     if ( this.player && this.player.getCurrentTime ) {
       // Returns the elapsed time in seconds since the video started playing
       const time = this.player.getCurrentTime(); /* * 1000*/
       const state = this.player.getPlayerState();
 
       // https://stackoverflow.com/a/9882349/214325
-      if ( state == YT.PlayerState.PLAYING ) {
-        for ( let startTime in this.timelineTriggers ) {
-          startTime  = parseFloat( startTime );
-          let trigger = this.timelineTriggers[startTime];
-          let endTime = trigger.endTime;
-          let totalAnimations = this.annotations[trigger.annotationIndex].goto.animate.length;
+      switch ( state ) {
+        case YT.PlayerState.PLAYING:
+          for ( let startTime in this.timelineTriggers ) {
+            startTime  = parseFloat( startTime );
+            let trigger = this.timelineTriggers[startTime];
+            let endTime = trigger.endTime;
+            let totalAnimations = this.annotations[trigger.annotationIndex].goto.animate.length;
 
-          if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
-            this.log( '---------' );
-            let drift = Math.abs( time - trigger.startTime );
-
-            if ( trigger.animateIndex == 0 ) {
-              trigger.$ui.classList.remove( trigger.startClass );
-            } else {
-              trigger.$ui.classList.remove( trigger.previousEndClass );
-            }
-
-            trigger.$ui.classList.add( trigger.endClass );
-
-            this.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.animateIndex} at: `, time );
-            this.log( 'Should be: ', trigger.startTime );
-            this.log( 'Drift: ', drift );
-
-            if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
-              let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
-
+            if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
               this.log( '---------' );
-              this.log( 'No more animations' );
-              this.log( 'this.annotations', this.annotations );
+              let drift = Math.abs( time - trigger.startTime );
 
-              setTimeout( () => {
-                this.log( 'timeout' );
+              if ( trigger.animateIndex == 0 ) {
+                trigger.$ui.classList.remove( trigger.startClass );
+              } else {
+                trigger.$ui.classList.remove( trigger.previousEndClass );
+              }
 
-                // Remove all previous animate classes
-                while ( totalAnimations-- ) {
-                  trigger.$ui.classList.remove(
-                    trigger.endClass.replace( /animate-[0-9]+-/, `animate-${totalAnimations}-` )
-                  );
-                }
+              trigger.$ui.classList.add( trigger.endClass );
 
-                trigger.$ui.classList.add( trigger.startClass );
-              }, transitionDuration * 1000 );
+              this.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.animateIndex} at: `, time );
+              this.log( 'Should be: ', trigger.startTime );
+              this.log( 'Drift: ', drift );
+
+              if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
+                let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
+
+                this.log( '---------' );
+                this.log( 'No more animations' );
+                this.log( 'this.annotations', this.annotations );
+
+                setTimeout( () => {
+                  this.log( 'timeout' );
+
+                  // Remove all previous animate classes
+                  while ( totalAnimations-- ) {
+                    trigger.$ui.classList.remove(
+                      trigger.endClass.replace( /animate-[0-9]+-/, `animate-${totalAnimations}-` )
+                    );
+                  }
+
+                  trigger.$ui.classList.add( trigger.startClass );
+                }, transitionDuration * 1000 );
+              }
             }
           }
-        }
-      } else {
-        // this.log( 'not playing' );
+        break;
+
+        case YT.PlayerState.PAUSED:
+          // this.log( 'not playing' );
+        break;
       }
     }
 
-    requestAnimationFrame( this.updatePlayback.bind( this ) );
+    requestAnimationFrame( this.updateYoutubePlayback.bind( this ) );
   }
 
   loadData() {
