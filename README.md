@@ -1,5 +1,5 @@
 # redblue
-Open-Source Interactive Video Framework
+Open-Source Hypervideo Framework
 
 ## Uses
 - “Choose Your Own Story” video experiences
