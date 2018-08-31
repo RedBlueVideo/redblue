@@ -1,0 +1,42 @@
+{
+  "name": "redblue",
+  "version": "0.0.0",
+  "description": "Open-Source Hypervideo Framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RedBlueVideo/redblue.git"
+  },
+  "keywords": [
+    "video",
+    "player",
+    "interactive-video",
+    "hvml",
+    "javascript",
+    "media-player",
+    "mediasource",
+    "video-player",
+    "videos",
+    "movies",
+    "films",
+    "interactive",
+    "interactive-fiction",
+    "interactive-storytelling",
+    "interactive-plots",
+    "interactive-courseware",
+    "nonlinear"
+  ],
+  "author": {
+    "name": "Hugh Guiney",
+    "email": "hugh@redblue.video",
+    "url": "https://redblue.video"
+  },
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/RedBlueVideo/redblue/issues"
+  },
+  "homepage": "https://github.com/RedBlueVideo/redblue#readme"
+}
