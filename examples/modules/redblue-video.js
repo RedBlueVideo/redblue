@@ -125,6 +125,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     this.MISSING_XML_PARSER_ERROR = 'Can’t process; XML mixin class has not been applied.';
     this.MISSING_JSONLD_PARSER_ERROR = 'Can’t process; JSON-LD mixin class has not been applied.';
+    this.YOUTUBE_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?youtube\.com\/watch\?v=([^&?]+)/i;
+    this.YOUTUBE_DOMAIN_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?youtube\.com/i;
+    this.VIMEO_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?vimeo\.com\/([^\/]+)/i;
+    this.VIMEO_DOMAIN_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?vimeo\.com/i;
   } // constructor
 
   connectedCallback() {
@@ -153,7 +157,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     try {
       // The order here is important
       this.loadData();
-      this.setUpYouTubeIframeAPI();
       this.annotations = this.getAnnotations();
       this.log( `annotations - ${this._hvmlParser}`, this.annotations );
       this.resolveCSSNamespacePrefix().then( ( prefix ) => {
@@ -163,11 +166,31 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       } );
       this.createHotspots();
       this.timelineTriggers = this.getTimelineTriggers();
-      // -----------------------------------------------------------------------
-      this.embedParameters = `?rel=0&amp;showinfo=0&amp;start=517&amp;end=527&amp;enablejsapi=1&amp;controls=1&amp;modestbranding=1&amp;playsinline=1&amp;fs=0&amp;origin=${encodeURIComponent(window.location.origin)}`;
-      // &amp;origin=${encodeURIComponent(window.location.origin)}
-      this.$embed = this.shadowRoot.getElementById( `embed-${this.embedID}` );
-      this.$embed.src = this.getEmbedUri();
+      this.$.embed = this.shadowRoot.getElementById( `embed-${this.embedID}` );
+      const embedUri = this.getEmbedUri();
+
+      if ( this.YOUTUBE_DOMAIN_REGEX.test( embedUri ) ) {
+        this.log( 'youtube' );
+        this.embedParameters = '?' + [
+          'rel=0',
+          'showinfo=0',
+          'start=517',
+          'end=527',
+          'enablejsapi=1',
+          'controls=1',
+          'modestbranding=1',
+          'playsinline=1',
+          'fs=0',
+          `origin=${encodeURIComponent(window.location.origin)}`
+        ].join( '&amp;' );
+        this.$.embed.src = embedUri + this.embedParameters;
+        this.setUpYouTubeIframeAPI();
+      } else if ( this.VIMEO_DOMAIN_REGEX.test( this.$.embed.src ) ) {
+        this.log( 'vimeo' );
+        // @todo: Handle Vimeo videos
+      } else {
+        this.log( 'no embed match' );
+      }
     } catch ( error ) {
       console.error( error );
     }
@@ -175,7 +198,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   log( data ) {
     if ( this.debug ) {
-      return console.log( data );
+      return console.log.apply( null, arguments );
     }
   }
 
@@ -281,7 +304,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   initializeYoutubePlayer() {
-    this.player = new YT.Player( this.$embed, {
+    this.player = new YT.Player( this.$.embed, {
       "events": {
         "onReady": this.onPlayerReady.bind( this ),
         "onStateChange": this.onStateChange.bind( this )
@@ -346,7 +369,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   onPlayerReady( event ) {
     this.log( 'ready' );
-    this.$embed.style.borderColor = '#FF6D00';
+    this.$.embed.style.borderColor = '#FF6D00';
     this.player.mute();
   }
 
@@ -450,7 +473,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
 
       if ( youtubeUrl ) {
-        return youtubeUrl.textContent.replace( /https?:\/\/www\.youtube\.com\/watch\?v=([^&?]+)/i, `//www.youtube.com/embed/$1${this.embedParameters}` );
+        return youtubeUrl.textContent.replace( this.YOUTUBE_VIDEO_REGEX, `//www.youtube.com/embed/$1${this.embedParameters || ''}` );
       }
 
       throw 'No YouTube URL found';
