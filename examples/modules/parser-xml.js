@@ -87,7 +87,7 @@ const RedBlueXMLParser = ( superClass ) => {
           case 'media':
           // break;
           default:
-            console.log( 'not `choice`', nodeName );
+            this.log( 'not `choice`', nodeName );
         }
       }
 

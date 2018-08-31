@@ -237,19 +237,19 @@ const RedBlueJSONLDParser = ( superClass ) => {
 
           if ( ( subatomicParticles[1] === 0 ) && this.HVML_SOLO_ELEMENTS.indexOf( subatomicParticles[0] ) !== -1 ) {
             if ( lastDatum ) {
-              console.log( `lastDatum[${subatomicParticles[0]}]`, lastDatum[subatomicParticles[0]] );
+              this.log( `lastDatum[${subatomicParticles[0]}]`, lastDatum[subatomicParticles[0]] );
               datum = lastDatum[subatomicParticles[0]];
             } else {
-              console.log( `contextNode[${subatomicParticles[0]}];`, contextNode[subatomicParticles[0]] );
+              this.log( `contextNode[${subatomicParticles[0]}];`, contextNode[subatomicParticles[0]] );
               datum = contextNode[subatomicParticles[0]];
             }
           } else {
             if ( lastDatum ) {
-              // console.log( `lastDatum[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
+              // this.log( `lastDatum[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
               datum = lastDatum[subatomicParticles[0]][subatomicParticles[1]];
             } else {
-              // console.log( 'contextNode', contextNode );
-              // console.log( `contextNode[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
+              // this.log( 'contextNode', contextNode );
+              // this.log( `contextNode[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
               datum = contextNode[subatomicParticles[0]][subatomicParticles[1]];
             }
           }

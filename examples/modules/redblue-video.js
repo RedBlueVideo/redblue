@@ -155,10 +155,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       this.loadData();
       this.setUpYouTubeIframeAPI();
       this.annotations = this.getAnnotations();
-      console.log( `annotations - ${this._hvmlParser}`, this.annotations );
+      this.log( `annotations - ${this._hvmlParser}`, this.annotations );
       this.resolveCSSNamespacePrefix().then( ( prefix ) => {
         this._cssNamespacePrefix = prefix;
-        console.log( 'this._cssNamespacePrefix', this._cssNamespacePrefix );
+        this.log( 'this._cssNamespacePrefix', this._cssNamespacePrefix );
         this.setupAnimations();
       } );
       this.createHotspots();
@@ -172,6 +172,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       console.error( error );
     }
   } // connectedCallback
+
+  log( data ) {
+    if ( this.debug ) {
+      return console.log( data );
+    }
+  }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API
   toggleFullscreen( event ) {
@@ -285,7 +291,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     document.addEventListener( 'keydown', ( event ) => {
       switch ( event.key ) {
         case 'm':
-          console.log( this.player.getCurrentTime() );
+          this.log( this.player.getCurrentTime() );
         break;
       }
     } );
@@ -319,9 +325,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         if ( ( 'YT' in window ) && YT.Player ) {
           clearInterval( interval );
           this.initializeYoutubePlayer();
-          if ( this.debug ) {
-            console.log( `YouTube Iframe API found after ${counter} tries in ${( new Date() ).getTime() - time } seconds` );
-          }
+          this.log( `YouTube Iframe API found after ${counter} tries in ${( new Date() ).getTime() - time } seconds` );
         }
         if ( this.debug ) {
           counter++;
@@ -329,7 +333,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       }, 0 );
       // Kill the check for YT after n minutes
       setTimeout( () => {
-        // console.log( 'YT NOT found after ', ( new Date() ).getTime() - time, ' seconds' );
+        // this.log( 'YT NOT found after ', ( new Date() ).getTime() - time, ' seconds' );
         clearInterval( interval );
         if ( this.debug ) {
           console.error( `Couldn’t find YouTube Iframe API after ${counter} tries in ${( new Date() ).getTime() - time} seconds'` );
@@ -341,13 +345,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   onPlayerReady( event ) {
-    console.log( 'ready' );
+    this.log( 'ready' );
     this.$embed.style.borderColor = '#FF6D00';
     this.player.mute();
   }
 
   onStateChange() {
-    console.log( 'statechange' );
+    this.log( 'statechange' );
     requestAnimationFrame( this.updatePlayback.bind( this ) );
   }
 
@@ -374,7 +378,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           let totalAnimations = this.annotations[trigger.annotationIndex].goto.animate.length;
 
           if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
-            console.log( '---------' );
+            this.log( '---------' );
             let drift = Math.abs( time - trigger.startTime );
 
             if ( trigger.animateIndex == 0 ) {
@@ -385,19 +389,19 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
             trigger.$ui.classList.add( trigger.endClass );
 
-            console.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.animateIndex} at: `, time );
-            console.log( 'Should be: ', trigger.startTime );
-            console.log( 'Drift: ', drift );
+            this.log( `Starting annotation #${trigger.annotationIndex}, transition #${trigger.animateIndex} at: `, time );
+            this.log( 'Should be: ', trigger.startTime );
+            this.log( 'Drift: ', drift );
 
             if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
               let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
 
-              console.log( '---------' );
-              console.log( 'No more animations' );
-              console.log( 'this.annotations', this.annotations );
+              this.log( '---------' );
+              this.log( 'No more animations' );
+              this.log( 'this.annotations', this.annotations );
 
               setTimeout( () => {
-                console.log( 'timeout' );
+                this.log( 'timeout' );
 
                 // Remove all previous animate classes
                 while ( totalAnimations-- ) {
@@ -412,7 +416,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           }
         }
       } else {
-        // console.log( 'not playing' );
+        // this.log( 'not playing' );
       }
     }
 
