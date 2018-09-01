@@ -375,7 +375,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   onStateChange() {
     this.log( 'statechange' );
-    requestAnimationFrame( this.updateYoutubePlayback.bind( this ) );
+    requestAnimationFrame( this.updateUIOnYoutubePlayback.bind( this ) );
   }
 
   addLeadingZeroes( number ) {
@@ -386,7 +386,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   // the youtube API sends no events at all on seek,
   // so unfortunately we have to poll the video if
   // we want to react to when the user seeks manually. :(
-  updateYoutubePlayback() {
+  updateUIOnYoutubePlayback() {
     if ( this.player && this.player.getCurrentTime ) {
       // Returns the elapsed time in seconds since the video started playing
       const time = this.player.getCurrentTime(); /* * 1000*/
@@ -443,11 +443,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
         case YT.PlayerState.PAUSED:
           // this.log( 'not playing' );
+
         break;
       }
     }
 
-    requestAnimationFrame( this.updateYoutubePlayback.bind( this ) );
+    requestAnimationFrame( this.updateUIOnYoutubePlayback.bind( this ) );
   }
 
   loadData() {
