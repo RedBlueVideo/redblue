@@ -23,7 +23,7 @@
         letter-spacing: -.05rem;
       }
     </style>
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="/style/index.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/solarized-dark.min.css" media="none" onload="if(media!=='all')media='all'" />
     <link rel="stylesheet" href="custom-code-colors.css" />
     <script>
@@ -45,154 +45,163 @@
   <body>
     <header role="banner">
       <a class="home" href="https://redblue.video" title="Home">
-      <!-- <img src="redblue-logo.png" srcset="redblue-logo.png 1x, redblue-logo@2x.png 2x, redblue-logo@3x.png 3x" width="200" height="200" alt="RedBlue logo" /> -->
-        <img src="redblue-logo.svg" width="200" height="200" alt="RedBlue logo" />
+        <picture>
+          <source type="image/svg+xml" srcset="/img/redblue-logo.svg" />
+          <img class="logo" src="/img/redblue.png" srcset="/img/redblue-logo.png 1x, /img/redblue-logo@2x.png 2x, /img/redblue-logo@3x.png 3x" width="200" height="200" alt="logo" longdesc="/img/redblue-logo.html" />
+        </picture>
       </a>
       <hgroup>
         <h1 class="logotype">RedBlue <span>Annotations</span></h1>
-        <h2>Third-Party Embeds</h2>
+        <h2 class="subhead">Third-Party Embeds</h2>
       </hgroup>
     </header>
     <main>
       <h2>Hotspot Over YouTube Video</h2>
       <nav id="tab-links" class="tab-links">
-        <a class="tab-link" href="#xml">XML</a>
-        <a class="tab-link" href="#json-ld">JSON-LD</a>
+        <a class="tab-link" href="#xml">XML</a> | <a class="tab-link" href="#json-ld">JSON-LD</a>
       </nav>
       <article id="xml" class="tab">
         <h3>XML</h3>
-        <h4>Code</h4>
-        <pre><code id="code-xml" class="xml full-example"></code></pre>
-        <h4>Result</h4>
-        <redblue-video id="redblue-youtube-xml" aspect-ratio="16:9" debug="debug">
-          <hvml
-            xmlns="https://hypervideo.tech/hvml#"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            xmlns:css="https://www.w3.org/TR/CSS/"
-            xml:lang="en-US"
-            hidden="hidden"
-          >
-            <video type="personal" xml:id="ep-23">
-              <title>Overnight Dance Party at the Museum of Fine Arts Boston</title>
-              <episode>23</episode>
-              <recorded>2016-09-17</recorded>
-              <description type="xhtml">
-                <div xmlns="http://www.w3.org/1999/xhtml">
-                  <p>Full Facebook Live stream: http://hugh.today/2016-09-17/live</p>
-                  <p>#mfaNOW #mfaLateNites</p>
-                </div>
-              </description>
-              <showing scope="release" type="internet" admission="private">
-                <venue type="site">
-                  <entity site="https://www.youtube.com/">YouTube</entity>
-                  <uri>https://www.youtube.com/watch?v=nWdWq3hMwao</uri>
-                  <title>Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites</title>
-                </venue>
-              </showing>
-              <presentation>
-                <choice xml:id="full-stream">
-                  <name>Go to: <code style="font-family: inherit; font-weight: bold;">hugh.today/2016-09-17/live</code> for the full stream</name>
-                  <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live" width="70%" height="13%" css:font-size="calc(384 / 150 * 1vw)" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap" css:overflow="hidden">
-                    <animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"></animate>
-                    <animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"></animate>
-                  </goto>
-                </choice>
-              </presentation>
-            </video>
-          </hvml>
-        </redblue-video>
+        <section id="xml-code">
+          <h4>Code</h4>
+          <pre><code id="code-xml" class="xml full-example"></code></pre>
+        </section>
+        <section id="xml-result">
+          <h4>Result</h4>
+          <redblue-video id="redblue-youtube-xml" aspect-ratio="16:9" debug="debug">
+            <hvml
+              xmlns="https://hypervideo.tech/hvml#"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:css="https://www.w3.org/TR/CSS/"
+              xml:lang="en-US"
+              hidden="hidden"
+            >
+              <video type="personal" xml:id="ep-23">
+                <title>Overnight Dance Party at the Museum of Fine Arts Boston</title>
+                <episode>23</episode>
+                <recorded>2016-09-17</recorded>
+                <description type="xhtml">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+                    <p>Full Facebook Live stream: http://hugh.today/2016-09-17/live</p>
+                    <p>#mfaNOW #mfaLateNites</p>
+                  </div>
+                </description>
+                <showing scope="release" type="internet" admission="private">
+                  <venue type="site">
+                    <entity site="https://www.youtube.com/">YouTube</entity>
+                    <uri>https://www.youtube.com/watch?v=nWdWq3hMwao</uri>
+                    <title>Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites</title>
+                  </venue>
+                </showing>
+                <presentation>
+                  <choice xml:id="full-stream">
+                    <name>Go to: <code style="font-family: inherit; font-weight: bold;">hugh.today/2016-09-17/live</code> for the full stream</name>
+                    <goto on="duration" xlink:actuate="onRequest" xlink:href="http://hugh.today/2016-09-17/live" width="70%" height="13%" css:font-size="calc(384 / 150 * 1vw)" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap" css:overflow="hidden">
+                      <animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"></animate>
+                      <animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"></animate>
+                    </goto>
+                  </choice>
+                </presentation>
+              </video>
+            </hvml>
+          </redblue-video>
+        </section>
       </article>
       <article id="json-ld" class="tab">
         <h3>JSON-LD</h3>
-        <h4>Code</h4>
-        <pre><code id="code-json-ld" class="xml full-example"></code></pre>
-        <h4>Result</h4>
-        <redblue-video id="redblue-youtube-json-ld" aspect-ratio="16:9" debug="debug">
-          <script type="application/ld+json">
-          {
-            "@context": "https://redblue.video/guide/hvml.context.jsonld",
-            "@type": "video",
-            "@id":  "vlog:2016-09-17",
-            "xml:id": "ep-23",
-            "type": "personal",
-            "title": "Overnight Dance Party at the Museum of Fine Arts Boston",
-            "episode": 23,
-            "recorded": "2016-09-17",
-            "description": {
-              "html:div": {
-                "childNodes": [
-                  {
-                    "@type": "p",
-                    "@value": "Full Facebook Live stream: http://hugh.today/2016-09-17/live"
-                  },
-                  {
-                    "@type": "p",
-                    "@value": "#mfaNOW #mfaLateNites"
-                  }
-                ]
-              }
-            },
-            "showing": {
-              "scope": "release",
-              "type": "internet",
-              "admission": "private",
-              "venue": {
-                "type": "site",
-                "entity": [
-                  {
-                    "site": "https://www.youtube.com/"
-                  },
-                  "YouTube"
-                ],
-                "uri": "https://www.youtube.com/watch?v=nWdWq3hMwao",
-                "title": "Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites"
-              }
-            },
-            "presentation": {
-              "choice": {
-                "name": [
-                  "Go to: ",
-                  {
-                    "@type": "code",
-                    "style": "font-family: inherit; font-weight: bold;",
-                    "textContent": "hugh.today/2016-09-17/live"
-                  },
-                  " for the full stream"
-                ],
-                "goto": {
-                  "on": "duration",
-                  "xlink:actuate": "onRequest",
-                  "xlink:href": "http://hugh.today/2016-09-17/live",
-                  "width": "70%",
-                  "height": "13%",
-                  "css:font-size": "calc(384 / 150 * 1vw)",
-                  "css:font-family": "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif",
-                  "css:white-space": "nowrap",
-                  "css:overflow": "hidden",
-                  "animate": [
+        <section id="json-ld-code">
+          <h4>Code</h4>
+          <pre><code id="code-json-ld" class="xml full-example"></code></pre>
+        </section>
+        <section id="json-ld-result">
+          <h4>Result</h4>
+          <redblue-video id="redblue-youtube-json-ld" aspect-ratio="16:9" debug="debug">
+            <script type="application/ld+json">
+            {
+              "@context": "https://redblue.video/guide/hvml.context.jsonld",
+              "@type": "video",
+              "@id":  "vlog:2016-09-17",
+              "xml:id": "ep-23",
+              "type": "personal",
+              "title": "Overnight Dance Party at the Museum of Fine Arts Boston",
+              "episode": 23,
+              "recorded": "2016-09-17",
+              "description": {
+                "html:div": {
+                  "childNodes": [
                     {
-                      "startTime": "517.292107",
-                      "endTime": "518.872131",
-                      "startX": "14.9%",
-                      "startY": "-15%",
-                      "endX": "15%",
-                      "endY": "10%"
+                      "@type": "p",
+                      "@value": "Full Facebook Live stream: http://hugh.today/2016-09-17/live"
                     },
                     {
-                      "startTime": "523.373882",
-                      "endTime": "524.873404",
-                      "startX": "14.9%",
-                      "startY": "10%",
-                      "endX": "15%",
-                      "endY": "-15%"
+                      "@type": "p",
+                      "@value": "#mfaNOW #mfaLateNites"
                     }
                   ]
                 }
+              },
+              "showing": {
+                "scope": "release",
+                "type": "internet",
+                "admission": "private",
+                "venue": {
+                  "type": "site",
+                  "entity": [
+                    {
+                      "site": "https://www.youtube.com/"
+                    },
+                    "YouTube"
+                  ],
+                  "uri": "https://www.youtube.com/watch?v=nWdWq3hMwao",
+                  "title": "Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites"
+                }
+              },
+              "presentation": {
+                "choice": {
+                  "name": [
+                    "Go to: ",
+                    {
+                      "@type": "code",
+                      "style": "font-family: inherit; font-weight: bold;",
+                      "textContent": "hugh.today/2016-09-17/live"
+                    },
+                    " for the full stream"
+                  ],
+                  "goto": {
+                    "on": "duration",
+                    "xlink:actuate": "onRequest",
+                    "xlink:href": "http://hugh.today/2016-09-17/live",
+                    "width": "70%",
+                    "height": "13%",
+                    "css:font-size": "calc(384 / 150 * 1vw)",
+                    "css:font-family": "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif",
+                    "css:white-space": "nowrap",
+                    "css:overflow": "hidden",
+                    "animate": [
+                      {
+                        "startTime": "517.292107",
+                        "endTime": "518.872131",
+                        "startX": "14.9%",
+                        "startY": "-15%",
+                        "endX": "15%",
+                        "endY": "10%"
+                      },
+                      {
+                        "startTime": "523.373882",
+                        "endTime": "524.873404",
+                        "startX": "14.9%",
+                        "startY": "10%",
+                        "endX": "15%",
+                        "endY": "-15%"
+                      }
+                    ]
+                  }
+                }
               }
             }
-          }
-          </script>
-        </redblue-video>
+            </script>
+          </redblue-video>
+        </section>
       </article>
       <article id="fallback">
         <h2>Non-interactive Fallback</h2>
@@ -214,33 +223,34 @@
       </article>
       <article id="detailed-instructions">
         <h2>Detailed Instructions</h2>
-        <h3 id="attaching-a-third-party-embed">Attaching a third-party embed</h3>
-        <dl class="instructions">
-          <dd class="step">Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;script type="module"&gt;
+        <section id="attaching-a-third-party-embed">
+          <h3>Attaching a third-party embed</h3>
+          <dl class="instructions">
+            <dd class="step">Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;script type="module"&gt;
   import RedBlueVideo from './modules/redblue-video-omni.js';
   customElements.define( RedBlueVideo.is, RedBlueVideo );
 &lt;/script&gt;</code></pre></dd>
-          <dd class="step">Include an <a href="https://hypervideo.tech"><abbr>HVML</abbr></a> code block as a child of <code>&lt;redblue-video&gt;</code>. <abbr>HVML</abbr> can be represented as either <abbr>XML</abbr> or <abbr>JSON-LD</abbr>. When using the <abbr>XML</abbr> serialization, set the boolean <code>hidden</code> attribute to true to prevent the browser from rendering the metadata.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Include an <a href="https://hypervideo.tech"><abbr>HVML</abbr></a> code block as a child of <code>&lt;redblue-video&gt;</code>. <abbr>HVML</abbr> can be represented as either <abbr>XML</abbr> or <abbr>JSON-LD</abbr>. When using the <abbr>XML</abbr> serialization, set the boolean <code>hidden</code> attribute to true to prevent the browser from rendering the metadata.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;&lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">In the <abbr>HVML</abbr>, specify a single <code>video</code> element. (Not to be confused with <abbr>HTML</abbr>’s <code>video</code> element—though unless your page is served as <abbr title="application/xhtml+xml">XHTML</abbr>, technically the browser will interpret it as such.) This is the container for all of your video’s metadata.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">In the <abbr>HVML</abbr>, specify a single <code>video</code> element. (Not to be confused with <abbr>HTML</abbr>’s <code>video</code> element—though unless your page is served as <abbr title="application/xhtml+xml">XHTML</abbr>, technically the browser will interpret it as such.) This is the container for all of your video’s metadata.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     <ins>&lt;video&gt;&lt;/video&gt;</ins>
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>video</code>, include a <code>showing</code> with its <code>scope</code> set to <code>release</code>. This tells the <abbr>HVML</abbr> parser that the video has been shown to an audience (or will be), and that this showing represents its initial release. For movies shown in a theater, there may be more than one showing, such as at different film festivals, but for online videos, there is typically only one.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>video</code>, include a <code>showing</code> with its <code>scope</code> set to <code>release</code>. This tells the <abbr>HVML</abbr> parser that the video has been shown to an audience (or will be), and that this showing represents its initial release. For movies shown in a theater, there may be more than one showing, such as at different film festivals, but for online videos, there is typically only one.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
       <ins>&lt;showing scope="release"&gt;&lt;/showing&gt;</ins>
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>showing</code>, include a <code>venue</code> with its <code>type</code> set to <code>site</code>. This tells the <abbr>HVML</abbr> parser where this showing takes place; in this case, a website.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>showing</code>, include a <code>venue</code> with its <code>type</code> set to <code>site</code>. This tells the <abbr>HVML</abbr> parser where this showing takes place; in this case, a website.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -249,10 +259,10 @@
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>venue</code>, include a <code>uri</code> with text matching the appropriate pattern for a third-party video link. The appropriate embed code will be automatically generated and inserted depending on the link pattern.</dd>
-          <dd>For YouTube videos, the pattern is <code>//www.youtube.com/watch?v=</code>.</dd>
-          <dd>For Vimeo videos, the pattern is <code>//vimeo.com/</code>.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>venue</code>, include a <code>uri</code> with text matching the appropriate pattern for a third-party video link. The appropriate embed code will be automatically generated and inserted depending on the link pattern.</dd>
+            <dd>For YouTube videos, the pattern is <code>//www.youtube.com/watch?v=</code>.</dd>
+            <dd>For Vimeo videos, the pattern is <code>//vimeo.com/</code>.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -263,13 +273,15 @@
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre>
-          </dd>
-        </dl>
-        <h3 id="annotating">Annotating</h3>
-        <dl class="instructions">
-          <dd class="step">To add a “hotspot” link to a specific segment of the video, do this:</dd>
-          <dd class="step">Under <code>video</code>, include a <code>presentation</code> element. This is the container for instructions telling the <abbr>HVML</abbr> parser how to present a video on playback.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            </dd>
+          </dl>
+        </section>
+        <section id="annotating">
+          <h3>Annotating</h3>
+          <dl class="instructions">
+            <dd class="step">To add a “hotspot” link to a specific segment of the video, do this:</dd>
+            <dd class="step">Under <code>video</code>, include a <code>presentation</code> element. This is the container for instructions telling the <abbr>HVML</abbr> parser how to present a video on playback.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -281,8 +293,8 @@
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>presentation</code>, include a <code>choice</code> element for each hotspot you want to create.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>presentation</code>, include a <code>choice</code> element for each hotspot you want to create.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -296,8 +308,8 @@
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>choice</code>, include a <code>name</code> specifying the hotspot’s link text. In the <abbr>XML</abbr> serialization of <abbr>HVML</abbr>, This can directly include <abbr>HTML</abbr> markup. However, <code>a</code> tags are not supported, as the hotspot will be generated as an <code>a</code> tag itself in the final product.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>choice</code>, include a <code>name</code> specifying the hotspot’s link text. In the <abbr>XML</abbr> serialization of <abbr>HVML</abbr>, This can directly include <abbr>HTML</abbr> markup. However, <code>a</code> tags are not supported, as the hotspot will be generated as an <code>a</code> tag itself in the final product.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -313,12 +325,12 @@
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>choice</code>, include a <code>goto</code>, which specifies a hyperlink action to perform.</dd>
-          <dd>Set its <code>on</code> attribute to <code>duration</code>, which specifies that this hotspot is triggered by the viewer arriving at a specific duration range in the timeline.</dd>
-          <dd>Set its <code>xlink:href</code> attribute to the <abbr>URL</abbr> you wish to link to.</dd>
-          <dd>Set its <code>xlink:actuate</code> attribute to <code>onRequest</code>, which specifies that the link should be activated when clicked or tapped on, rather than automatically.</dd>
-          <dd>Since we are using XLink-namespaced attributes, define the XLink namespace on the root <code>hvml</code> element.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>choice</code>, include a <code>goto</code>, which specifies a hyperlink action to perform.</dd>
+            <dd>Set its <code>on</code> attribute to <code>duration</code>, which specifies that this hotspot is triggered by the viewer arriving at a specific duration range in the timeline.</dd>
+            <dd>Set its <code>xlink:href</code> attribute to the <abbr>URL</abbr> you wish to link to.</dd>
+            <dd>Set its <code>xlink:actuate</code> attribute to <code>onRequest</code>, which specifies that the link should be activated when clicked or tapped on, rather than automatically.</dd>
+            <dd>Since we are using XLink-namespaced attributes, define the XLink namespace on the root <code>hvml</code> element.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" <ins>xmlns:xlink="http://www.w3.org/1999/xlink"</ins> hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -335,11 +347,11 @@
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-          <dd class="step">Under <code>goto</code>, include an <code>animate</code> element for every transition from one state to another that you want the hotspot to go through.</dd>
-          <dd>Set its <code>startTime</code> and <code>endTime</code> attributes to the video times in seconds you want the transition to start and end respectively.</dd>
-          <dd>Set its <code>startX</code> and <code>endX</code> attributes to the x-axis coordinates, specified as a percentage relative to the video container starting from the left, that you want the transition to start at and move to respectively.</dd>
-          <dd>Set its <code>startY</code> and <code>endY</code> attributes to the y-axis coordinates, specified as a percentage relative to the video container starting from the bottom, that you want the transition to start at and move to respectively.</dd>
-          <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+            <dd class="step">Under <code>goto</code>, include an <code>animate</code> element for every transition from one state to another that you want the hotspot to go through.</dd>
+            <dd>Set its <code>startTime</code> and <code>endTime</code> attributes to the video times in seconds you want the transition to start and end respectively.</dd>
+            <dd>Set its <code>startX</code> and <code>endX</code> attributes to the x-axis coordinates, specified as a percentage relative to the video container starting from the left, that you want the transition to start at and move to respectively.</dd>
+            <dd>Set its <code>startY</code> and <code>endY</code> attributes to the y-axis coordinates, specified as a percentage relative to the video container starting from the bottom, that you want the transition to start at and move to respectively.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" xmlns:xlink="http://www.w3.org/1999/xlink" hidden="hidden"&gt;
     &lt;video&gt;
       &lt;showing scope="release"&gt;
@@ -358,9 +370,10 @@
       &lt;/presentation&gt;
     &lt;/video&gt;
   &lt;/hvml&gt;
-&lt;/redblue-video&gt;</code></pre></dd>
-
-        </dl>
+&lt;/redblue-video&gt;</code></pre>
+            </dd>
+          </dl>
+        </section>
       </article>
     </main>
     <div id="scripts">
@@ -374,7 +387,8 @@
         const highlightCode = () => {
           const $codeXML = document.getElementById( 'code-xml' );
           const $codeJSONLD = document.getElementById( 'code-json-ld' );
-          const extraWhitespace10 = /\n\s{10}/gi;
+          const extraWhitespace12 = /\n\s{12}/gi;
+          // const extraWhitespace10 = /\n\s{10}/gi;
           // const extraWhitespace8 = /\n\s{8}/gi;
           // const extraWhitespace6 = /\n\s{6}/gi;
           // const extraWhitespace4 = /\n\s{4}/gi;
@@ -382,7 +396,8 @@
 
           if ( $codeXML ) {
             $codeXML.textContent = document.getElementById( 'redblue-youtube-xml' ).outerHTML
-              .replace( extraWhitespace10, '\n  ' )
+              .replace( extraWhitespace12, '\n  ' )
+              // .replace( extraWhitespace10, '\n  ' )
               // .replace( extraWhitespace8, '\n    ' )
               // .replace( extraWhitespace6, '\n   ' )
               // .replace( extraWhitespace4, '\n  ' )
@@ -392,10 +407,11 @@
 
           if ( $codeJSONLD ) {
             $codeJSONLD.textContent = document.getElementById( 'redblue-youtube-json-ld' ).outerHTML
-            .replace( extraWhitespace10, '\n  ' )
-            // .replace( extraWhitespace8, '\n    ' )
-            // .replace( extraWhitespace6, '\n   ' )
-            // .replace( extraWhitespace4, '\n  ' )
+              .replace( extraWhitespace12, '\n  ' )
+              // .replace( extraWhitespace10, '\n  ' )
+              // .replace( extraWhitespace8, '\n    ' )
+              // .replace( extraWhitespace6, '\n   ' )
+              // .replace( extraWhitespace4, '\n  ' )
               .replace( closingTag, '\n$1' )
             ;
           }
@@ -453,16 +469,16 @@
     <style scoped>
       @font-face {
         font-family: 'Accord Alternate';
-        src: url('/style/AccordAlternate_Med-webfont.woff2') format('woff2'),
-             url('/style/AccordAlternate_Med-webfont.woff') format('woff');
+        src: url('/style/AccordAlternate_Med.woff2') format('woff2'),
+             url('/style/AccordAlternate_Med.woff') format('woff');
         font-weight: 600;
         font-style: normal;
       }
 
       @font-face {
         font-family: 'Accord Alternate';
-        src: url('/style/AccordAlternate_Reg-webfont.woff2') format('woff2'),
-             url('/style/AccordAlternate_Reg-webfont.woff') format('woff');
+        src: url('/style/AccordAlternate_Reg.woff2') format('woff2'),
+             url('/style/AccordAlternate_Reg.woff') format('woff');
         font-weight: normal;
         font-style: normal;
       }
