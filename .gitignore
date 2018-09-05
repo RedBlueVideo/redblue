@@ -42,3 +42,5 @@ _internal/
 node_modules/
 style/
 funky-lines*
+_site/
+homepage/
