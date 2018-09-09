@@ -45,6 +45,7 @@
   }
 
   var isProduction = /^https?:\/\/(www\.)?redblue\.video/i.test( window.location.origin );
+  var isDevelopment = !isProduction;
   var isInternalTrafficLink = /(?:\?|&)utm_source=internal\b/.test( window.location.search );
   var isInternalTraffic = false;
 
@@ -52,40 +53,38 @@
     if ( isInternalTrafficLink ) {
       localStorage.setItem( 'internalTraffic', 'true' );
     }
-    isInternalTraffic = ( localStorage.getItem( 'internalTraffic' ) === 'true' );
+    isInternalTraffic = ( isDevelopment || ( localStorage.getItem( 'internalTraffic' ) === 'true' ) );
   }
 
-  if ( isProduction ) {
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    ga( 'create', 'UA-99429830-1', 'auto' );
+  ga( 'create', 'UA-99429830-1', 'auto' );
 
-    window.fbAsyncInit = function() {
-      FB.init({
-        appId      : '270333566921477',
-        cookie     : true,
-        xfbml      : true,
-        version    : 'v3.1'
-      });
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '270333566921477',
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v3.1'
+    });
 
-      if ( !isInternalTraffic ) {
-        ga( 'send', 'pageview' );
-        FB.AppEvents.logPageView();
-      }
+    if ( !isInternalTraffic ) {
+      ga( 'send', 'pageview' );
+      FB.AppEvents.logPageView();
+    }
 
-      deuglifyAnalyticsURL();
-    };
+    deuglifyAnalyticsURL();
+  };
 
-    (function(d, s, id){
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) {return;}
-      js = d.createElement(s); js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-  } // isProduction
+  (function(d, s, id){
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {return;}
+    js = d.createElement(s); js.id = id;
+    js.src = "https://connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
 </script>
 <script src="https://apis.google.com/js/platform.js"></script>
