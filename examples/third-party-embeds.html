@@ -20,7 +20,7 @@ pageScripts: guide/third-party-embeds.scripts.html
       -->
       <h2>Hotspot Over YouTube Video</h2>
       <nav id="tab-links" class="tab-links">
-        <a class="tab-link" href="#xml">XML</a> | <a class="tab-link" href="#json-ld">JSON-LD</a>
+        <a id="guide_third-party-embeds_hotspot-over-youtube-video_xml" class="tab-link" href="#xml">XML</a> | <a id="guide_third-party-embeds_hotspot-over-youtube-video_json" class="tab-link" href="#json-ld">JSON-LD</a>
       </nav>
       <article id="xml" class="tab">
         <h3>XML</h3>
@@ -193,7 +193,7 @@ pageScripts: guide/third-party-embeds.scripts.html
   import RedBlueVideo from './modules/redblue-video-omni.js';
   customElements.define( RedBlueVideo.is, RedBlueVideo );
 &lt;/script&gt;</code></pre></dd>
-            <dd class="step">Include an <a href="https://hypervideo.tech"><abbr>HVML</abbr></a> code block as a child of <code>&lt;redblue-video&gt;</code>. <abbr>HVML</abbr> can be represented as either <abbr>XML</abbr> or <abbr>JSON-LD</abbr>. When using the <abbr>XML</abbr> serialization, set the boolean <code>hidden</code> attribute to true to prevent the browser from rendering the metadata.</dd>
+            <dd class="step">Include an <a id="guide_third-party-embeds_attaching-a-third-party-embed_hvml" href="https://hypervideo.tech"><abbr>HVML</abbr></a> code block as a child of <code>&lt;redblue-video&gt;</code>. <abbr>HVML</abbr> can be represented as either <abbr>XML</abbr> or <abbr>JSON-LD</abbr>. When using the <abbr>XML</abbr> serialization, set the boolean <code>hidden</code> attribute to true to prevent the browser from rendering the metadata.</dd>
             <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;&lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
