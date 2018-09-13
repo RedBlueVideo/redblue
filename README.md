@@ -29,6 +29,12 @@ This is not yet integrated into the Custom Element, but a [prototype](https://re
 ### Hotspots
 A preliminary version of hotspots are implemented for YouTube embeds. See the [Developer Guide](https://redblue.video/guide/third-party-embeds.html?utm_source=readme&utm_medium=github&utm_content=hotspots).
 
+## Installation
+- <del>`npm install redblue`</del>
+- <del>`yarn add redblue`</del>
+
+Since RedBlue is not yet feature-complete, only a placeholder version 0.0.0 has been published to NPM. In the meantime, you can just clone the Git repository.
+
 ## Usage
 Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)
 ```html
