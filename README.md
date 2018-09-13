@@ -1,6 +1,9 @@
 # redblue
 Open-Source Hypervideo Framework
 
+## Stability
+⚠️ The `master` branch currently represents an alpha pre-release. Features and syntax are subject to change at any time, so please don’t use it in production. Unless you’re some kind of daredevil.
+
 ## About
 <dfn>Hypervideo</dfn>: online video annotated with time-based links and other widgets.
 
@@ -25,9 +28,6 @@ This is not yet integrated into the Custom Element, but a [prototype](https://re
 
 ### Hotspots
 A preliminary version of hotspots are implemented for YouTube embeds. See the [Developer Guide](https://redblue.video/guide/third-party-embeds.html?utm_source=readme&utm_medium=github&utm_content=hotspots).
-
-## Stability
-⚠️ The `master` branch currently represents an alpha pre-release. Features and syntax are subject to change at any time, so please don’t use it in production. Unless you’re some kind of daredevil.
 
 ## Usage
 Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)
