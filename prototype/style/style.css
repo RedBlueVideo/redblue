@@ -1,13 +1,3 @@
-* {
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Helvetica Neue", sans-serif;
-}
-
 .video-container {
   position: relative;
 }
@@ -41,10 +31,15 @@ h2 {
   text-align: center;
 }
 
+main p {
+  text-align: center;
+}
+
 .choices {
   position: absolute;
   width: 100%;
   height: 100%;
+  max-width: 100%;
   top: 0;
   left: 0;
   background-color: black;
@@ -52,6 +47,19 @@ h2 {
   z-index: 9999;
 
   color: white;
+}
+
+.video-container {
+  max-width: 100%;
+  height: 0;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.choices[hidden] {
+  display: none;
 }
 
 .choices ul {
@@ -109,4 +117,12 @@ h2 {
   left: 55%;
   width: 25%;
   height: 60%;
+}
+
+#choice-2a {
+  width: 100%;
+  top: 90%;
+  left: 0;
+  font-size: 5vw;
+  text-align: center;
 }
