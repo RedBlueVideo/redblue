@@ -1,81 +1,3 @@
-RedBlue.MSE = {
-  "buffers": [],
-  "bufferLoading": false,
-  "endOfStream": false,
-  "sourceBuffer": null,
-  "mediaSource": null,
-  "mediaSegment": null,
-  "checkStatus": null,
-  "checkStatusBuffer": null, // Do we really need 2?
-
-  "supported": function() {
-    window.MediaSource = window.MediaSource || window.WebKitMediaSource;
-    
-    if ( !!!window.MediaSource ) {
-      alert( 'MediaSource API is not supported.' );
-      return false;
-    }
-
-    return true;
-  },
-
-  "onSourceOpen": function( event ) {
-    console.log( '--MSE.onSourceOpen()--' );
-
-    // Why would sourceopen even fire again after the first time???
-    if ( !RedBlue.MSE.endOfStream ) {
-      // 'video/webm; codecs="vorbis,vp8"'
-      // 
-      RedBlue.MSE.sourceBuffer = RedBlue.MSE.mediaSource.addSourceBuffer( RedBlue.DEBUG_BUFFER_TYPE );
-    } else {
-      return false;
-    }
-
-    if ( !RedBlue.XML.xmlLoaded ) {
-      // Load playlist
-      RedBlue.XML.import( 'db/redblue.ovml.xml' );
-    } else {
-      console.log( '--XML already loaded--' );
-      RedBlue.XHR.GET( RedBlue.mediaQueue[0].path, RedBlue.mediaQueue[0].type, RedBlue.Reader.init );
-    }
-  },
-
-  "onSourceEnded": function( event ) {
-    RedBlue.MSE.mediaSource = event.target;
-    console.log('mediaSource readyState: ' + RedBlue.MSE.mediaSource.readyState);
-  },
-
-  "isReady": function() {
-    if ( !RedBlue.MSE.mediaSource.sourceBuffers[0] ) {
-      console.log( 'NOT READY: !mediaSource.sourceBuffers[0]' );
-      return false;
-    }
-
-    if ( RedBlue.MSE.mediaSource.sourceBuffers[0].updating ) {
-      console.log('NOT READY: mediaSource.sourceBuffers[0].updating');
-      return false;
-    }
-
-    if ( RedBlue.MSE.mediaSource.readyState !== "open" ) {
-      console.log( 'NOT READY: mediaSource.readyState !== "open"', RedBlue.MSE.mediaSource.readyState );
-      return false;
-    }
-
-    if ( RedBlue.MSE.mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
-      console.log( 'NOT READY: mediaSource.sourceBuffers[0].mode == PARSING_MEDIA_SEGMENT' );
-      return false;
-    }
-
-    if ( RedBlue.mediaQueue.length === 0 ) {
-      console.log( 'NOT READY: RedBlue.mediaQueue.length === 0' );
-      return false;
-    }
-
-    console.log( 'READY' );
-    return true;
-  }
-};
-
 RedBlue.MSEPlayer = extend(RedBlue.__Player, {
   "init": function( skipEventListeners ) {
     console.log( '--init()--' );
@@ -100,7 +22,7 @@ RedBlue.MSEPlayer = extend(RedBlue.__Player, {
   },
 
   "checkStatusInterval": function() {
-    var appended = RedBlue.Player.getAndPlay();
+    var appended = RedBlue.Player.play();
 
     if ( appended ) {
       clearInterval( RedBlue.MSE.checkStatus );
@@ -124,8 +46,8 @@ RedBlue.MSEPlayer = extend(RedBlue.__Player, {
 
   //"Events": {},
 
-  "getAndPlay": function() {
-    console.log( '--getAndPlay()--' );
+  "play": function() {
+    console.log( '--play()--' );
     // Make sure the previous append is not still pending.
     var ready = RedBlue.MSE.isReady();
 
@@ -173,7 +95,7 @@ RedBlue.MSEPlayer = extend(RedBlue.__Player, {
       if ( RedBlue.Player.video.paused ) {
         RedBlue.Player.video.play(); // Start playing after 1st chunk is appended.
       }
-      
+
       RedBlue.mediaQueue = RedBlue.mediaQueue.slice( 1 );
 
       if ( RedBlue.mediaQueue.length > 0 ) {
@@ -184,7 +106,7 @@ RedBlue.MSEPlayer = extend(RedBlue.__Player, {
 
   "readPlaylistItem": function( uInt8Array, type ) {
     type = type || RedBlue.DEBUG_MIME_TYPE; //'video/webm';
-    
+
     var file = new Blob(
       [uInt8Array],
       {

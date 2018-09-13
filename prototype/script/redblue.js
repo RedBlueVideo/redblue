@@ -74,16 +74,96 @@ var RedBlue = RedBlue || {
   // Past this point, errors: second video gets appended twice, third not at all, because shit is not ready
   //"POLLING_INTERVAL": 8.33333333333, // 1/120 second
   //"POLLING_INTERVAL": 1, // 1/1000 second
-  
+
   "duration": 0,
-  
+
   "mediaQueue": [],
   "mediaQueueHistory": [],
 
   "totalVideos": 0,
-  
+
   "fileTypePreferences": [],
   //"replacing": false,
+
+  "playerType": ""
+};
+
+RedBlue.MSE = {
+  "buffers": [],
+  "bufferLoading": false,
+  "endOfStream": false,
+  "sourceBuffer": null,
+  "mediaSource": null,
+  "mediaSegment": null,
+  "checkStatus": null,
+  "checkStatusBuffer": null, // Do we really need 2?
+
+  "supported": function() {
+    window.MediaSource = window.MediaSource || window.WebKitMediaSource;
+
+    if ( !!!window.MediaSource ) {
+      alert( 'MediaSource API is not supported.' );
+      return false;
+    }
+
+    return true;
+  },
+
+  "onSourceOpen": function( event ) {
+    console.log( '--MSE.onSourceOpen()--' );
+
+    // Why would sourceopen even fire again after the first time???
+    if ( !RedBlue.MSE.endOfStream ) {
+      // 'video/webm; codecs="vorbis,vp8"'
+      //
+      RedBlue.MSE.sourceBuffer = RedBlue.MSE.mediaSource.addSourceBuffer( RedBlue.DEBUG_BUFFER_TYPE );
+    } else {
+      return false;
+    }
+
+    if ( !RedBlue.XML.xmlLoaded ) {
+      // Load playlist
+      RedBlue.XML.import( 'db/redblue.ovml.xml' );
+    } else {
+      console.log( '--XML already loaded--' );
+      RedBlue.XHR.GET( RedBlue.mediaQueue[0].path, RedBlue.mediaQueue[0].type, RedBlue.Reader.init );
+    }
+  },
+
+  "onSourceEnded": function( event ) {
+    RedBlue.MSE.mediaSource = event.target;
+    console.log('mediaSource readyState: ' + RedBlue.MSE.mediaSource.readyState);
+  },
+
+  "isReady": function() {
+    if ( !RedBlue.MSE.mediaSource.sourceBuffers[0] ) {
+      console.log( 'NOT READY: !mediaSource.sourceBuffers[0]' );
+      return false;
+    }
+
+    if ( RedBlue.MSE.mediaSource.sourceBuffers[0].updating ) {
+      console.log('NOT READY: mediaSource.sourceBuffers[0].updating');
+      return false;
+    }
+
+    if ( RedBlue.MSE.mediaSource.readyState !== "open" ) {
+      console.log( 'NOT READY: mediaSource.readyState !== "open"', RedBlue.MSE.mediaSource.readyState );
+      return false;
+    }
+
+    if ( RedBlue.MSE.mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
+      console.log( 'NOT READY: mediaSource.sourceBuffers[0].mode == PARSING_MEDIA_SEGMENT' );
+      return false;
+    }
+
+    if ( RedBlue.mediaQueue.length === 0 ) {
+      console.log( 'NOT READY: RedBlue.mediaQueue.length === 0' );
+      return false;
+    }
+
+    console.log( 'READY' );
+    return true;
+  }
 };
 
 RedBlue.init = (function() {
@@ -222,7 +302,7 @@ RedBlue.OVML = {
         for ( i = RedBlue.fileTypePreferences.length - 1; i >= 0; --i ) {
           for ( var mime in RedBlue.fileTypePreferences[i] ) {
             container = RedBlue.XML.getNodes( 'container[./mime[text() = "' + mime + '"]]', fileElement ).iterateNext();
-            
+
             if ( container ) {
               containers.push( { 'mime': mime, 'node': container} );
             }
@@ -299,7 +379,7 @@ RedBlue.OVML = {
 
         while ( playlistActionElement ) {
           var playlistActionMethod = playlistActionElement.getAttribute( 'method' );
-          
+
           if ( playlistActionMethod ) {
             playlistActions.push( playlistActionMethod );
           } else {
@@ -324,7 +404,7 @@ RedBlue.OVML = {
         fileMime = RedBlue.OVML.getMime( fileElement );
 
         choiceLetter = String.fromCharCode( 64 + choicesCounter ).toLowerCase();
-        
+
         // @todo: Instead of storing in the DOM, just keep track of the damn things (right?)
         choicesHTML += [
           '<li>',
@@ -386,7 +466,7 @@ RedBlue.OVML = {
         playlistItem = playlistItems;
         //console.log( 'playlistItem', playlistItem );
       }
-      
+
       switch ( playlistItem.localName ) {
         case 'media':
           RedBlue.OVML.parse.mediaElement( playlistItem );
@@ -402,12 +482,12 @@ RedBlue.OVML = {
 
 RedBlue.__Player = {
   "choiceContainer": null,
-  
+
   "choices": document.querySelectorAll( '.choice' ),
   "choicesCounter": 0,
   "choicesContainer": document.getElementById( 'choices-container' ),
   "choicesContainerCounter": 0,
-  
+
   "firstChoiceSelected": false,
 
   "video": document.getElementById( 'v' ),
@@ -454,7 +534,7 @@ RedBlue.__Player = {
         ) // XML.getNodes
         .iterateNext()
       ); // OVML.parse.nonlinearPlaylistItems
-      
+
       // console.log( '--Player.play()--' );
       RedBlue.Player.play();
     },
@@ -517,7 +597,7 @@ RedBlue.LegacyPlayer = extend(RedBlue.__Player, {
       RedBlue.XHR.GET( RedBlue.mediaQueue[0].path, RedBlue.mediaQueue[0].type, RedBlue.LegacyPlayer.readPlaylistItem );
     }
 
-    //RedBlue.LegacyPlayer.video.src = 
+    //RedBlue.LegacyPlayer.video.src =
   },
 
   "readPlaylistItem": function () {
@@ -530,7 +610,7 @@ RedBlue.LegacyPlayer = extend(RedBlue.__Player, {
     if ( RedBlue.Player.video.paused ) {
       RedBlue.Player.video.play(); // Start playing after 1st chunk is appended.
     }
-    
+
     // RedBlue.mediaQueue = RedBlue.mediaQueue.slice( 1 );
 
     // if ( RedBlue.mediaQueue.length > 0 ) {
@@ -671,12 +751,4 @@ RedBlue.XML = {
     xhr.send( '' );
   } // import
 }; // XML
-
-// if ( RedBlue.MSE.supported() ) {
-//   RedBlue.Player = RedBlue.MSEPlayer;
-// } else {
-  RedBlue.Player = RedBlue.LegacyPlayer;
-// }
-
-RedBlue.Player.init();
 //})();
