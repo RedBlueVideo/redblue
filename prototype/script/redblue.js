@@ -102,7 +102,7 @@ RedBlue.MSE = {
     window.MediaSource = window.MediaSource || window.WebKitMediaSource;
 
     if ( !!!window.MediaSource ) {
-      alert( 'MediaSource API is not supported.' );
+      // alert( 'MediaSource API is not supported.' );
       return false;
     }
 
