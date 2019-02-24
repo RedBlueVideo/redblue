@@ -1,10 +1,11 @@
 {
   "name": "redblue",
-  "version": "0.0.0",
-  "description": "Open-Source Interactive Video Framework",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "Open-Source Hypervideo Framework",
+  "browser": "src/redblue-video-omni.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "[ $(git symbolic-ref --short -q HEAD) = \"npm\" ] && git checkout master -- package.json .gitignore .npmignore README.md examples && echo '\nexamples/*' >> .gitignore && rm -rf src/ && mkdir src/ && cp -r examples/modules/ src/ && sed -i '' -e 's,./examples/modules/,node_modules/redblue/src/,g' README.md"
   },
   "repository": {
     "type": "git",
@@ -31,8 +32,8 @@
   ],
   "author": {
     "name": "Hugh Guiney",
-    "email": "hello@hughguiney.com",
-    "url": "https://hughguiney.com"
+    "email": "hugh@redblue.video",
+    "url": "https://redblue.video"
   },
   "license": "GPL-3.0",
   "bugs": {
