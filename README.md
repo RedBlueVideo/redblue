@@ -89,6 +89,8 @@ Populate the <abbr>HVML</abbr> data. RedBlue will render the appropriate video e
 ## Contributing
 As this is alpha software, we are not currently accepting Pull Requests, but you are welcome to test it out and offer feedback by posting it to Issues, or by tweeting [@RedBlueVideo](https://twitter.com/RedBlueVideo).
 
+Another big way you can contribute is by supporting us on [Patreon](https://www.patreon.com/redbluevideo)!
+
 ## Known Issues
 - Limited browser support
 - Choice-based narratives not in `master`
