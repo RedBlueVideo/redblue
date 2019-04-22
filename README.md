@@ -97,4 +97,4 @@ Another big way you can contribute is by supporting us on [Patreon](https://www.
 - Hotspot animations do not respond to pauses or timeline seeking within their trigger range
 
 ## Team
-RedBlue <abbr>Co.</abbr> is a small-time operation headed by Hugh Guiney (Twitter: [@LordPancreas](https://twitter.com/LordPancreas) & [@TurboHax](https://twitter.com/TurboHax), GitHub: [@hguiney](https://github.com/hguiney)), with help from his brother Austin (Twitter: [@SenorKoffey](https://twitter.com/SenorKoffey), GitHub: [@pyreking](https://github.com/pyreking)).
+RedBlue Video is a small-time operation headed by Hugh Guiney (Twitter: [@LordPancreas](https://twitter.com/LordPancreas) & [@TurboHax](https://twitter.com/TurboHax), GitHub: [@hguiney](https://github.com/hguiney)), with help from his brother Austin (Twitter: [@SenorKoffey](https://twitter.com/SenorKoffey), GitHub: [@pyreking](https://github.com/pyreking)).
