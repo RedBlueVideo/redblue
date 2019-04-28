@@ -35,7 +35,7 @@
     "email": "hugh@redblue.video",
     "url": "https://redblue.video"
   },
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/RedBlueVideo/redblue/issues"
   },
