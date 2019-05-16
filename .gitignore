@@ -43,3 +43,4 @@ node_modules/
 funky-lines*
 _site/
 homepage/
+.jekyll-metadata
