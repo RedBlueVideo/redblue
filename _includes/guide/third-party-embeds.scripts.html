@@ -62,8 +62,20 @@
 </script>
 <!-- Omni-Parser Config (XML + JSON-LD) -->
 <script type="module">
-  import RedBlueVideo from '/src/redblue-video-omni.js';
-  customElements.define( RedBlueVideo.is, RedBlueVideo );
+  // import RedBlueVideo from '/src/redblue-video-omni.js';
+  import RedBlueVideo from '/src/redblue-video.js';
+  import RedBlueXMLParser from '/src/parser-xml.js';
+  import RedBlueJSONLDParser from '/src/parser-json-ld.js';
+
+  const RedBlueVideoOmni =
+    RedBlueJSONLDParser(
+      RedBlueXMLParser(
+        RedBlueVideo
+      )
+    )
+  ;
+
+  customElements.define( RedBlueVideoOmni.is, RedBlueVideoOmni );
 </script>
 <!-- Omni-Parser Config with Custom JSON Search -->
 <!-- <script type="module">

@@ -1,0 +1,269 @@
+---
+title: "Annotations: Branching Narratives | RedBlue Developer Guide"
+section: Annotations
+pageTitle: Branching Narratives
+layout: default
+footer: footer.html
+styles: guide/styles.html
+scripts: guide/scripts.html
+pageScripts: guide/branching-narratives.scripts.html
+---
+      <h2>Self-hosted</h2>
+      <nav id="tab-links" class="tab-links">
+        <a id="guide_branching-narratives_self-hosted_xml" class="tab-link" href="#xml">XML</a> | <a id="guide_branching-narratives_self-hosted_json" class="tab-link" href="#json-ld">JSON-LD</a>
+      </nav>
+      <article id="xml" class="tab">
+        <h3>XML</h3>
+        <section id="xml-code">
+          <h4>Code</h4>
+          <pre><code id="code-xml" class="xml full-example"></code></pre>
+        </section>
+        <section id="xml-result">
+          <h4>Result</h4>
+          <redblue-video id="redblue-branching-xml" aspect-ratio="16:9" debug="debug">
+            <hvml
+              xmlns="https://hypervideo.tech/hvml#"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:css="https://www.w3.org/TR/CSS/"
+              xml:lang="en-US"
+              hidden="hidden"
+            >
+              <video type="short" xml:lang="en" xml:id="branching-narrative">
+                <title>RedBlue Test</title>
+                <published>2014</published>
+                <runtime>variable</runtime>
+                <description>What will it be, Neo?</description>
+                <presentation><!-- Renamed from resource -->
+                  <poster xml:id="poster-1080" width="1920" height="1080" xlink:href="/path/to/poster-1920x1080.png"></poster>
+                  <frametype abbr="p">progressive</frametype>
+                  <par x="1" y="1"></par>
+                  <fps rate="24000" scale="1001"></fps>
+                  <file xml:id="intro-webm-1080p" label="intro" xlink:href="media/webm/intro-1080p.webm">
+                    <width>1920</width>
+                    <height>1080</height>
+                    <container>
+                      <name>WebM</name>
+                      <mime>video/webm</mime>
+                      <codec type="video">
+                        <name>VP8</name>
+                        <mime>vp8</mime>
+                        <bitrate type="cbr">100</bitrate><!-- made-up -->
+                        <bitdepth></bitdepth>
+                      </codec>
+                      <codec type="audio">
+                        <name>Vorbis</name>
+                        <mime>vorbis</mime>
+                        <bitrate>320000</bitrate>
+                        <samplerate>48000</samplerate>
+                        <bitdepth>24</bitdepth>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="red-webm-1080p" label="red" xlink:href="media/webm/red-pill-1080p.webm">
+                    <width>1920</width>
+                    <height>1080</height>
+                    <container>
+                      <name>WebM</name>
+                      <mime>video/webm</mime>
+                      <codec type="video">
+                        <name>VP8</name>
+                        <mime>vp8</mime>
+                        <bitrate type="cbr">100</bitrate><!-- made-up -->
+                        <bitdepth></bitdepth>
+                      </codec>
+                      <codec type="audio">
+                        <name>Vorbis</name>
+                        <mime>vorbis</mime>
+                        <bitrate>320000</bitrate>
+                        <samplerate>48000</samplerate>
+                        <bitdepth>24</bitdepth>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="blue-webm-1080p" label="blue" xlink:href="media/webm/blue-pill-1080p.webm">
+                    <width>1920</width>
+                    <height>1080</height>
+                    <container>
+                      <name>WebM</name>
+                      <mime>video/webm</mime>
+                      <codec type="video">
+                        <name>VP8</name>
+                        <mime>vp8</mime>
+                        <bitrate type="cbr">100</bitrate><!-- made-up -->
+                        <bitdepth></bitdepth>
+                      </codec>
+                      <codec type="audio">
+                        <name>Vorbis</name>
+                        <mime>vorbis</mime>
+                        <bitrate>320000</bitrate>
+                        <samplerate>48000</samplerate>
+                        <bitdepth>24</bitdepth>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="the-end-webm" label="the-end" xlink:href="media/webm/the-end.webm">
+                    <container>
+                      <name>WebM</name>
+                      <mime>video/webm</mime>
+                      <codec type="video">
+                        <mime>vp8</mime>
+                      </codec>
+                      <codec type="audio">
+                        <mime>vorbis</mime>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="intro-mp4-1080p" label="intro" xlink:href="media/mp4-dash/intro-1080p.mp4">
+                    <link rel="alternate" xlink:href="#xpointer(//file[@label='intro'])"></link><!-- should also have not:parent but i'm not going to deal with that right now -->
+                    <container>
+                      <name>MPEG-4 Part 14</name>
+                      <nickname>MP4</nickname>
+                      <mime>video/mp4</mime>
+                      <codec type="video">
+                        <name>H.264/MPEG-4 Part 10 AVC</name>
+                        <nickname>H.264</nickname>
+                        <codecProfile>Baseline</codecProfile>
+                        <mime>avc1.42E01E</mime>
+                      </codec>
+                      <codec type="audio">
+                        <name>AAC-LC</name>
+                        <mime>mp4a.40.2</mime>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="red-mp4-1080p" label="red" xlink:href="media/mp4-dash/red-pill-1080p.mp4">
+                    <width>1920</width>
+                    <height>1080</height>
+                    <container>
+                      <name>MPEG-4 Part 14</name>
+                      <nickname>MP4</nickname>
+                      <mime>video/mp4</mime>
+                      <codec type="video">
+                        <name>H.264/MPEG-4 Part 10 AVC</name>
+                        <nickname>H.264</nickname>
+                        <codecProfile>Baseline</codecProfile>
+                        <mime>avc1.42E01E</mime>
+                      </codec>
+                      <codec type="audio">
+                        <name>AAC-LC</name>
+                        <mime>mp4a.40.2</mime>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="blue-mp4-1080p" label="blue" xlink:href="media/mp4-dash/blue-pill-1080p.mp4">
+                    <width>1920</width>
+                    <height>1080</height>
+                    <container>
+                      <name>MPEG-4 Part 14</name>
+                      <nickname>MP4</nickname>
+                      <mime>video/mp4</mime>
+                      <codec type="video">
+                        <name>H.264/MPEG-4 Part 10 AVC</name>
+                        <nickname>H.264</nickname>
+                        <codecProfile>Baseline</codecProfile>
+                        <mime>avc1.42E01E</mime>
+                      </codec>
+                      <codec type="audio">
+                        <name>AAC-LC</name>
+                        <mime>mp4a.40.2</mime>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="the-end-mp4-1080p" label="the-end" xlink:href="media/mp4-dash/the-end.mp4">
+                    <container>
+                      <name>MPEG-4 Part 14</name>
+                      <nickname>MP4</nickname>
+                      <mime>video/mp4</mime>
+                      <codec type="video">
+                        <name>H.264/MPEG-4 Part 10 AVC</name>
+                        <nickname>H.264</nickname>
+                        <codecProfile>Baseline</codecProfile>
+                        <mime>avc1.42E01E</mime>
+                      </codec>
+                      <codec type="audio">
+                        <name>AAC-LC</name>
+                        <mime>mp4a.40.2</mime>
+                      </codec>
+                    </container>
+                  </file>
+                  <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/bitmap/morpheus-hands.jpg">
+                    <codec>
+                      <name>JPEG</name>
+                      <mime>image/jpeg</mime>
+                    </codec>
+                  </file>
+                  <file xml:id="the-end-still-1080p" label="the-end-still" xlink:href="media/bitmap/the-end-still.png">
+                    <codec>
+                      <name>PNG</name>
+                      <mime>image/png</mime>
+                    </codec>
+                  </file>
+                  <file xml:id="easter-egg-1080p" label="easter-egg" xlink:href="media/bitmap/easter-egg.png">
+                    <codec>
+                      <name>PNG</name>
+                      <mime>image/png</mime>
+                    </codec>
+                  </file>
+                  <playlist type="nonlinear">
+                    <media xml:id="intro" xlink:href="#xpointer(//file[@label='intro'])">
+                      <goto on="durationEnd" xlink:href="#red-pill-or-blue-pill"></goto>
+                    </media>
+                    <choices xml:id="red-pill-or-blue-pill"><!--displayType="generate|embedded"-->
+                      <name>What will it be, Neo?</name>
+                      <media xlink:href="#xpointer(//file[@label='intro-choice'])"></media>
+                      <choice xml:id="red">
+                        <name>Red Pill</name>
+                        <goto
+                          xlink:actuate="onRequest"
+                          xlink:href="#wakes-up-to-reality"
+                          width="25%"
+                          height="57%"
+                          css:top="50%"
+                          css:left="20%"
+                        ></goto>
+                      </choice>
+                      <choice xml:id="blue">
+                        <name>Blue Pill</name>
+                        <playlistAction xlink:actuate="onRequest"></playlistAction>
+                        <playlistAction xlink:actuate="onRequest" method="doSomethingElse"></playlistAction>
+                        <goto
+                          xlink:actuate="onRequest"
+                          xlink:href="#stays-in-the-matrix"
+                          width="25%"
+                          height="60%"
+                          css:top="50%"
+                          css:left="55%"
+                        ></goto>
+                      </choice>
+                    </choices>
+                    <media xml:id="wakes-up-to-reality" xlink:href="#xpointer(//file[@label='red'])">
+                      <goto xlink:href="#what-next"></goto>
+                    </media>
+                    <media xml:id="stays-in-the-matrix" xlink:href="#xpointer(//file[@label='blue'])">
+                      <goto xlink:href="#what-next"></goto>
+                    </media>
+                    <choices xml:id="what-next">
+                      <name>What next?</name>
+                      <media xlink:href="#xpointer(//file[@label='the-end-still'])"></media>
+                      <choice xml:id="start-over">
+                        <name>Start Over</name>
+                        <goto
+                          xlink:actuate="onRequest"
+                          xlink:href="#intro"
+                          timeline="replace"
+                          width="100%"
+                          css:top="90%"
+                          css:left="0"
+                          css:font-size="5vw"
+                          css:text-align="center"
+                        ></goto><!-- timeline = replace | restart? could be a do over that does not replace the entire timeline, like an undo | continue [default] -->
+                      </choice>
+                    </choices>
+                    <media xml:id="easter-egg" xlink:href="#xpointer(//file[@label='easter-egg'])"></media>
+                  </playlist>
+                </presentation>
+              </video>
+            </hvml>
+          </redblue-video>
+        </section>
+      </article>
