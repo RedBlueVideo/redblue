@@ -3,11 +3,14 @@
 import RedBlueVideo from './redblue-video.js';
 import RedBlueXMLParser from './parser-xml.js';
 import RedBlueJSONLDParser from './parser-json-ld.js';
+import RedBlueMSEPlayer from './player-mse.js';
 
 const RedBlueVideoOmni =
-  RedBlueJSONLDParser(
-    RedBlueXMLParser(
-      RedBlueVideo
+  RedBlueMSEPlayer(
+    RedBlueJSONLDParser(
+      RedBlueXMLParser(
+        RedBlueVideo
+      )
     )
   )
 ;

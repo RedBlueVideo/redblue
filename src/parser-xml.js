@@ -87,17 +87,21 @@ const RedBlueXMLParser = ( superClass ) => {
           case 'media':
           // break;
           default:
-            this.log( 'not `choice`', nodeName );
+            // this.log( 'not `choice`', nodeName );
         }
       }
 
       return annotations;
     }
 
-    findInXML( xpathExpression ) {
+    findInXML( xpathExpression, contextNode ) {
+      if ( !contextNode ) {
+        contextNode = this.hvml;
+      }
+
       return document.evaluate(
         xpathExpression,
-        this.hvml, // contextNode
+        contextNode,
         function ( prefix ) {
           const ns = {
             "hvml": "https://hypervideo.tech/hvml#",
