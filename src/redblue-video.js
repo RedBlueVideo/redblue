@@ -76,16 +76,18 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         <div class="redblue-content">
           <div id="fullscreen-context" class="redblue-player-wrapper redblue-fullscreen-context">
             <slot name="player">
-              <iframe id="embed" class="redblue-player"
+              <iframe id="embedded-media" class="redblue-player"
                 src=""
                 frameborder="0"
                 allow="autoplay; encrypted-media"
                 allowfullscreen="allowfullscreen"
-                >
+                hidden="hidden"
+              >
               </iframe>
-              <video id="local" class="redblue-player"
+              <video id="local-media" class="redblue-player"
+                src=""
                 controls="controls"
-                src="">
+              >
               </video>
             </slot>
             <button id="fullscreen-button" class="redblue-fullscreen-button">Toggle Fullscreen</button>
@@ -98,6 +100,24 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         </div>
       </template>
     `;
+  }
+
+  static get NS() {
+    return {
+      "hvml": "https://hypervideo.tech/hvml#",
+      "ovml": "http://vocab.nospoon.tv/ovml#",
+      "html": "http://www.w3.org/1999/xhtml",
+      "xlink": "http://www.w3.org/1999/xlink",
+      "css": "https://www.w3.org/TR/CSS/",
+      "xml": "http://www.w3.org/XML/1998/namespace",
+    };
+  }
+
+  static get cachingStrategies() {
+    return {
+      "LAZY": 0,
+      "PRELOAD": 1,
+    };
   }
 
   static reCamelCase( nodeName ) {
@@ -127,50 +147,49 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return false;
   }
 
-  get hostDocument() {
-    // TODO: this.ownerDocument
-    return {
-      "isPlainHTML": () => ( document.body.nodeName === 'BODY' ),
-      "isXHTML": () => ( document.body.nodeName === 'body' ),
-    };
+  get hasMSEPlayer() {
+    return false;
   }
-  
-  isReady() {
-    if ( !this.MSE ) {
-      return false;
-    }
 
-    if ( !this.MSE.mediaSource.sourceBuffers[0] ) {
-      this.log( 'NOT READY: !mediaSource.sourceBuffers[0]' );
-      return false;
-    }
+  get hostDocument() {
+    const body = this.ownerDocument.body.nodeName;
 
-    if ( this.MSE.mediaSource.sourceBuffers[0].updating ) {
-      this.log('NOT READY: mediaSource.sourceBuffers[0].updating');
-      return false;
+    return {
+      "isPlainHTML": () => body === 'BODY',
+      "isXHTML": () => body === 'body',
     }
+  }
 
-    if ( this.MSE.mediaSource.readyState !== "open" ) {
-      this.log( 'NOT READY: mediaSource.readyState !== "open"', this.MSE.mediaSource.readyState );
-      return false;
-    }
+  _registerChoiceEvents() {
+    this.Events = {
+      "presentChoice": ( event ) => {
+        // toFixed works around a Firefox bug but makes it slightly less accurate
+        // @todo: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
+        // Imprecision may not matter if it's going to be an overlay onto bg video.
+        const $videoPlayer = event.target; // this
+        const currentTime = +$videoPlayer.currentTime.toFixed(0);
+        const currentDuration = +$videoPlayer.duration.toFixed(0);
 
-    if ( this.MSE.mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
-      this.log( 'NOT READY: mediaSource.sourceBuffers[0].mode == PARSING_MEDIA_SEGMENT' );
-      return false;
-    }
+        if ( currentTime === currentDuration ) {
+          console.log( 'choice presented' );
 
-    if ( this.mediaQueue.length === 0 ) {
-      this.log( 'NOT READY: this.mediaQueue.length === 0' );
-      return false;
-    }
+          // TODO: this.choiceContainer.hidden = false;
 
-    this.log( 'READY' );
-    return true;
+          // TODO: This could stay here if there were a reliable way to dynamically re-attach (not saying there isn't; just not sure why it's not already happpening)
+          $videoPlayer.removeEventListener( 'timeupdate', this.Events.presentChoice );
+        }
+      },
+
+      "choiceClicked": () => {
+        console.log( 'choiceClicked' );
+      },
+    };
   }
 
   constructor() {
     super();
+
+    window.RedBlue = ( window.RedBlue || {} );
 
     this.bufferTypes = {
       'webm': 'video/webm; codecs="vorbis,vp8"',
@@ -218,269 +237,50 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.lastSegmentAppended = false;
 
     // TODO: make pluggable with custom XHR methods
-    this.XHR = {
-      "GET": ( url, type, callback ) => {
-        this.log( '--XHR.GET()--' );
+    // this.XHR = {
+    //   "GET": ( url, type, callback ) => {
+    //     this.log( '--XHR.GET()--' );
     
-        var xhr = new XMLHttpRequest();
-        xhr.open( 'GET', url, true );
-        xhr.responseType = 'arraybuffer';
-        xhr.send();
+    //     var xhr = new XMLHttpRequest();
+    //     xhr.open( 'GET', url, true );
+    //     xhr.responseType = 'arraybuffer';
+    //     xhr.send();
     
-        xhr.onload = ( event ) => {
-          if ( xhr.status !== 200 ) {
-            this.log( "Unexpected status code " + xhr.status + " for " + url );
-            return false;
-          }
-          callback( new Uint8Array( xhr.response ), type );
-        };
-      }
-    };
+    //     xhr.onload = ( event ) => {
+    //       if ( xhr.status !== 200 ) {
+    //         this.log( "Unexpected status code " + xhr.status + " for " + url );
+    //         return false;
+    //       }
+    //       callback( new Uint8Array( xhr.response ), type );
+    //     };
+    //   }
+    // };
 
-    this.HVML = {
-      "getMime": ( fileElement ) => {
-        var returnVal = this.find( 'container/mime', fileElement, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-    
-        if ( returnVal ) {
-          return returnVal.textContent;
-        }
-    
-        // for images etc. with no container format
-        returnVal = this.find( 'codec/mime', fileElement, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-    
-        if ( returnVal ) {
-          return returnVal.textContent;
-        }
-    
-        return returnVal;
-      },
-    
-      "parse": {
-        "playlist": ( XPathResult ) => {
-          var playlistElement = XPathResult.iterateNext();
-          var playlistType = playlistElement.getAttribute( 'type' );
-    
-          switch ( playlistType ) {
-            case 'linear':
-            break;
-    
-            case 'nonlinear':
-              this.HVML.parse.nonlinearPlaylistItems( playlistElement );
-            break;
-    
-            default:
-          }
-        },
-    
-        "mediaElement": ( playlistItem ) => {
-          var containers = [];
-          var container;
-          var fileElement;
-          var i;
-          var mediaFile;
-          var plGrandchild;
-          var query;
-          var obj;
-    
-          query = this.XLink.getQuery( playlistItem );
-    
-          mediaFile = this.find( query ); // This will return both webm and mp4
-    
-          fileElement = mediaFile.iterateNext();
-    
-          this.log( this.fileTypePreferences );
-    
-          // @todo: canPlayType
-          while ( fileElement ) {
-            for ( i = this.fileTypePreferences.length - 1; i >= 0; --i ) {
-              for ( var mime in this.fileTypePreferences[i] ) {
-                container = this.find( 'container[./mime[text() = "' + mime + '"]]', fileElement, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-    
-                if ( container ) {
-                  containers.push( { 'mime': mime, 'node': container} );
-                }
-              }
-            }
-    
-            fileElement = mediaFile.iterateNext();
-          }
-    
-          if ( containers.length > 0 ) {
-            obj = {
-              //'type': 'media',
-              'mime': containers[0]['mime'],
-              'path': this.XLink.get( containers[0]['node'].parentElement )
-            };
-    
-            this.mediaQueue.push( obj );
-            this.mediaQueueHistory.push( obj );
-          }
-    
-          if ( playlistItem.children.length > 0 ) {
-            for ( i = playlistItem.children.length - 1; i >= 0; --i) {
-              plGrandchild = playlistItem.children[i];
-    
-              switch( plGrandchild.localName ) {
-                case 'goto':
-                  query = this.XLink.getQuery( plGrandchild );
-    
-                  if ( query ) {
-                    this.HVML.parse.nonlinearPlaylistItems( this.find( query, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext() );
-                  }
-                break;
-              }
-            }
-          } else {
-            this.MSE.endOfStream = true;
-            // this.playNextWhenReady();
-            this.play();
-          }
-        },
-    
-        "choicesElement": ( playlistItem ) => {
-          var choicesBg = this.find( 'media', playlistItem, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-          var choices = this.find( 'choice', playlistItem, XPathResult.ORDERED_NODE_ITERATOR_TYPE );
-          var choicesName = this.find( 'name', playlistItem, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext().textContent;
-          var choice = choices.iterateNext();
-          var choiceLetter;
-          var choicesHTML = '<ul>';
-          var choicesCounter = 1;
-          var file;
-          var fileElement;
-          var fileMime;
-          var mediaElement;
-          var timeline;
-          var gotoElement;
-          var playlistActions = [];
-          var playlistActionElements;
-          var playlistActionElement;
-          var query;
-          var xlinkHref;
-    
-          // console.log( 'this.choicesContainer.innerHTML', this.choicesContainer.innerHTML );
-    
-          console.log('encountered a choice');
-    
-          ++this.choicesContainerCounter;
-    
-          // static bg - use poster frame?
-          // http://stackoverflow.com/a/19457115/214325
-    
-          while ( choice ) {
-            playlistActionElements = this.find( 'playlistAction', choice );
-            playlistActionElement = playlistActionElements.iterateNext();
-    
-            while ( playlistActionElement ) {
-              var playlistActionMethod = playlistActionElement.getAttribute( 'method' );
-    
-              if ( playlistActionMethod ) {
-                playlistActions.push( playlistActionMethod );
-              } else {
-                playlistActions.push( choice.getAttributeNS( this.XML.ns.xml, 'id' ) );
-              }
-    
-              playlistActionElement = playlistActionElements.iterateNext();
-            }
-    
-            gotoElement = this.find( 'goto', choice, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-    
-            //console.log( 'gotoElement', gotoElement );
-    
-            xlinkHref = this.XLink.get( gotoElement );
-            query = RedBlue.XPointer.parse( xlinkHref );
-            timeline = gotoElement.getAttribute( 'timeline' );
-    
-            mediaElement = this.find( query, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-    
-            query = this.XLink.getQuery( mediaElement );
-            fileElement = this.find( query, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext(); // @todo: filter by filetype/etc.
-            fileMime = this.HVML.getMime( fileElement );
-    
-            choiceLetter = String.fromCharCode( 64 + choicesCounter ).toLowerCase();
-    
-            // @todo: Instead of storing in the DOM, just keep track of the damn things (right?)
-            // choicesHTML += [
-            //   '<li>',
-            //     '<a id="choice-', this.choicesContainerCounter, choiceLetter, '"',
-            //       ' class="choice choice-', choiceLetter, '"',
-            //       ' href="javascript:void(0);"',
-            //       ' data-actions="[\'', playlistActions.join("','"), '\']"',
-            //       ' data-goto="', xlinkHref, '"',
-            //       ' data-play="', this.XLink.get( fileElement ), '"',
-            //       ' data-type="', fileMime, '"',
-            //       ( timeline ? ' data-timeline="' + timeline + '"' : '' ),
-            //       '>', this.find( 'name', choice, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext().textContent,
-            //     '</a>',
-            //   '</li>'
-            // ].join('');
-    
-            choice = choices.iterateNext();
-            ++choicesCounter;
-          }
-          // choicesHTML += '</ul>';
-    
-          // this.choicesContainer.innerHTML += '<nav id="choice-' + this.choicesContainerCounter + '" class="choices" hidden="hidden"><div class="container"><h2>' + choicesName + '</h2>' + choicesHTML + '</div></nav>';
-    
-          this.choiceContainer = this.$id( 'annotation-' + this.choicesContainerCounter );
-          console.log( 'annotation-' + this.choicesContainerCounter );
-          console.log( 'this.choiceContainer', this.choiceContainer );
+    switch ( RedBlue.cachingStrategy ) {
+      case 'preload':
+        this.cachingStrategy = RedBlueVideo.cachingStrategies.PRELOAD;
+      break;
 
-          // if bg
-          fileElement = this.XLink.getNodes( choicesBg, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE ).iterateNext();
-          fileMime = this.HVML.getMime( fileElement );
-          file = this.XLink.get( fileElement );
-    
-          switch ( fileMime ) {
-            case 'image/jpeg':
-            case 'image/png':
-            case 'image/gif':
-            case 'image/webp':
-              this.choiceContainer.style.backgroundImage = 'url(' + file + ')';
-              this.choiceContainer.style.backgroundRepeat = 'no-repeat';
-              this.choiceContainer.style.backgroundSize = 'contain';
-            break;
-    
-            default:
-              console.log('Choice background image file type "' + fileMime + '" not supported.');
-          }
-    
-          this.video.addEventListener( 'timeupdate', this.Events.presentChoice );
-        }, // parse.choicesElement
-    
-        "nonlinearPlaylistItems": ( playlistItems ) => {
-          console.log( '--OVML.parse.nonlinearPlaylistItems()--' );
-          //console.log( 'playlistItems', playlistItems );
-    
-          var playlistItem;
-    
-          // hasOwnProperty('children') does not work in Firefox
-          if ( ( playlistItems.localName === 'playlist' ) && playlistItems.children && playlistItems.children.length > 0 ) {
-            playlistItem = playlistItems.children[0];
-            //console.log( 'playlistItem', playlistItem );
-          } else {
-            playlistItem = playlistItems;
-            //console.log( 'playlistItem', playlistItem );
-          }
-    
-          switch ( playlistItem.localName ) {
-            case 'media':
-              this.HVML.parse.mediaElement( playlistItem );
-            break;
-    
-            case 'choices':
-              this.HVML.parse.choicesElement( playlistItem );
-            break;
-          }
-        } // nonlinearPlaylistItems
-      } // parse
-    }; // OVML
+      // case 'predictive':
+      // break;
+
+      case 'lazy':
+      default:
+        this.cachingStrategy = RedBlueVideo.cachingStrategies.LAZY;
+    }
+
+    // TODO: Avoid falling out of sync:
+    // Option A.) delete RedBlue.cachingStrategy;
+    // Option B.) observe property changes
 
     this.embedID = ( new Date().getTime() );
     this.$template = this.parseHTML(
       RedBlueVideo.template
-        .replace( 'id="embed"', `id="embed-${this.embedID}"` )
-        .replace( 'id="local"', `id="local-${this.embedID}"` )
+        .replace( 'id="embedded-media"', `id="embedded-${this.embedID}"` )
+        .replace( 'id="local-media"', `id="local-media-${this.embedID}"` )
     ).children[RedBlueVideo.is];
+    this.mediaQueue = [];
+    this._isNonlinear = false;
 
     this.MISSING_XML_PARSER_ERROR = 'Can’t process; XML mixin class has not been applied.';
     this.MISSING_JSONLD_PARSER_ERROR = 'Can’t process; JSON-LD mixin class has not been applied.';
@@ -489,6 +289,217 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.VIMEO_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?vimeo\.com\/([^\/]+)/i;
     this.VIMEO_DOMAIN_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?vimeo\.com/i;
   } // constructor
+
+  isNonlinear() {
+    return this._isNonlinear;
+  }
+
+  hasAttributeAnyNS( $element, attribute ) {
+    const attributeParts = attribute.split( ':' );
+
+    if ( attributeParts.length > 1 ) { // Has namespace
+      const namespace = attributeParts[0];
+      const localName = attributeParts[1];
+
+      if ( this.hostDocument.isXHTML() ) {
+        if ( RedBlueVideo.NS.hasOwnProperty( namespace ) ) {
+          return $element.hasAttributeNS( RedBlueVideo.NS[namespace], localName );
+        }
+
+        throw new Error(
+          `Can’t check if <${$element.nodeName.toLowerCase()}> has attribute “${attribute}”: no namespace URI defined in \`RedBlueVideo.NS\` for “${namespace}”`
+        );
+      }
+    }
+
+    // Non-namespace-aware
+    return $element.hasAttribute( attribute );
+  }
+
+  getAttributeAnyNS( $element, attribute ) {
+    const attributeParts = attribute.split( ':' );
+
+    if ( attributeParts.length > 1 ) { // Has namespace
+      const namespace = attributeParts[0];
+      const localName = attributeParts[1];
+
+      if ( this.hostDocument.isXHTML() ) {
+        if ( RedBlueVideo.NS.hasOwnProperty( namespace ) ) {
+          return $element.getAttributeNS( RedBlueVideo.NS[namespace], localName );
+        }
+
+        throw new Error(
+          `Can’t get attribute “${attribute}” from <${$element.nodeName.toLowerCase()}>: no namespace URI defined in \`RedBlueVideo.NS\` for “${namespace}”`
+        );
+      }
+    }
+
+    // Non-namespace-aware
+    return $element.getAttribute( attribute );
+  }
+
+  _getXPathFromXPointerURI( uri ) {
+    return uri.replace( /#xpointer\(([^)]+)\)/i, '$1' );
+  }
+
+  getMimeTypeFromFileElement( fileElement ) {
+    const container = this.find( './/container/mime/text()', fileElement ).snapshotItem(0);
+    const videoCodec = this.find( './/codec[@type="video"]/mime/text()', fileElement ).snapshotItem(0);
+    const audioCodec = this.find( './/codec[@type="audio"]/mime/text()', fileElement ).snapshotItem(0);
+    const ambiguousCodec = this.find( './/codec[not(@type)]/mime/text()' ).snapshotItem(0);
+
+    let mimeType = '';
+    const codecs = [];
+
+    if ( container ) {
+      mimeType += container.textContent;
+
+      if ( videoCodec ) {
+        codecs.push( videoCodec.textContent );
+      }
+  
+      if ( audioCodec ) {
+        codecs.push( audioCodec.textContent );
+      }
+  
+      if ( codecs.length ) {
+        mimeType += `; codecs=${codecs.join( ', ' )}`;
+      }
+    } else if ( ambiguousCodec ) {
+      mimeType += ambiguousCodec.textContent;
+    }
+
+    return mimeType;
+  }
+
+  fetchMedia( mediaQueueObject ) {
+    /* {
+      "mime": 'video/webm',
+      "path": '/foo/bar',
+    }; */
+
+    fetch(
+      mediaQueueObject.path,
+      {
+        "method": "GET",
+        // "headers": {
+        //   "Content-Type": mediaQueueObject.mime.split( ';' )[0],
+        // },
+        "cache": "force-cache",
+      }
+    )
+      .then( ( response ) => {
+        // this.log( 'response', response );
+      } )
+      .catch( ( error ) => {
+        console.error( error );
+      } )
+    ;
+  }
+
+  _handleMediaFromFileElements( xpath, callback ) {
+    // TODO: Check if xpath is actually searching for a file element
+
+    const fileElements = this.find( xpath );
+
+    for ( let index = 0; index < fileElements.snapshotLength; index++ ) {
+      const fileElement = fileElements.snapshotItem(index);
+      const mimeType = this.getMimeTypeFromFileElement( fileElement );
+
+      const mediaQueueObject = {
+        //'type': 'media',
+        "mime": mimeType,
+        "path": this.getAttributeAnyNS( fileElement, 'xlink:href' ),
+      };
+
+      if ( /^image\/.*/i.test( mimeType ) ) {
+        callback( mediaQueueObject );
+      } else if ( this.$.localMedia.canPlayType( mimeType ) ) {
+        callback( mediaQueueObject );
+        break;
+      }
+    }
+  }
+
+  queueMediaFromFileElements( xpath ) {
+    this._handleMediaFromFileElements(
+      xpath,
+      // this.mediaQueue.push.bind( this )
+      mediaQueueObject => {
+        this.mediaQueue.push( mediaQueueObject );
+      },
+    );
+  }
+
+  fetchMediaFromFileElements( xpath ) {
+    this._handleMediaFromFileElements(
+      xpath,
+      this.fetchMedia.bind( this ),
+    );
+  }
+
+  _handleMediaFromMediaElement( $mediaElement, callback ) {
+    if ( this.hasAttributeAnyNS( $mediaElement, 'xlink:href' ) ) {
+      const xpath = this._getXPathFromXPointerURI(
+        this.getAttributeAnyNS( $mediaElement, 'xlink:href' )
+      );
+
+      callback( xpath );
+    }
+  }
+
+  queueMediaFromMediaElement( $mediaElement ) {
+    this._handleMediaFromMediaElement(
+      $mediaElement,
+      this.queueMediaFromFileElements.bind( this )
+    );
+  }
+
+  fetchMediaFromMediaElement( $mediaElement ) {
+    this._handleMediaFromMediaElement(
+      $mediaElement,
+      this.fetchMediaFromFileElements.bind( this )
+    );
+  }
+
+  _handleMediaFromPlaylistItem( $playlistItem, mediaCallback, choicesCallback ) {
+    const nodeName = $playlistItem.nodeName.toLowerCase();
+    let $mediaElementsForChoicePrompt;
+
+    if ( !choicesCallback ) {
+      choicesCallback = mediaCallback;
+    }
+
+    switch ( nodeName ) {
+      case 'media':
+        mediaCallback( $playlistItem );
+      break;
+
+      case 'choices':
+        $mediaElementsForChoicePrompt = this.find( './/media', $playlistItem );
+
+        for ( let index = 0; index < $mediaElementsForChoicePrompt.snapshotLength; index++) {
+          const $mediaElement = $mediaElementsForChoicePrompt.snapshotItem(index);
+
+          choicesCallback( $mediaElement );
+        }
+      break;
+    }
+  }
+
+  queueMediaFromPlaylistItem( $playlistItem ) {
+    this._handleMediaFromPlaylistItem(
+      $playlistItem,
+      this.queueMediaFromMediaElement.bind( this )
+    );
+  }
+
+  fetchMediaFromPlaylistItem( $playlistItem ) {
+    this._handleMediaFromPlaylistItem(
+      $playlistItem,
+      this.fetchMediaFromMediaElement.bind( this )
+    );
+  }
 
   connectedCallback() {
     this.setAttribute( 'class', 'redblue-video' );
@@ -516,146 +527,39 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.$id = this.shadowRoot.getElementById.bind( this.shadowRoot );
 
     if ( this.hostDocument.isPlainHTML() ) {
-      this.querySelectorAll( '[xml\\:id]' ).forEach( ( el ) => {
-        el.setAttribute( 'id', el.getAttribute( 'xml:id' ) );
+      /*
+        Workaround for namespace-unaware XPath queries.
+        -----------------------------------------------
+        - In XHTML, we can do `//foo[@xml:id]`.
+        - In HTML, we have to do `//foo[@*[local-name() = 'xml:id']]`.
+        
+        But for some reason, combinatorial queries work differently.
+        In XHTML, we can do `//foo[@xml:id="bar"]`.
+        In HTML, we *should* be able to do
+          `//foo[@*[local-name() = 'xml:id' and text() = 'bar']]`
+        …but this do not work with `document.evaluate` in either Chrome or Firefox.
+
+        With the following we can just query light DOM children
+        using `getElementById` and `querySelectorAll`.
+      */
+      this.querySelectorAll( '[xml\\:id]' ).forEach( ( $lightDomChild ) => {
+        if ( !$lightDomChild.id && $lightDomChild.hasAttribute( 'xml:id' ) ) {
+          $lightDomChild.id = $lightDomChild.getAttribute( 'xml:id' );
+        }
+
+        // qsa += ', [xlink\\:href]'
+        // if ( $lightDomChild.hasAttribute( 'xlink:href' ) ) {
+        //   $lightDomChild.dataset.xlinkHref = $lightDomChild.getAttribute( 'xlink:href' );
+        // }
       } );
     }
-
-    // -- Prototype --
-    this.choices = this.$$$( '.choice' );
-    this.choicesContainer = this.$id( 'annotations' ); // this.$id( 'choices-container' );
-    this.video = this.$id( `local-${this.embedID}` );
-
-    this.Events = {
-      "choiceClicked": ( event ) => {
-        this.log( '--Player.Events.choiceClicked()--' );
-        var link = event.target;
-
-        if ( link.nodeName.toLowerCase() === 'a' ) {
-          event.preventDefault();
-
-          // var link = event.target;
-          var id = link.id;
-
-          while ( link && link.nodeName.toLowerCase() !== 'a' ) {
-            link = link.parentNode;
-          }
-
-          //this.log( 'clicked choice:', link );
-
-          // this.choiceContainer.setAttribute('hidden', 'hidden');
-          this.choiceContainer.hidden = true;
-          this.firstChoiceSelected = true;
-          this.lastSegmentAppended = true;
-
-          var replaceTimeline = link && ( link.getAttribute( 'data-timeline' ) === 'replace' );
-
-          if ( replaceTimeline ) {
-            this.log ( '--Replacing stream--' );
-
-            // this mostly works but for some reason double-append of intro at the beginning
-            //initVars();
-
-            // this.XML.xmlLoaded = true;
-            this.XML.xmlLoaded = false; // TODO: performance bottleneck?
-
-            this.init();
-
-            return;
-          }
-
-          // this.HVML.parse.nonlinearPlaylistItems(
-          //   this.XML.getNodes(
-          //     RedBlue.XPointer.parse(
-          //       link.getAttribute( 'data-goto' )
-          //     ) // XPointer.parse
-          //   ) // XML.getNodes
-          //   .iterateNext()
-          // ); // OVML.parse.nonlinearPlaylistItems
-          this.log( 'do something with this', link.getAttribute( 'href' ) );
-
-          
-          this.log( 'link', link );
-
-          const fileId = link.getAttribute( 'href' ).slice(1);
-          // Plain HTML
-          if ( this.hostDocument.isPlainHTML() ) {
-            // xmlIdSelector = `@*[local-name() = "xml:id" and text() = "${fileId}"]`;
-            let fileElement = this.find(
-              document.getElementById( fileId )
-                .getAttribute( 'xlink:href' )
-                .replace(
-                  /#xpointer\(([^)]+)\)/i,
-                  `$1[container/mime[text() = '${this.DEBUG_MIME_TYPE}']]`
-                )
-            ).snapshotItem(0);
-            let segmentUrl = fileElement.getAttribute( 'xlink:href' );
-
-            const obj = {
-              //'type': 'media',
-              'mime': this.DEBUG_MIME_TYPE,
-              'path': segmentUrl,
-            };
-    
-            this.mediaQueue.push( obj );
-            this.mediaQueueHistory.push( obj );
-
-            this.choiceContainer = this.$id( `annotation-${++this.choicesContainerCounter}` );
-
-            this.XHR.GET( segmentUrl, this.DEBUG_MIME_TYPE, ( uInt8Array, type ) => {
-              this.Reader.init( uInt8Array, type );
-              // this.play();
-            } );
-          // XHTML
-          } else if ( this.hostDocument.isXHTML() ) {
-            let xmlIdSelector = `@xml:id="${fileId}"`;
-            // this.find 
-          }
-
-          // this.XHR.GET( firstSegmentUrl, this.DEBUG_MIME_TYPE, this.Reader.init );
-
-          // this.log( '--Player.play()--' );
-          // this.play();
-        }
-      },
-
-      "presentChoice": ( event ) => {
-        // toFixed works around a Firefox bug but makes it slightly less accurate
-        // @todo: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
-        // Imprecision may not matter if it's going to be an overlay onto bg video.
-        var videoPlayer = event.target; // this
-        var currentTime = +videoPlayer.currentTime.toFixed(0);
-        var currentDuration = +videoPlayer.duration.toFixed(0);
-
-        if ( currentTime === currentDuration ) {
-
-          this.log( 'choice presented' );
-
-          this.log( 'this.choicesContainerCounter', this.choicesContainerCounter );
-
-          if ( !this.choicesContainerCounter || !this.choiceContainer ) {
-            this.choicesContainerCounter = 0;
-            this.choiceContainer = this.$id( 'annotation-0' );
-          }
-
-          // this.choiceContainer.removeAttribute( 'hidden' );
-          this.choiceContainer.hidden = false;
-
-          //this.log( this.choiceContainer );
-
-          // @todo: This could stay here if there were a reliable way to dynamically re-attach (not saying there isn't; just not sure why it's not already happpening)
-          this.removeEventListener( 'timeupdate', this.Events.presentChoice );
-        }
-      }
-    }; // Events
-    // -- End Prototype
-
-    // this.$.annotations = this.$id( 'annotations' );
 
     this.$.fullscreenButton = this.$id( 'fullscreen-button' );
     this.$.fullscreenContext = this.$id( 'fullscreen-context' );
 
     this.$.fullscreenButton.addEventListener( 'click', this.toggleFullscreen.bind( this ) );
+
+    this.$.annotations = this.$id( 'annotations' );
 
     // The order here is important
     this.loadData();
@@ -663,19 +567,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.log( `annotations - ${this._hvmlParser}`, this.annotations );
     this.resolveCSSNamespacePrefix().then( ( prefix ) => {
       this._cssNamespacePrefix = prefix;
-      // this.log( 'this._cssNamespacePrefix', this._cssNamespacePrefix );
+      this.log( 'this._cssNamespacePrefix', this._cssNamespacePrefix );
       this.setupAnimations();
     } );
+    this.createHotspots();
     this.timelineTriggers = this.getTimelineTriggers();
-
-    // FIXME: Not sure why the timeout here is necessary; race condition?
-    setTimeout( () => {
-      this.createHotspots();
-      this.choiceContainer = this.$id( 'annotation-0' ); // will be overriden depending on current
-      // this.log( 'this.choiceContainer', this.choiceContainer );
-    }, 0 );
-
-    this.$.embed = this.shadowRoot.getElementById( `embed-${this.embedID}` );
+    this.$.embeddedMedia = this.$id( `embedded-media-${this.embedID}` );
+    this.$.localMedia = this.$id( `local-media-${this.embedID}` );
 
     try {
       const embedUri = this.getEmbedUri();
@@ -701,22 +599,71 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         // @todo: Handle Vimeo videos
       }
     } catch ( error ) {
-      this.log( error.message );
-      // switch ( error.message ) {
-      //   case 'No Embed URL found':
-      //   break;
-      // }
-      // If third-party embed not found, initialize MSE or Legacy Player
-      // if ( 'init' in this ) {
-      //   this.init();
-      // }
+      console.warn( error );
+
+      try {
+        const nonlinearPlaylist = this.getNonlinearPlaylist();
+        const nonlinearPlaylistChildren = Array.from( nonlinearPlaylist.children );
+
+        this._isNonlinear = !!nonlinearPlaylist;
+        this._registerChoiceEvents(); // FIXME: potentially applies to linear video with annotations
+
+        // Cache playlist media
+        switch ( this.cachingStrategy ) {
+          case RedBlueVideo.cachingStrategies.PRELOAD:
+            nonlinearPlaylistChildren.forEach( $playlistItem =>
+              this.fetchMediaFromPlaylistItem( $playlistItem )
+            );
+          break;
+
+          default:
+        }
+
+        // Queue playlist media
+        for ( let index = 0; index < nonlinearPlaylistChildren.length; index++ ) {
+          const $playlistItem = nonlinearPlaylistChildren[index];
+
+          this._handleMediaFromPlaylistItem(
+            $playlistItem,
+
+            /*
+              mediaCallback:
+              If we have media tha
+            */
+            $mediaElement => {
+              if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
+                this.fetchMediaFromMediaElement( $mediaElement );
+              }
+
+              this.queueMediaFromMediaElement( $mediaElement );
+            },
+
+            /*
+              choicesCallback:
+              If we have a choice prompt (<choices>),
+              get its background image/video (direct <media> child),
+              then break the loop so we aren’t queuing up the media for
+              every possible story branch.
+            */
+            $mediaElement => {
+              if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
+                this.fetchMediaFromMediaElement( $mediaElement );
+              }
+
+              this.queueMediaFromMediaElement( $mediaElement );
+              index = nonlinearPlaylistChildren.length;
+            },
+          );
+        }
+        
+        this.log( 'this.mediaQueue', this.mediaQueue );
+      } catch ( error ) {
+        console.warn( error );
+
+        // const playlist = this.getPlaylist();
+      }
     }
   } // connectedCallback
-
-  isPlaying() {
-    // https://stackoverflow.com/a/36898221/214325
-    return ( this.video.currentTime > 0 && !this.video.paused && !this.video.ended && this.video.readyState > 2 );
-  }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API
   toggleFullscreen( event ) {
@@ -1010,20 +957,23 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getEmbedUri() {
-    function getXpath( urlPattern ) {
-      const xpath = `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '${urlPattern}')]/text()`;
-      return xpath;
-    }
-
-    const youtubeUrl = this.find( getXpath( '//www.youtube.com/watch?v=' ) ).snapshotItem(0);
+    let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
 
     if ( youtubeUrl ) {
       return youtubeUrl.textContent.replace( this.YOUTUBE_VIDEO_REGEX, `//www.youtube.com/embed/$1${this.embedParameters || ''}` );
     }
 
-    /* … Vimeo, etc. */
+    throw 'No Embed URL found';
+  }
 
-    throw new Error( 'No Embed URL found' );
+  getNonlinearPlaylist() {
+    const nonlinearPlaylist = this.find( `.//presentation/playlist[@type="nonlinear"]` ).snapshotItem(0);
+
+    if ( nonlinearPlaylist ) {
+      return nonlinearPlaylist;
+    }
+
+    throw 'No nonlinear playlists found';
   }
 
   createHotspots() {
@@ -1040,7 +990,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return true;
   }
 
-  createHotspot( annotation, index, $target = this.choicesContainer ) {
+  createHotspot( annotation, index, $target = this.$.annotations ) {
     let $annotation;
 
     switch ( annotation.type ) {
@@ -1153,21 +1103,20 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return triggers;
   }
 
-  find( query, contextNode = null, resultType = null ) {
+  find( query, contextNode ) {
     switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {
           throw this.MISSING_XML_PARSER_ERROR;
         }
-        return this.findInXML( query, contextNode, resultType );
+        return this.findInXML( query, contextNode );
       break;
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
           throw this.MISSING_JSONLD_PARSER_ERROR;
         }
-        // TODO: contextNode
-        return this.findInJSONLD( query );
+        return this.findInJSONLD( query/*, contextNode*/ );
       break;
     }
   }

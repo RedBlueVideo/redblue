@@ -1,6 +1,6 @@
 ---
-title: "Annotations: Branching Narratives | RedBlue Developer Guide"
-section: Annotations
+title: "Branching Narratives | RedBlue Developer Guide"
+section: 
 pageTitle: Branching Narratives
 layout: default
 footer: footer.html
@@ -8,6 +8,16 @@ styles: guide/styles.html
 scripts: guide/scripts.html
 pageScripts: guide/branching-narratives.scripts.html
 ---
+      <!--
+        Design considerations:
+        • Does `playlist` make sense to mark up annotations *within* a video,
+          or is it only for “meta-videos”, i.e. those that embed other videos?
+        • `playlist type="nonlinear"` is only required if sibling actions
+          (`goto`, `playlistAction`, `media`) are not guranteed to execute.
+        • `playlist type="linear"` means that all actions are guaranteed to
+          execute provided the user encounters their triggers (typically duration)
+        • If a video only has one action, is `playlist` required?
+      -->
       <h2>Self-hosted</h2>
       <nav id="tab-links" class="tab-links">
         <a id="guide_branching-narratives_self-hosted_xml" class="tab-link" href="#xml">XML</a> | <a id="guide_branching-narratives_self-hosted_json" class="tab-link" href="#json-ld">JSON-LD</a>
@@ -266,4 +276,20 @@ pageScripts: guide/branching-narratives.scripts.html
             </hvml>
           </redblue-video>
         </section>
+      </article>
+      <article id="json-ld" class="tab">
+        <h3>JSON-LD</h3>
+        <section id="json-ld-code">
+          <h4>Code</h4>
+          <pre><code id="code-json-ld" class="xml full-example"></code></pre>
+        </section>
+        <section id="json-ld-result">
+          <h4>Result</h4>
+          <!-- <redblue-video id="redblue-youtube-json-ld" aspect-ratio="16:9" debug="debug">
+            <script type="application/ld+json"></script>
+          </redblue-video> -->
+        </section>
+      </article>
+      <article id="detailed-instructions">
+        <h2>Detailed Instructions</h2>
       </article>

@@ -6,20 +6,32 @@
     const $codeXML = document.getElementById( 'code-xml' );
     const $codeJSONLD = document.getElementById( 'code-json-ld' );
     const extraWhitespace12 = /\n\s{12}/gi;
+    // const extraWhitespace10 = /\n\s{10}/gi;
+    // const extraWhitespace8 = /\n\s{8}/gi;
+    // const extraWhitespace6 = /\n\s{6}/gi;
+    // const extraWhitespace4 = /\n\s{4}/gi;
     const closingTag = /\n\s*(<\/redblue-video>)/gi;
 
     if ( $codeXML ) {
       $codeXML.textContent = document.getElementById( 'redblue-branching-xml' ).outerHTML
         .replace( extraWhitespace12, '\n  ' )
+        // .replace( extraWhitespace10, '\n  ' )
+        // .replace( extraWhitespace8, '\n    ' )
+        // .replace( extraWhitespace6, '\n   ' )
+        // .replace( extraWhitespace4, '\n  ' )
         .replace( closingTag, '\n$1' )
       ;
     }
 
     if ( $codeJSONLD ) {
-      $codeJSONLD.textContent = document.getElementById( 'redblue-branching-json-ld' ).outerHTML
-        .replace( extraWhitespace12, '\n  ' )
-        .replace( closingTag, '\n$1' )
-      ;
+      // $codeJSONLD.textContent = document.getElementById( 'redblue-branching-json-ld' ).outerHTML
+      //   .replace( extraWhitespace12, '\n  ' )
+      //   // .replace( extraWhitespace10, '\n  ' )
+      //   // .replace( extraWhitespace8, '\n    ' )
+      //   // .replace( extraWhitespace6, '\n   ' )
+      //   // .replace( extraWhitespace4, '\n  ' )
+      //   .replace( closingTag, '\n$1' )
+      // ;
     }
 
     hljs.initHighlighting();
@@ -48,7 +60,21 @@
   highlightCode();
 // })();
 </script>
+<!-- Omni-Parser Config (XML + JSON-LD) -->
 <script type="module">
   import RedBlueVideo from '/src/redblue-video-omni.js';
   customElements.define( RedBlueVideo.is, RedBlueVideo );
 </script>
+<!-- Omni-Parser Config with Custom JSON Search -->
+<!-- <script type="module">
+  import RedBlueVideo from './modules/redblue-video.js';
+  import RedBlueXMLParser from './modules/parser-xml.js';
+  import RedBlueJSONLDParser from './modules/parser-json-ld.js';
+  RedBlueJSONLDParser.customJSONSearchUtility = function ( xpathExpression, contextNode, namespaceResolver, resultType, result ) {
+    const params = { xpathExpression, contextNode, namespaceResolver, resultType, result };
+    console.log( 'params', params );
+    return params;
+  };
+  const RedBlueVideoOmni = RedBlueJSONLDParser( RedBlueXMLParser( RedBlueVideo ) );
+  customElements.define( RedBlueVideoOmni.is, RedBlueVideoOmni );
+</script> -->

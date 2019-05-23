@@ -181,34 +181,26 @@ const RedBlueXMLParser = ( superClass ) => {
           // case 'media':
           // break;
           default:
-            // this.log( 'No match:', nodeName );
+            // this.log( 'not `choice`', nodeName );
         }
       }
 
       return annotations;
     }
 
-    findInXML( xpathExpression, contextNode, resultType ) {
-      contextNode = ( contextNode || this.hvml );
-      resultType = ( resultType || XPathResult.ORDERED_NODE_SNAPSHOT_TYPE );
+    findInXML( xpathExpression, contextNode ) {
+      if ( !contextNode ) {
+        contextNode = this.hvml;
+      }
 
       return document.evaluate(
         xpathExpression,
         contextNode,
         function ( prefix ) {
-          const ns = {
-            "hvml": "https://hypervideo.tech/hvml#",
-            "ovml": "http://vocab.nospoon.tv/ovml#",
-            "html": "http://www.w3.org/1999/xhtml",
-            "xlink": "http://www.w3.org/1999/xlink",
-            "css": "https://www.w3.org/TR/CSS/",
-            "xml": "http://www.w3.org/XML/1998/namespace",
-          };
-
-          return ( ns[prefix] || ns.html );
+          return ( RedBlueVideo.NS[prefix] || RedBlueVideo.NS.html );
         }, // namespaceResolver
         // XPathResult.ANY_TYPE, // resultType
-        resultType,
+        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
         null // result
       )
     }
