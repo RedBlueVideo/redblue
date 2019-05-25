@@ -83,12 +83,6 @@ const RedBlueMSEPlayer = ( superClass ) => {
 
     connectedCallback() {
       super.connectedCallback();
-      
-      // TODO: this.choicesContainer.addEventListener( 'click', RedBlue.MSEPlayer.Events.choiceClicked, false );
-
-      if ( this.isNonlinear() ) {
-        this.$.localMedia.addEventListener( 'timeupdate', this.Events.presentChoice );
-      }
 
       this.$.localMedia.src = window.URL.createObjectURL( this.MSE.mediaSource );
       // this.$.localMedia.pause();

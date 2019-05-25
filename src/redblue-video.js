@@ -160,7 +160,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  _registerChoiceEvents() {
+  _initChoiceEvents() {
     this.Events = {
       "presentChoice": ( event ) => {
         // toFixed works around a Firefox bug but makes it slightly less accurate
@@ -171,19 +171,49 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         const currentDuration = +$videoPlayer.duration.toFixed(0);
 
         if ( currentTime === currentDuration ) {
-          console.log( 'choice presented' );
+          this.log( 'choice presented' );
 
-          // TODO: this.choiceContainer.hidden = false;
+          this.$.currentChoice.hidden = false;
+          this.log( 'this.$.currentChoice', this.$.currentChoice );
 
           // TODO: This could stay here if there were a reliable way to dynamically re-attach (not saying there isn't; just not sure why it's not already happpening)
           $videoPlayer.removeEventListener( 'timeupdate', this.Events.presentChoice );
         }
       },
 
-      "choiceClicked": () => {
-        console.log( 'choiceClicked' );
+      "choiceClicked": ( event ) => {
+        event.preventDefault();
+        
+        let $clicked = event.target;
+
+        // Prevent clicks on `a > span` from following the link
+        if ( $clicked.nodeName.toLowerCase() !== 'a' ) {
+          while ( $clicked !== event.currentTarget ) {
+            $clicked = $clicked.parentNode;
+          }
+        }
+
+        if ( $clicked.nodeName.toLowerCase() === 'a' ) {
+          this.log( 'choice clicked' );
+        }
       },
     };
+  }
+
+  _registerChoiceEvents() {
+    if ( this.isNonlinear() ) {
+      this.$.localMedia.addEventListener(
+        'timeupdate',
+        this.Events.presentChoice,
+        false
+      );
+    }
+
+    this.$.annotations.addEventListener(
+      'click',
+      this.Events.choiceClicked,
+      false
+    );
   }
 
   constructor() {
@@ -217,20 +247,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     // this.POLLING_INTERVAL = 1; // 1/1000 second
   
     this.duration = 0;
-  
-    this.mediaQueue = [];
-    this.mediaQueueHistory = [];
-  
-    this.totalVideos = 0;
-  
-    this.fileTypePreferences = [];
-    // this.replacing = false;
-  
-    this.playerType = '';
 
-    this.choiceContainer = null;
+    this.$ = {
+      "currentChoice": null,
+    };
     this.choicesCounter = 0;
-    this.choicesContainerCounter = 0;
     this.firstChoiceSelected = false;
 
     this.firstSegmentAppended = false;
@@ -280,6 +301,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         .replace( 'id="local-media"', `id="local-media-${this.embedID}"` )
     ).children[RedBlueVideo.is];
     this.mediaQueue = [];
+    // TODO: this.mediaQueueHistory = [];
     this._isNonlinear = false;
 
     this.MISSING_XML_PARSER_ERROR = 'Can’t process; XML mixin class has not been applied.';
@@ -521,7 +543,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       );
     }
 
-    this.$   = {};
+    // this.$   = {};
     this.$$  = this.shadowRoot.querySelector.bind( this.shadowRoot );
     this.$$$ = this.shadowRoot.querySelectorAll.bind( this.shadowRoot );
     this.$id = this.shadowRoot.getElementById.bind( this.shadowRoot );
@@ -554,12 +576,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       } );
     }
 
+    // Cached elements
     this.$.fullscreenButton = this.$id( 'fullscreen-button' );
     this.$.fullscreenContext = this.$id( 'fullscreen-context' );
-
     this.$.fullscreenButton.addEventListener( 'click', this.toggleFullscreen.bind( this ) );
-
     this.$.annotations = this.$id( 'annotations' );
+    this.$.style = this.$$( 'style' );
+    this.stylesheetRules = ( this.$.style.sheet.cssRules || this.$.style.sheet.rules );
 
     // The order here is important
     this.loadData();
@@ -574,6 +597,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.timelineTriggers = this.getTimelineTriggers();
     this.$.embeddedMedia = this.$id( `embedded-media-${this.embedID}` );
     this.$.localMedia = this.$id( `local-media-${this.embedID}` );
+    this.$.currentChoice = this.$.annotations.children[0];
 
     try {
       const embedUri = this.getEmbedUri();
@@ -606,7 +630,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         const nonlinearPlaylistChildren = Array.from( nonlinearPlaylist.children );
 
         this._isNonlinear = !!nonlinearPlaylist;
-        this._registerChoiceEvents(); // FIXME: potentially applies to linear video with annotations
+        
+        // No need to if-guard with isNonlinear() since the
+        // try block will fail if getNonlinearPlaylist() throws
+        this._initChoiceEvents(); // FIXME: potentially applies to linear video with annotations
+        this._registerChoiceEvents();
 
         // Cache playlist media
         switch ( this.cachingStrategy ) {
@@ -706,8 +734,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   applyAnnotationStyles( loopObject = this.annotations, parentIndex ) {
-    const stylesheet = this.$$( 'style' ).sheet;
-    const stylesheetRules = ( stylesheet.cssRules || stylesheet.rules );
+    const stylesheet = this.$.style.sheet;
 
     for ( let annotationIndex = 0; annotationIndex < loopObject.length; annotationIndex++ ) {
       let annotation = loopObject[annotationIndex];
@@ -748,22 +775,21 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               ${animate ? `transition: ${animate.endTime - animate.startTime}s bottom linear;` : '' }
             }`;
 
-            stylesheet.insertRule( rule, ( stylesheetRules.length )
-            );
+            stylesheet.insertRule( rule, ( this.stylesheetRules.length ) );
   
             if ( animate ) {
               stylesheet.insertRule( `
                 .redblue-annotations__link.redblue-annotations__link--${compoundIndex}-start {
                   left: ${animate.startX};
                   bottom: ${animate.startY};
-                }`, ( stylesheetRules.length )
+                }`, ( this.stylesheetRules.length )
               );
 
               stylesheet.insertRule( `
                 .redblue-annotations__link.redblue-annotations__link--${compoundIndex}-animate-${animateIndex}-end {
                   left: ${animate.startX};
                   bottom: ${animate.endY};
-                }`, ( stylesheetRules.length )
+                }`, ( this.stylesheetRules.length )
               );
             }
           } // if animateIndex === 0
@@ -992,9 +1018,53 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   createHotspot( annotation, index, $target = this.$.annotations ) {
     let $annotation;
+    let backgroundMedia;
+    const stylesheet = this.$.style.sheet;
+    let id;
+
+    console.log( annotation );
+
+    if ( annotation['xml:id'] ) {
+      id = annotation['xml:id'];
+    } else if ( annotation.id ) {
+      id = annotation.id;
+    } else {
+      id = `annotation-${index}`;
+    }
 
     switch ( annotation.type ) {
       case 'choices':
+        backgroundMedia = this.find(
+          this._getXPathFromXPointerURI(
+            annotation.media['xlink:href']
+          )
+        );
+
+        stylesheet.insertRule( `
+          .redblue-annotations__choices {
+            color: white;
+            background-color: black;
+            background-size: contain;
+            z-index: 1;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+          }
+        `, this.stylesheetRules.length );
+
+        for ( let i = 0; i < backgroundMedia.snapshotLength; i++ ) {
+          const $fileElement = backgroundMedia.snapshotItem(i);
+          
+          // TODO: if ( supportsImageFormat() ) {
+          stylesheet.insertRule( `
+            .redblue-annotations__choices.redblue-annotations__choices--${index} {
+              background-image: url( '${this.getAttributeAnyNS( $fileElement, 'xlink:href' )}' );
+            }
+          `, this.stylesheetRules.length );
+          // }
+          // break;
+        }
+
         $annotation = this.parseHTML(
           `<div
             id="annotation-${index}"
@@ -1015,7 +1085,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       case 'choice':
         $annotation = this.parseHTML(
           `<a
-            id="annotation-${index}"
+            id="${id}"
             class="redblue-annotations__link redblue-annotations__link--${index} redblue-annotations__link--${index}-start"
             href="${annotation.goto['xlink:href']}"
             target="_blank"

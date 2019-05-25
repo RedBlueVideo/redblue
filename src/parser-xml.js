@@ -80,6 +80,9 @@ const RedBlueXMLParser = ( superClass ) => {
     getAnnotationFromChoiceElement( child ) {
       let choice = {};
 
+      choice['xml:id'] = this.getAttributeAnyNS( child, 'xml:id' );
+      choice.id = child.id;
+
       for ( let i = 0; i < child.children.length; i++ ) {
         let grandchild = child.children[i];
         let nodeName = grandchild.nodeName.toLowerCase();
@@ -131,6 +134,9 @@ const RedBlueXMLParser = ( superClass ) => {
             for ( let i = 0, length = child.children.length; i < length; i++ ) {
               let grandchild = child.children[i];
               let nodeName = grandchild.nodeName.toLowerCase();
+
+              choices['xml:id'] = this.getAttributeAnyNS( grandchild, 'xml:id' );
+              choices.id = grandchild.id;
 
               switch ( nodeName ) {
                 case 'name':
