@@ -21,7 +21,7 @@ const RedBlueMSEPlayer = ( superClass ) => {
           "endOfStream": false,
 
           "onSourceOpen": () => {
-            console.log( 'onSourceOpen' );
+            this.log( 'onSourceOpen' );
             // if ( !this.MSE.endOfStream ) {
             this.MSE.sourceBuffer = this.MSE.mediaSource.addSourceBuffer(
               // FIXME: use real buffer type
@@ -74,17 +74,31 @@ const RedBlueMSEPlayer = ( superClass ) => {
             console.log( 'READY' );
             return true;
           }, // isReady
+
+          "registerEvents": () => {
+            this.MSE.mediaSource.addEventListener( 'sourceopen', this.MSE.onSourceOpen, false );
+            this.MSE.mediaSource.addEventListener( 'sourceended', this.MSE.onSourceEnded, false );
+          },
+
+          "apply": () => {
+            this.$.localMedia.src = window.URL.createObjectURL( this.MSE.mediaSource );
+          },
+
+          "init": () => {
+            this.MSE.mediaSource = new window.MediaSource();
+            this.MSE.registerEvents();
+            this.MSE.apply();
+          },
         } // this.MSE
 
-        this.MSE.mediaSource.addEventListener( 'sourceopen', this.MSE.onSourceOpen, false );
-        this.MSE.mediaSource.addEventListener( 'sourceended', this.MSE.onSourceEnded, false );
+        this.MSE.registerEvents();
       } // this.MSE.supported()
     }
 
     connectedCallback() {
       super.connectedCallback();
 
-      this.$.localMedia.src = window.URL.createObjectURL( this.MSE.mediaSource );
+      this.MSE.apply();
       // this.$.localMedia.pause();
     }
 

@@ -87,6 +87,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               <video id="local-media" class="redblue-player"
                 src=""
                 controls="controls"
+                hidden="hidden"
               >
               </video>
             </slot>
@@ -177,13 +178,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           this.log( 'this.$.currentChoice', this.$.currentChoice );
 
           // TODO: This could stay here if there were a reliable way to dynamically re-attach (not saying there isn't; just not sure why it's not already happpening)
-          $videoPlayer.removeEventListener( 'timeupdate', this.Events.presentChoice );
+          $videoPlayer.removeEventListener( 'timeupdate', this.Events.presentChoice, false );
         }
       },
 
       "choiceClicked": ( event ) => {
         event.preventDefault();
-        
+
         let $clicked = event.target;
 
         // Prevent clicks on `a > span` from following the link
@@ -194,7 +195,122 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         }
 
         if ( $clicked.nodeName.toLowerCase() === 'a' ) {
+          this.$.localMedia.addEventListener( 'timeupdate', this.Events.presentChoice, false );
+
+          this.$.currentChoice.hidden = true;
+          
           this.log( 'choice clicked' );
+
+          let href;
+
+          if ( $clicked.hasAttribute( 'href' ) ) {
+            href = $clicked.getAttribute( 'href' );
+          } else if ( this.hasAttributeAnyNS( $clicked, 'xlink:href' ) ) {
+            // href = this._getXPathFromXPointerURI(
+            //   this.getAttributeAnyNS( $clicked, 'xlink:href' )
+            // );
+            href = this.getAttributeAnyNS( $clicked, 'xlink:href' );
+          } else {
+            throw new Error( 'Choice link has no `href` or `xlink:href` attribute; no action to perform.' );
+          }
+
+          if ( !/^#/i.test( href ) ) {
+            throw new Error( 'Choice link’s href must be a valid CSS or XLink ID selector (i.e. it must start with a hash symbol)' );
+          }
+
+          href = href.slice( 1 );
+
+          let xpath;
+          let $mediaElement;
+
+          if ( this.hostDocument.isPlainHTML() ) {
+            xpath = `//*[@id="${href}"]`;
+          } else if ( this.hostDocument.isXHTML() ) {
+            xpath = `//*[@xml:id="${href}"]`;
+          }
+
+          $mediaElement = this.find( xpath );
+
+          if ( $mediaElement.snapshotLength ) {
+            $mediaElement = $mediaElement.snapshotItem(0);
+          } else {
+            throw new Error( `No HVML elements found after following choice link` );
+          }
+
+          let currentAnnotation = this.annotations[this.currentChoiceAnnotationIndex];
+          let currentChoiceChoiceIndex = $clicked.dataset.index.split( '-' )[1];
+          let timelineProperty = currentAnnotation.choices[currentChoiceChoiceIndex].goto.timeline;
+
+          if ( timelineProperty && ( timelineProperty === 'replace' ) ) {
+            this.log( 'replacing timeline' );
+            this.currentChoiceAnnotationIndex = 0;
+            this.mediaQueue = [];
+            // TODO: this.mediaQueueHistory
+            if ( this.MSE ) {
+              // this.MSE.mediaSource.endOfStream();
+              // this.MSE.endOfStream = true;
+              this.MSE.init();
+            }
+          } else {
+            this.log( 'appending to timeline' );
+            ++this.currentChoiceAnnotationIndex;
+          }
+
+          this.$.currentChoice = this.$id( `annotation-${this.currentChoiceAnnotationIndex}` );
+
+          this.log( 'this.currentChoiceAnnotationIndex', this.currentChoiceAnnotationIndex );
+          this.log( '$mediaElement', $mediaElement );
+
+          if ( this.hasAttributeAnyNS( $mediaElement, 'xlink:href' ) ) {
+            let fileXPath = this._getXPathFromXPointerURI(
+              this.getAttributeAnyNS( $mediaElement, 'xlink:href' )
+            );
+ 
+            if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
+              this.fetchMediaFromFileElements( fileXPath );
+            }
+
+            this.queueMediaFromFileElements( fileXPath );
+
+            let $gotoElement = this.find( './/goto[1]', $mediaElement );
+
+            this.log( '$gotoElement', $gotoElement.snapshotItem(0) );
+
+            if ( $gotoElement.snapshotLength ) {
+              let idSelector = this.getAttributeAnyNS( $gotoElement.snapshotItem(0), 'xlink:href' );
+              
+              if ( !/^#/i.test( idSelector ) ) {
+                throw 'Not an ID selector';
+              }
+
+              idSelector = idSelector.slice(1);
+
+              if ( this.hostDocument.isPlainHTML() ) {
+                xpath = `//*[@id="${idSelector}"]`;
+              } else if ( this.hostDocument.isXHTML() ) {
+                xpath = `//*[@xml:id="${idSelector}"]`;
+              }
+
+              let $playlistItem = this.find( xpath ).snapshotItem(0);
+              
+              this._handleMediaFromPlaylistItem(
+                $playlistItem,
+                null, // mediaCallback
+                ( $mediaElement ) => { // choicesCallback
+                  // queue media
+                  this.log( $mediaElement );
+
+                  if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
+                    this.fetchMediaFromMediaElement( $mediaElement );
+                  }
+
+                  this.queueMediaFromMediaElement( $mediaElement );
+
+                  // this.$.currentChoice = 
+                }
+              );
+            }
+          }
         }
       },
     };
@@ -251,7 +367,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.$ = {
       "currentChoice": null,
     };
-    this.choicesCounter = 0;
+   
     this.firstChoiceSelected = false;
 
     this.firstSegmentAppended = false;
@@ -297,7 +413,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.embedID = ( new Date().getTime() );
     this.$template = this.parseHTML(
       RedBlueVideo.template
-        .replace( 'id="embedded-media"', `id="embedded-${this.embedID}"` )
+        .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
         .replace( 'id="local-media"', `id="local-media-${this.embedID}"` )
     ).children[RedBlueVideo.is];
     this.mediaQueue = [];
@@ -597,6 +713,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.timelineTriggers = this.getTimelineTriggers();
     this.$.embeddedMedia = this.$id( `embedded-media-${this.embedID}` );
     this.$.localMedia = this.$id( `local-media-${this.embedID}` );
+    this.currentChoiceAnnotationIndex = 0;
     this.$.currentChoice = this.$.annotations.children[0];
 
     try {
@@ -616,9 +733,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           'fs=0',
           `origin=${encodeURIComponent(window.location.origin)}`
         ].join( '&amp;' );
-        this.$.embed.src = embedUri + this.embedParameters;
+        this.$.embeddedMedia.hidden = false;
+        this.$.embeddedMedia.src = embedUri + this.embedParameters;
         this.setUpYouTubeIframeAPI();
-      } else if ( this.VIMEO_DOMAIN_REGEX.test( this.$.embed.src ) ) {
+      } else if ( this.VIMEO_DOMAIN_REGEX.test( this.$.embeddedMedia.src ) ) {
         this.log( 'vimeo' );
         // @todo: Handle Vimeo videos
       }
@@ -628,6 +746,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       try {
         const nonlinearPlaylist = this.getNonlinearPlaylist();
         const nonlinearPlaylistChildren = Array.from( nonlinearPlaylist.children );
+
+        this.$.localMedia.hidden = false;
 
         this._isNonlinear = !!nonlinearPlaylist;
         
@@ -813,7 +933,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   initializeYoutubePlayer() {
-    this.player = new YT.Player( this.$.embed, {
+    this.player = new YT.Player( this.$.embeddedMedia, {
       "events": {
         "onReady": this.onPlayerReady.bind( this ),
         "onStateChange": this.onStateChange.bind( this )
@@ -878,7 +998,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   onPlayerReady( event ) {
     this.log( 'ready' );
-    this.$.embed.style.borderColor = '#FF6D00';
+    this.$.embeddedMedia.style.borderColor = '#FF6D00';
     this.player.mute();
   }
 
@@ -1086,6 +1206,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         $annotation = this.parseHTML(
           `<a
             id="${id}"
+            data-index="${index}"
             class="redblue-annotations__link redblue-annotations__link--${index} redblue-annotations__link--${index}-start"
             href="${annotation.goto['xlink:href']}"
             target="_blank"
@@ -1158,7 +1279,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             annotationIndex,
             animateIndex,
             "name": annotation.name,
-            "$ui": this.$id( `annotation-${annotationIndex}` ),
+            "$ui": this.$$( `#annotations [data-index="${annotationIndex}"]` ),
             "startClass": `redblue-annotations__link--${annotationIndex}-start`,
             "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`
           };
