@@ -321,15 +321,17 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         event.preventDefault();
 
         let $clicked = event.target;
+        let nodeName = $clicked.nodeName.toLowerCase();
 
         // Prevent clicks on `a > span` from following the link
-        if ( $clicked.nodeName.toLowerCase() !== 'a' ) {
-          while ( $clicked !== event.currentTarget ) {
+        if ( nodeName !== 'a' ) {
+          while ( ( $clicked !== event.currentTarget ) && ( nodeName !== 'a' ) ) {
             $clicked = $clicked.parentNode;
+            nodeName = $clicked.nodeName.toLowerCase();
           }
         }
 
-        if ( $clicked.nodeName.toLowerCase() === 'a' ) {
+        if ( nodeName === 'a' ) {
           this.handleChoice( $clicked );
         }
       },
