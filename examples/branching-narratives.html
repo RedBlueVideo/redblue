@@ -264,11 +264,24 @@ pageScripts: guide/branching-narratives.scripts.html
                           width="100%"
                           css:top="80%"
                           css:left="0"
-                          css:font-size="5vw"
+                          css:font-size="4vw"
                           css:text-align="center"
                           css:color="white"
                         ></goto><!-- timeline = replace | restart? could be a do over that does not replace the entire timeline, like an undo | continue [default] -->
                       </choice>
+                      <!-- <choice>
+                        <name>Watch My Movie</name>
+                        <goto
+                          xlink:actuate="onRequest"
+                          timeline="replay"
+                          width="49%"
+                          css:top="80%"
+                          css:right="0"
+                          css:font-size="4vw"
+                          css:text-align="center"
+                          css:color="white"
+                        ></goto>
+                      </choice> -->
                     </choices>
                     <media xml:id="easter-egg" xlink:href="#xpointer(//file[@label='easter-egg'])"></media>
                   </playlist>

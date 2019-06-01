@@ -5,17 +5,9 @@ const RedBlueMSEPlayer = ( superClass ) => {
     constructor() {
       super();
 
-      this.MSE = {
-        "supported": () => {
-          return !!( window.MediaSource || window.WebKitMediaSource );
-        },
-      };
-
       // Don’t spend CPU initializing this stuff unless we need to
-      if ( this.MSE.supported() ) {
+      if ( superClass.MSEsupported() ) {
         this.MSE = {
-          ...this.MSE,
-
           "mediaSource": new window.MediaSource(),
 
           "endOfStream": false,

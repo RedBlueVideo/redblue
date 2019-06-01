@@ -60,11 +60,8 @@
   highlightCode();
 // })();
 </script>
-<!-- Omni-Parser Config (XML + JSON-LD) -->
-<script type="module">
-  import RedBlueVideo from '/src/redblue-video-omni.js';
-  customElements.define( RedBlueVideo.is, RedBlueVideo );
-</script>
+<!-- Omni-Parser Config (XML + JSON-LD) + Firefox compatibility -->
+<script type="module" src="/src/redblue-video-compat.js"></script>
 <!-- Omni-Parser Config with Custom JSON Search -->
 <!-- <script type="module">
   import RedBlueVideo from './modules/redblue-video.js';

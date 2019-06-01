@@ -134,6 +134,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return ( map[nodeName] || nodeName );
   }
 
+  static MSEsupported() {
+    return !!( window.MediaSource || window.WebKitMediaSource );
+  }
+
   get HVML_SOLO_ELEMENTS() {
     return [
       "presentation"
@@ -166,13 +170,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     if ( $choiceLink.hasAttribute( 'href' ) ) {
       href = $choiceLink.getAttribute( 'href' );
-      this.log( 'hasAttribute(href)', href );
     } else if ( this.hasAttributeAnyNS( $choiceLink, 'xlink:href' ) ) {
       // href = this._getXPathFromXPointerURI(
       //   this.getAttributeAnyNS( $clicked, 'xlink:href' )
       // );
       href = this.getAttributeAnyNS( $choiceLink, 'xlink:href' );
-      this.log( 'hasAttributeAnyNS(href)', href );
     } else {
       throw new Error( 'Choice link has no `href` or `xlink:href` attribute; no action to perform.' );
     }
@@ -182,7 +184,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
 
     href = href.slice( 1 );
-    this.log( 'href', href );
 
     return href;
   }
@@ -523,7 +524,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       }
   
       if ( codecs.length ) {
-        mimeType += `; codecs=${codecs.join( ', ' )}`;
+        
+        mimeType += `; codecs=${codecs.join( ',' )}`;
       }
     } else if ( ambiguousCodec ) {
       mimeType += ambiguousCodec.textContent;
