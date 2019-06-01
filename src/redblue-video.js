@@ -667,6 +667,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.setAttribute( 'class', 'redblue-video' );
     this.setAttribute( 'role', 'application' );
 
+    let shadowRoot;
+
     this.debug = this.hasAttribute( 'debug' );
 
     // https://stackoverflow.com/a/32928812/214325
@@ -677,16 +679,19 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
 
     if ( !this.shadowRoot ) {
-      this.attachShadow( { "mode": "open" } );
-      this.shadowRoot.appendChild(
+      shadowRoot = this.attachShadow( {
+        "mode": ( this.debug ? "open" : "closed" )
+      } );
+
+      shadowRoot.appendChild(
         document.importNode( this.$template.content, true )
       );
     }
 
     // this.$   = {};
-    this.$$  = this.shadowRoot.querySelector.bind( this.shadowRoot );
-    this.$$$ = this.shadowRoot.querySelectorAll.bind( this.shadowRoot );
-    this.$id = this.shadowRoot.getElementById.bind( this.shadowRoot );
+    this.$$  = shadowRoot.querySelector.bind( shadowRoot );
+    this.$$$ = shadowRoot.querySelectorAll.bind( shadowRoot );
+    this.$id = shadowRoot.getElementById.bind( shadowRoot );
 
     if ( this.hostDocument.isPlainHTML() ) {
       /*
