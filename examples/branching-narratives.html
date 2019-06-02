@@ -38,82 +38,14 @@ pageScripts: guide/branching-narratives.scripts.html
               xml:lang="en-US"
               hidden="hidden"
             >
-              <video type="short" xml:lang="en" xml:id="branching-narrative">
+              <video xml:lang="en" xml:id="branching-narrative">
                 <title>RedBlue Test</title>
                 <published>2014</published>
                 <runtime>variable</runtime>
-                <description>What will it be, Neo?</description>
-                <presentation><!-- Renamed from resource -->
-                  <poster xml:id="poster-1080" width="1920" height="1080" xlink:href="/path/to/poster-1920x1080.png"></poster>
-                  <frametype abbr="p">progressive</frametype>
-                  <par x="1" y="1"></par>
-                  <fps rate="24000" scale="1001"></fps>
+                <description>Branching narratives demo</description>
+                <presentation>
                   <file xml:id="intro-webm-1080p" label="intro" xlink:href="media/webm/intro-1080p.webm">
-                    <width>1920</width>
-                    <height>1080</height>
                     <container>
-                      <name>WebM</name>
-                      <mime>video/webm</mime>
-                      <codec type="video">
-                        <name>VP8</name>
-                        <mime>vp8</mime>
-                        <bitrate type="cbr">100</bitrate><!-- made-up -->
-                        <bitdepth></bitdepth>
-                      </codec>
-                      <codec type="audio">
-                        <name>Vorbis</name>
-                        <mime>vorbis</mime>
-                        <bitrate>320000</bitrate>
-                        <samplerate>48000</samplerate>
-                        <bitdepth>24</bitdepth>
-                      </codec>
-                    </container>
-                  </file>
-                  <file xml:id="red-webm-1080p" label="red" xlink:href="media/webm/red-pill-1080p.webm">
-                    <width>1920</width>
-                    <height>1080</height>
-                    <container>
-                      <name>WebM</name>
-                      <mime>video/webm</mime>
-                      <codec type="video">
-                        <name>VP8</name>
-                        <mime>vp8</mime>
-                        <bitrate type="cbr">100</bitrate><!-- made-up -->
-                        <bitdepth></bitdepth>
-                      </codec>
-                      <codec type="audio">
-                        <name>Vorbis</name>
-                        <mime>vorbis</mime>
-                        <bitrate>320000</bitrate>
-                        <samplerate>48000</samplerate>
-                        <bitdepth>24</bitdepth>
-                      </codec>
-                    </container>
-                  </file>
-                  <file xml:id="blue-webm-1080p" label="blue" xlink:href="media/webm/blue-pill-1080p.webm">
-                    <width>1920</width>
-                    <height>1080</height>
-                    <container>
-                      <name>WebM</name>
-                      <mime>video/webm</mime>
-                      <codec type="video">
-                        <name>VP8</name>
-                        <mime>vp8</mime>
-                        <bitrate type="cbr">100</bitrate><!-- made-up -->
-                        <bitdepth></bitdepth>
-                      </codec>
-                      <codec type="audio">
-                        <name>Vorbis</name>
-                        <mime>vorbis</mime>
-                        <bitrate>320000</bitrate>
-                        <samplerate>48000</samplerate>
-                        <bitdepth>24</bitdepth>
-                      </codec>
-                    </container>
-                  </file>
-                  <file xml:id="the-end-webm" label="the-end" xlink:href="media/webm/the-end.webm">
-                    <container>
-                      <name>WebM</name>
                       <mime>video/webm</mime>
                       <codec type="video">
                         <mime>vp8</mime>
@@ -123,92 +55,35 @@ pageScripts: guide/branching-narratives.scripts.html
                       </codec>
                     </container>
                   </file>
-                  <file xml:id="intro-mp4-1080p" label="intro" xlink:href="media/mp4-dash/intro-1080p.mp4">
-                    <link rel="alternate" xlink:href="#xpointer(//file[@label='intro'])"></link><!-- should also have not:parent but i'm not going to deal with that right now -->
+                  <file xml:id="red-pill-outcome-webm-1080p" label="red" xlink:href="media/webm/red-pill-outcome-1080p.webm">
                     <container>
-                      <name>MPEG-4 Part 14</name>
-                      <nickname>MP4</nickname>
-                      <mime>video/mp4</mime>
+                      <mime>video/webm</mime>
                       <codec type="video">
-                        <name>H.264/MPEG-4 Part 10 AVC</name>
-                        <nickname>H.264</nickname>
-                        <codecProfile>Baseline</codecProfile>
-                        <mime>avc1.42E01E</mime>
+                        <mime>vp8</mime>
                       </codec>
                       <codec type="audio">
-                        <name>AAC-LC</name>
-                        <mime>mp4a.40.2</mime>
+                        <mime>vorbis</mime>
                       </codec>
                     </container>
                   </file>
-                  <file xml:id="red-mp4-1080p" label="red" xlink:href="media/mp4-dash/red-pill-1080p.mp4">
-                    <width>1920</width>
-                    <height>1080</height>
+                  <file xml:id="blue-pill-outcome-webm-1080p" label="blue" xlink:href="media/webm/blue-pill-outcome-1080p.webm">
                     <container>
-                      <name>MPEG-4 Part 14</name>
-                      <nickname>MP4</nickname>
-                      <mime>video/mp4</mime>
+                      <mime>video/webm</mime>
                       <codec type="video">
-                        <name>H.264/MPEG-4 Part 10 AVC</name>
-                        <nickname>H.264</nickname>
-                        <codecProfile>Baseline</codecProfile>
-                        <mime>avc1.42E01E</mime>
+                        <mime>vp8</mime>
                       </codec>
                       <codec type="audio">
-                        <name>AAC-LC</name>
-                        <mime>mp4a.40.2</mime>
+                        <mime>vorbis</mime>
                       </codec>
                     </container>
                   </file>
-                  <file xml:id="blue-mp4-1080p" label="blue" xlink:href="media/mp4-dash/blue-pill-1080p.mp4">
-                    <width>1920</width>
-                    <height>1080</height>
-                    <container>
-                      <name>MPEG-4 Part 14</name>
-                      <nickname>MP4</nickname>
-                      <mime>video/mp4</mime>
-                      <codec type="video">
-                        <name>H.264/MPEG-4 Part 10 AVC</name>
-                        <nickname>H.264</nickname>
-                        <codecProfile>Baseline</codecProfile>
-                        <mime>avc1.42E01E</mime>
-                      </codec>
-                      <codec type="audio">
-                        <name>AAC-LC</name>
-                        <mime>mp4a.40.2</mime>
-                      </codec>
-                    </container>
-                  </file>
-                  <file xml:id="the-end-mp4-1080p" label="the-end" xlink:href="media/mp4-dash/the-end.mp4">
-                    <container>
-                      <name>MPEG-4 Part 14</name>
-                      <nickname>MP4</nickname>
-                      <mime>video/mp4</mime>
-                      <codec type="video">
-                        <name>H.264/MPEG-4 Part 10 AVC</name>
-                        <nickname>H.264</nickname>
-                        <codecProfile>Baseline</codecProfile>
-                        <mime>avc1.42E01E</mime>
-                      </codec>
-                      <codec type="audio">
-                        <name>AAC-LC</name>
-                        <mime>mp4a.40.2</mime>
-                      </codec>
-                    </container>
-                  </file>
-                  <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="media/bitmap/morpheus-hands.jpg">
+                  <file xml:id="choice-1-wait-screen-1080p" label="choice-1-wait-screen" xlink:href="media/bitmap/choice-1-wait-screen.jpg">
                     <codec>
                       <name>JPEG</name>
                       <mime>image/jpeg</mime>
                     </codec>
                   </file>
-                  <file xml:id="the-end-still-1080p" label="the-end-still" xlink:href="media/bitmap/the-end-still.png">
-                    <codec>
-                      <name>PNG</name>
-                      <mime>image/png</mime>
-                    </codec>
-                  </file>
-                  <file xml:id="easter-egg-1080p" label="easter-egg" xlink:href="media/bitmap/easter-egg.png">
+                  <file xml:id="the-end-wait-screen-1080p" label="the-end-wait-screen" xlink:href="media/bitmap/the-end-wait-screen.png">
                     <codec>
                       <name>PNG</name>
                       <mime>image/png</mime>
@@ -220,7 +95,7 @@ pageScripts: guide/branching-narratives.scripts.html
                     </media>
                     <choices xml:id="red-pill-or-blue-pill"><!--displayType="generate|embedded"-->
                       <name>What will it be, Neo?</name>
-                      <media xlink:href="#xpointer(//file[@label='intro-choice'])"></media>
+                      <media xlink:href="#xpointer(//file[@label='choice-1-wait-screen'])"></media>
                       <choice xml:id="red">
                         <name>Red Pill</name>
                         <goto
@@ -254,7 +129,7 @@ pageScripts: guide/branching-narratives.scripts.html
                     </media>
                     <choices xml:id="what-next">
                       <name>What next?</name>
-                      <media xlink:href="#xpointer(//file[@label='the-end-still'])"></media>
+                      <media xlink:href="#xpointer(//file[@label='the-end-wait-screen'])"></media>
                       <choice xml:id="start-over">
                         <name>Start Over</name>
                         <goto
@@ -306,4 +181,140 @@ pageScripts: guide/branching-narratives.scripts.html
       </article>
       <article id="detailed-instructions">
         <h2>Detailed Instructions</h2>
+        <p>For this example, we’re creating a movie that presents the viewer with a choice. Depending on the viewer’s choice, the movie shows one of two alternate endings.</p>
+        <p>To achieve this, we have three video segments: the Introduction, Choice 1’s “Red Pill” Outcome, and Choice 1’s “Blue Pill” Outcome.</p>
+        <p>We also have two images: the Choice 1 Wait Screen and the Ending Wait Screen.</p>
+        <p>Put together, the playback sequence looks like this: Intro → Choice 1 Wait Screen → ( “Red Pill” Outcome OR “Blue Pill” Outcome ) → Ending Wait Screen.</p>
+        <p>With RedBlue, you don’t have to write the logic to achieve this playback sequence yourself. You simply use declarative <abbr>HVML</abbr> markup to specify what the available choices are and which files to play for each choice. The player code handles the rest.</p>
+        <section id="attaching-a-third-party-embed">
+          <h3>Setup</h3>
+          <dl class="instructions">
+            <dd class="step">Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;script type="module"&gt;
+  import RedBlueVideo from './modules/redblue-video-compat.js';
+  customElements.define( RedBlueVideo.is, RedBlueVideo );
+&lt;/script&gt;</code></pre></dd>
+            <dd class="step">Include an <a id="guide_third-party-embeds_attaching-a-third-party-embed_hvml" href="https://hypervideo.tech"><abbr>HVML</abbr></a> code block as a child of <code>&lt;redblue-video&gt;</code>. <abbr>HVML</abbr> can be represented as either <abbr>XML</abbr> or <abbr>JSON-LD</abbr>. When using the <abbr>XML</abbr> serialization, set the boolean <code>hidden</code> attribute to true to prevent the browser from rendering the metadata.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;&lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+            <dd class="step">In the <abbr>HVML</abbr>, specify a single <code>video</code> element. (Not to be confused with <abbr>HTML</abbr>’s <code>video</code> element—though unless your page is served as <abbr title="application/xhtml+xml">XHTML</abbr>, technically the browser will interpret it as such.) This is the container for all of your video’s metadata.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    <ins>&lt;video&gt;&lt;/video&gt;</ins>
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+            <dd class="step">Under <code>video</code>, set basic metadata.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;&lt;/hvml&gt;
+    &lt;video&gt;
+      <ins>&lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;</ins>
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Media Files</h3>
+          <dl class="instructions">
+            <dd class="step">Under <code>video</code>, include a <code>presentation</code> element. This is the container for instructions telling the <abbr>HVML</abbr> parser how to present a video on playback.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      <ins>&lt;presentation&gt;&lt;/presentation&gt;</ins>
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+            <dd class="step">For each media file, in any order, do this:</dd>
+            <dd>Define a <code>file</code> element.</dd>
+            <dd>Set its <code>label</code> attribute to an identifier that is unique amongst different media segments, but is shared between different versions of the same media segment. For instance, for the Introduction, you might have a WebM and an MP4 version; each of which might have a 1080p and a 720p version. So all four of these <code>file</code> elements could have <samp><code>label="intro"</code></samp>, which allows the RedBlue player to select the best version for playback depending on the viewer’s browser capabilities and connection speed.</dd>
+            <dd>Set its <code>xlink:href</code> attribute to the <abbr>URL</abbr> of the media file.</dd>
+            <dd>Optional: Set its <code>xml:id</code> attribute to a globally unique identifier, e.g. <samp><code>intro-webm-1080p</code></samp>, so it can individually referenced.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      &lt;presentation&gt;
+        <ins>&lt;file label="intro" xlink:href="media/webm/intro-1080p.webm"&gt;
+        &lt;file&gt;
+        &lt;file label="choice-1-wait-screen" xlink:href="media/bitmap/choice-1-wait-screen.jpg"&gt;&lt;file&gt;
+        &lt;file label="red-pill-outcome" xlink:href="media/webm/red-pill-outcome-1080p.webm"&gt;&lt;file&gt;
+        &lt;file label="blue-pill-outcome" xlink:href="media/webm/blue-pill-outcome-1080p.webm"&gt;&lt;file&gt;
+        &lt;file label="the-end-wait-screen" xlink:href="media/bitmap/the-end-wait-screen.png"&gt;&lt;file&gt;</ins>
+      &lt;/presentation&gt;
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+            <dd>If a video file, specify its container, video, and audio <abbr>MIME</abbr> type identifiers. If an image file, specify a bare <code>codec</code> element.</dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      &lt;presentation&gt;
+        &lt;file label="intro" xlink:href="media/webm/intro-1080p.webm"&gt;
+          &lt;!-- video/webm; codecs=vp8,vorbis -->
+          <ins>&lt;container&gt;
+            &lt;mime&gt;video/webm&lt;/mime&gt;
+            &lt;codec type="video"&gt;
+              &lt;mime&gt;vp8&lt;/mime&gt;
+            &lt;/codec&gt;
+            &lt;codec type="audio"&gt;
+              &lt;mime&gt;vorbis&lt;/mime&gt;
+            &lt;/codec&gt;
+          &lt;/container&gt;</ins>
+        &lt;file&gt;
+        &lt;file label="choice-1-wait-screen" xlink:href="media/bitmap/choice-1-wait-screen.jpg"&gt;
+          <ins>&lt;codec&gt;
+            &lt;mime&gt;image/jpeg&lt;/mime&gt;
+          &lt;/codec&gt;</ins>
+        &lt;file&gt;
+        &lt;file label="red-pill-outcome" xlink:href="media/webm/red-pill-outcome-1080p.webm"&gt;
+          &lt;!-- … --&gt;
+        &lt;file&gt;
+        &lt;file label="blue-pill-outcome" xlink:href="media/webm/blue-pill-outcome-1080p.webm"&gt;
+          &lt;!-- … --&gt;
+        &lt;file&gt;
+        &lt;file label="the-end-wait-screen" xlink:href="media/bitmap/the-end-wait-screen.png"&gt;
+          &lt;!-- … --&gt;
+        &lt;file&gt;
+      &lt;/presentation&gt;
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Nonlinear Playlists</h3>
+          <p>In <abbr>HVML</abbr>, branching narratives are achieved by what is termed a <dfn>nonlinear playlist</dfn>. Nonlinear playlists are like regular playlists in that they specify a list of media files to be played back sequentially. But in nonlinear playlists, choice prompts can be queued in addition to media files. When the viewer chooses an option in a choice prompt, the play head can continue sequentially, or it can be sent to a different part of the playlist, skipping over other items.</p>
+          <dl class="instructions">
+            <dd class="step"></dd>
+            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      &lt;presentation&gt;
+        &lt;!-- &lt;file&gt;s --&gt;
+        <ins>&lt;playlist type="nonlinear"&gt;&lt;/playlist&gt;</ins>
+      &lt;/presentation&gt;
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+          </dl>
+        </section>
       </article>

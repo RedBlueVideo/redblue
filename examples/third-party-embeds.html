@@ -190,7 +190,7 @@ pageScripts: guide/third-party-embeds.scripts.html
           <dl class="instructions">
             <dd class="step">Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)</dd>
             <dd class="step step--code"><pre><code class="xml">&lt;script type="module"&gt;
-  import RedBlueVideo from './modules/redblue-video-omni.js';
+  import RedBlueVideo from './modules/redblue-video-compat.js';
   customElements.define( RedBlueVideo.is, RedBlueVideo );
 &lt;/script&gt;</code></pre></dd>
             <dd class="step">Include an <a id="guide_third-party-embeds_attaching-a-third-party-embed_hvml" href="https://hypervideo.tech"><abbr>HVML</abbr></a> code block as a child of <code>&lt;redblue-video&gt;</code>. <abbr>HVML</abbr> can be represented as either <abbr>XML</abbr> or <abbr>JSON-LD</abbr>. When using the <abbr>XML</abbr> serialization, set the boolean <code>hidden</code> attribute to true to prevent the browser from rendering the metadata.</dd>
