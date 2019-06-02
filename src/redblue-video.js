@@ -94,10 +94,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             <button id="fullscreen-button" class="redblue-fullscreen-button">Toggle Fullscreen</button>
             <nav id="annotations" class="redblue-annotations"></nav>
           </div>
-          <div class="redblue-description">
-            <p>Full Facebook Live stream: http://hugh.today/2016-09-17/live</p>
-            <p>#mfaNOW #mfaLateNites</p>
-          </div>
+          <div id="description" class="redblue-description"></div>
         </div>
       </template>
     `;
@@ -663,6 +660,37 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     );
   }
 
+  populateDescription() {
+    // this.$.description
+    let $description = this.find( '//description[1]' );
+
+    if ( $description.snapshotLength ) {
+      let $div;
+      $description = $description.snapshotItem( 0 );
+
+      switch ( $description.getAttribute( 'type' ) ) {
+        case 'xhtml':
+          $div = this.find( 'html:div[1]', $description );
+          
+          if ( $div.snapshotLength ) {
+            $div = $div.snapshotItem( 0 );
+
+            for ( let index = 0; index < $div.children.length; index++ ) {
+              const $node = $div.children[index];
+              this.$.description.appendChild( $node );
+            }
+          } else {
+            console.error( 'Found HVML `description` with `type` attribute set to `xhtml`, but no HTML `div` child found.' )
+          }
+        break;
+
+        case 'text':
+        default:
+          this.$.description.textContent = $description.textContent;
+      }
+    }
+  }
+
   connectedCallback() {
     this.setAttribute( 'class', 'redblue-video' );
     this.setAttribute( 'role', 'application' );
@@ -742,6 +770,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.timelineTriggers = this.getTimelineTriggers();
     this.$.embeddedMedia = this.$id( `embedded-media-${this.embedID}` );
     this.$.localMedia = this.$id( `local-media-${this.embedID}` );
+    this.$.description = this.$id( 'description' );
+    this.populateDescription();
     this.currentChoiceAnnotationIndex = 0;
     this.$.currentChoice = this.$.annotations.children[0];
 
