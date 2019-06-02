@@ -9,8 +9,8 @@
 */
 'use strict';
 
-const RedBlueLegacyPlayer = ( superClass ) => {
-  return class extends superClass {
+const RedBlueLegacyPlayer = ( RedBlueVideo ) => {
+  return class extends RedBlueVideo {
     constructor() {
       super();
 

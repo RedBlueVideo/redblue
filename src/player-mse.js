@@ -1,12 +1,12 @@
 'use strict';
 
-const RedBlueMSEPlayer = ( superClass ) => {
-  return class extends superClass {
+const RedBlueMSEPlayer = ( RedBlueVideo ) => {
+  return class extends RedBlueVideo {
     constructor() {
       super();
 
       // Don’t spend CPU initializing this stuff unless we need to
-      if ( superClass.MSEsupported() ) {
+      if ( RedBlueVideo.MSEsupported() ) {
         this.MSE = {
           "mediaSource": new window.MediaSource(),
 

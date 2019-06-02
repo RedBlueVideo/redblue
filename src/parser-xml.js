@@ -1,7 +1,7 @@
 'use strict';
 
-const RedBlueXMLParser = ( superClass ) => {
-  return class extends superClass {
+const RedBlueXMLParser = ( RedBlueVideo ) => {
+  return class extends RedBlueVideo {
     constructor() {
       super();
 

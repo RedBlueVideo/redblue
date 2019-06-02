@@ -63,10 +63,10 @@ class JSONXPathResult {
   }
 }
 
-const RedBlueJSONLDParser = ( superClass ) => {
+const RedBlueJSONLDParser = ( RedBlueVideo ) => {
   let _customJSONSearchUtility = null;
 
-  return class extends superClass {
+  return class extends RedBlueVideo {
     constructor() {
       super();
 
