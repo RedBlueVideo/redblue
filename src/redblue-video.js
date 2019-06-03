@@ -933,14 +933,23 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             let compoundIndex = annotationIndex;
   
             for ( let attribute in annotation.goto ) {
-              if ( ( attribute === 'height' ) || ( attribute === 'width' ) ) {
-                styleProperties += `${attribute}: ${annotation.goto[attribute]};\n`;
-              } else {
-                let cssAttributeRegex = new RegExp( `^${this._cssNamespacePrefix}:([^=]+)`, 'i' );
-                let cssAttribute = attribute.match( cssAttributeRegex );
-  
-                if ( cssAttribute ) {
-                  styleProperties += `${cssAttribute[1]}: ${annotation.goto[attribute]};`;
+              switch ( attribute ) {
+                case 'height':
+                case 'width':
+                case 'top':
+                case 'right':
+                case 'bottom':
+                case 'left':
+                  styleProperties += `${attribute}: ${annotation.goto[attribute]};\n`;
+                break;
+
+                default: {
+                  let cssAttributeRegex = new RegExp( `^${this._cssNamespacePrefix}:([^=]+)`, 'i' );
+                  let cssAttribute = attribute.match( cssAttributeRegex );
+    
+                  if ( cssAttribute ) {
+                    styleProperties += `${cssAttribute[1]}: ${annotation.goto[attribute]};`;
+                  }
                 }
               }
             }

@@ -103,8 +103,8 @@ pageScripts: guide/branching-narratives.scripts.html
                           xlink:href="#wakes-up-to-reality"
                           width="28%"
                           height="45%"
-                          css:top="26%"
-                          css:left="17%"
+                          top="26%"
+                          left="17%"
                         ></goto>
                       </choice>
                       <choice xml:id="blue">
@@ -114,8 +114,8 @@ pageScripts: guide/branching-narratives.scripts.html
                           xlink:href="#stays-in-the-matrix"
                           width="31%"
                           height="39%"
-                          css:top="34%"
-                          css:left="52%"
+                          top="34%"
+                          left="52%"
                         ></goto>
                       </choice>
                     </choicePrompt>
@@ -135,8 +135,8 @@ pageScripts: guide/branching-narratives.scripts.html
                           xlink:href="#intro"
                           timeline="replace"
                           width="100%"
-                          css:top="80%"
-                          css:left="0"
+                          top="80%"
+                          left="0"
                           css:font-size="4vw"
                           css:text-align="center"
                           css:color="white"
@@ -148,7 +148,7 @@ pageScripts: guide/branching-narratives.scripts.html
                           xlink:actuate="onRequest"
                           timeline="replay"
                           width="49%"
-                          css:top="80%"
+                          top="80%"
                           css:right="0"
                           css:font-size="4vw"
                           css:text-align="center"
@@ -304,23 +304,6 @@ pageScripts: guide/branching-narratives.scripts.html
         <section id="nonlinear-playlists">
           <h3>Nonlinear Playlists</h3>
           <p>In <abbr>HVML</abbr>, branching narratives are achieved by what is termed a <dfn>nonlinear playlist</dfn>. Nonlinear playlists are like regular playlists in that they specify a list of media files to be played back sequentially. But in nonlinear playlists, <dfn>choice prompts</dfn> can be queued in addition to media files. When the playhead encounters a choice prompt, the viewer is presented with one or more options that, when selected, redirect the playhead to different parts of the playlist. Each choice prompt can be assigned a <dfn>wait screen</dfn>, a background video or image to display while waiting for the viewer’s input. In our example, the Red Pill/Blue Pill choice prompt features a closeup of Morpheus’s hands as its wait screen.</p>
-          <dl class="instructions">
-            <dd class="step">Under <code>presentation</code>, add a <code>playlist</code> element with its <code>type</code> attribute set to “nonlinear”. This attribute activates RedBlue’s interactive playback mode.</dd>
-            <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
-  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
-    &lt;video&gt;
-      &lt;title&gt;RedBlue Test&lt;/title&gt;
-      &lt;published&gt;2014&lt;/published&gt;
-      &lt;runtime&gt;variable&lt;/runtime&gt;
-      &lt;description&gt;Branching narratives demo&lt;/description&gt;
-      &lt;presentation&gt;
-        &lt;!-- &lt;file&gt;s --&gt;
-        <ins>&lt;playlist type="nonlinear"&gt;&lt;/playlist&gt;</ins>
-      &lt;/presentation&gt;
-    &lt;/video&gt;
-  &lt;/hvml&gt;
-&lt;/redblue-video&gt;</code></pre></dd>
-          </dl>
           <p>When creating nonlinear playlists, there are three <abbr>HVML</abbr> elements to be familiar with.</p>
           <section id="media">
             <h4><span class="enumeration">1.</span> <code>media</code></h4>
@@ -357,7 +340,7 @@ pageScripts: guide/branching-narratives.scripts.html
 &gt;&lt;/media&gt;</code></pre>
             </section>
           </section>
-          <section id="choices" class="--modest-top-margin">
+          <section id="choice-prompt" class="--modest-top-margin">
             <h4><span class="enumeration">2.</span> <code>choicePrompt</code></h4>
             <p>A <code>choicePrompt</code> element instructs the RedBlue Player to present the viewer with one or more options to choose from. Under it, you can provide:</p>
             <ul>
@@ -378,13 +361,13 @@ pageScripts: guide/branching-narratives.scripts.html
   &lt;/choice&gt;
 &lt;/choicePrompt&gt;</pre></code>
           </section>
-          <section id="choices" class="--modest-top-margin">
+          <section id="choice" class="--modest-top-margin">
             <h4><span class="enumeration">3.</span> <code>choice</code></h4>
             <p>A <code>choice</code> element instructs the RedBlue Player to render one of a set of options, usually in the form of a link. <code>choice</code>s can be overlaid onto specific regions of the player, making them <dfn>hotspots</dfn>. When the viewer selects a choice, an action is performed, typically moving the playhead to another point in the playlist.</p>
             <p>Under <code>choice</code>, you can provide:</p>
             <ul>
               <li>A <code>name</code> element, setting the link text. Link text may be invisble if the <code>choice</code> represents a hotspot;</li>
-              <li>A <code>goto</code> element, instructing the RedBlue Player to follow the URL specified in its <code>xlink:href</code> attribute. If the URL resolves to another playlist item, the playhead will be moved there. A <code>goto</code>’s <code>xlink:actuate</code> attribute being set to “onRequest” specifies that the viewer needs to request the URL manually (here, by clicking on the link) before the player will follow the URL.</li>  
+              <li>A <code>goto</code> element, instructing the RedBlue Player to follow the URL specified in its <code>xlink:href</code> attribute. If the URL resolves to another playlist item, the playhead will be moved there. A <code>goto</code>’s <code>xlink:actuate</code> attribute being set to “onRequest” specifies that the viewer needs to request the URL manually (here, by clicking on the link) before the player will follow the URL.</li>
             </ul>
             <pre><code class="xml">&lt;choice xml:id="red"&gt;
   &lt;name&gt;Red Pill&lt;/name&gt;
@@ -393,6 +376,83 @@ pageScripts: guide/branching-narratives.scripts.html
     xlink:href="#wakes-up-to-reality"
   &gt;&lt;/goto&gt;
 &lt;/choice&gt;</pre></code>
+          </section>
+        </section>
+        <section id="putting-it-all-together">
+          <h3>Putting It All Together</h3>
+          <p>With all of our <code>file</code> elements set up, let’s assemble the nonlinear playlist to put them to use.</p>
+          <!-- <nav>
+            <a href="#putting-it-all-together-intro">Intro</a> → <a href="#putting-it-all-together-choice-1-wait-screen">Choice 1 Wait Screen</a> → <a href="#putting-it-all-together-choice-1">( “Red Pill” Ending OR “Blue Pill” Ending )</a> → <a href="#putting-it-all-together-closing-wait-screen">Closing Wait Screen</a>
+          </nav> -->
+          <section id="putting-it-all-together-intro">
+            <h4>Intro</h4>
+            <dl class="instructions">
+              <dd class="step">Under <code>presentation</code>, add a <code>playlist</code> element.</dd>
+              <dd>Set its <code>type</code> attribute to “nonlinear”. This attribute activates RedBlue’s interactive playback mode.</dd>
+              <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      &lt;presentation&gt;
+        &lt;!-- &lt;file&gt;s --&gt;
+        <ins>&lt;playlist type="nonlinear"&gt;&lt;/playlist&gt;</ins>
+      &lt;/presentation&gt;
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+              <dd class="step">Under <code>playlist</code>, add a <code>media</code> element.</dd>
+              <dd>Set its <code>xml:id</code> attribute to a globally-unique ID so it can be independently referenced.</dd>
+              <dd>Set its <code>xlink:href</code> attribute to the XPointer expression <code>#xpointer(//file[@label='intro'])</code>. This selects every <code>file</code> with a <code>label</code> attribute equal to “intro”.</dd>
+              <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      &lt;presentation&gt;
+        &lt;!-- &lt;file&gt;s --&gt;
+        &lt;playlist type="nonlinear"&gt;
+          <ins>&lt;media
+            xml:id="intro"
+            xlink:href="#xpointer(//file[@label='intro'])"
+          &gt;&lt;/media&gt;</ins>
+        &lt;/playlist&gt;
+      &lt;/presentation&gt;
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+              <dd class="step">Under <code>media</code>, add a <code>goto</code> element. This sets up a playhead redirect.</dd>
+              <dd>Set its <code>on</code> attribute to <code>durationEnd</code>. This tells the RedBlue Player not to activate the redirect until the parent <code>media</code> element is done playing.</dd>
+              <dd>Set its <code>xlink:href</code> to the ID selector <code>#red-pill-or-blue-pill</code>. This will point to a <code>choicePrompt</code> element shortly.</dd>
+              <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
+  &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
+    &lt;video&gt;
+      &lt;title&gt;RedBlue Test&lt;/title&gt;
+      &lt;published&gt;2014&lt;/published&gt;
+      &lt;runtime&gt;variable&lt;/runtime&gt;
+      &lt;description&gt;Branching narratives demo&lt;/description&gt;
+      &lt;presentation&gt;
+        &lt;!-- &lt;file&gt;s --&gt;
+        &lt;playlist type="nonlinear"&gt;
+          &lt;media
+            xml:id="intro"
+            xlink:href="#xpointer(//file[@label='intro'])"
+          &gt;
+            <ins>&lt;goto
+              on="durationEnd"
+              xlink:href="#red-pill-or-blue-pill"
+            &gt;&lt;/goto&gt;</ins>
+          &lt;/media&gt;
+        &lt;/playlist&gt;
+      &lt;/presentation&gt;
+    &lt;/video&gt;
+  &lt;/hvml&gt;
+&lt;/redblue-video&gt;</code></pre></dd>
+            </dl>
           </section>
         </section>
       </article>
