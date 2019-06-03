@@ -93,7 +93,7 @@ pageScripts: guide/branching-narratives.scripts.html
                     <media xml:id="intro" xlink:href="#xpointer(//file[@label='intro'])">
                       <goto on="durationEnd" xlink:href="#red-pill-or-blue-pill"></goto>
                     </media>
-                    <choices xml:id="red-pill-or-blue-pill"><!--displayType="generate|embedded"-->
+                    <choicePrompt xml:id="red-pill-or-blue-pill"><!--displayType="generate|embedded"-->
                       <name>What will it be, Neo?</name>
                       <media xlink:href="#xpointer(//file[@label='choice-1-wait-screen'])"></media>
                       <choice xml:id="red">
@@ -109,8 +109,6 @@ pageScripts: guide/branching-narratives.scripts.html
                       </choice>
                       <choice xml:id="blue">
                         <name>Blue Pill</name>
-                        <playlistAction xlink:actuate="onRequest"></playlistAction>
-                        <playlistAction xlink:actuate="onRequest" method="doSomethingElse"></playlistAction>
                         <goto
                           xlink:actuate="onRequest"
                           xlink:href="#stays-in-the-matrix"
@@ -120,14 +118,14 @@ pageScripts: guide/branching-narratives.scripts.html
                           css:left="52%"
                         ></goto>
                       </choice>
-                    </choices>
+                    </choicePrompt>
                     <media xml:id="wakes-up-to-reality" xlink:href="#xpointer(//file[@label='red'])">
                       <goto xlink:href="#what-next"></goto>
                     </media>
                     <media xml:id="stays-in-the-matrix" xlink:href="#xpointer(//file[@label='blue'])">
                       <goto xlink:href="#what-next"></goto>
                     </media>
-                    <choices xml:id="what-next">
+                    <choicePrompt xml:id="what-next">
                       <name>What next?</name>
                       <media xlink:href="#xpointer(//file[@label='the-end-wait-screen'])"></media>
                       <choice xml:id="start-over">
@@ -157,7 +155,7 @@ pageScripts: guide/branching-narratives.scripts.html
                           css:color="white"
                         ></goto>
                       </choice> -->
-                    </choices>
+                    </choicePrompt>
                     <media xml:id="easter-egg" xlink:href="#xpointer(//file[@label='easter-egg'])"></media>
                   </playlist>
                 </presentation>
@@ -181,11 +179,13 @@ pageScripts: guide/branching-narratives.scripts.html
       </article>
       <article id="detailed-instructions">
         <h2>Detailed Instructions</h2>
-        <p>For this example, we’re creating a movie that presents the viewer with a choice. Depending on the viewer’s choice, the movie shows one of two alternate endings.</p>
-        <p>To achieve this, we have three video segments: the Introduction, Choice 1’s “Red Pill” Outcome, and Choice 1’s “Blue Pill” Outcome.</p>
-        <p>We also have two images: the Choice 1 Wait Screen and the Ending Wait Screen.</p>
-        <p>Put together, the playback sequence looks like this: Intro → Choice 1 Wait Screen → ( “Red Pill” Outcome OR “Blue Pill” Outcome ) → Ending Wait Screen.</p>
-        <p>With RedBlue, you don’t have to write the logic to achieve this playback sequence yourself. You simply use declarative <abbr>HVML</abbr> markup to specify what the available choices are and which files to play for each choice. The player code handles the rest.</p>
+        <p>For this example, we’re creating a movie that presents the viewer with a choice: Red Pill or Blue Pill. Depending on the viewer’s choice, the movie shows one of two alternate endings.</p>
+        <p>To achieve this, we have split the movie into three video segments: the Introduction, the “Red Pill” Ending, and the “Blue Pill” Ending.</p>
+        <p>We also have two images that are displayed during the choice prompts: the Choice 1 Wait Screen: <img src="media/bitmap/choice-1-wait-screen.jpg" alt="Morpheus’s hands presenting a red pill and a blue pill" /></p>
+        <p>…and the Closing Wait Screen: <img src="media/bitmap/the-end-wait-screen.png" alt="The End" /></p>
+        <p>While these could also be implemented as video segments, since there is no motion in them, using images saves on file size and thus download overhead.</p>
+        <p>Put together, the playback sequence looks like this: Intro → Choice 1 Wait Screen → ( “Red Pill” Ending OR “Blue Pill” Ending ) → Closing Wait Screen.</p>
+        <p>With RedBlue, you don’t have to write the logic to achieve this playback sequence yourself. You simply use declarative <abbr>HVML</abbr> markup to specify the available choices and which files to play for each choice. The player code handles the rest.</p>
         <section id="setup">
           <h3>Setup</h3>
           <dl class="instructions">
@@ -204,7 +204,12 @@ pageScripts: guide/branching-narratives.scripts.html
     <ins>&lt;video&gt;&lt;/video&gt;</ins>
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-            <dd class="step">Under <code>video</code>, set basic metadata.</dd>
+            <dd class="step">Under <code>video</code>, set basic metadata: <ul>
+              <li><code>title</code></li>
+              <li><code>published</code>, the date of first public release</li>
+              <li><code>runtime</code>, usually an integer denoting minutes or an ISO 8601 duration, but in this case the string “variable” indicates a branching narrative whose runtime depends on choices made</li>
+              <li><code>description</code></li>
+            </ul></dd>
             <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;&lt;/hvml&gt;
     &lt;video&gt;
@@ -220,7 +225,7 @@ pageScripts: guide/branching-narratives.scripts.html
         <section id="media-files">
           <h3>Media Files</h3>
           <dl class="instructions">
-            <dd class="step">Under <code>video</code>, include a <code>presentation</code> element. This is the container for instructions telling the <abbr>HVML</abbr> parser how to present a video on playback.</dd>
+            <dd class="step">Under <code>video</code>, include a <code>presentation</code> element. This is the container for instructions telling the RedBlue Player how to present a video on playback.</dd>
             <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
@@ -232,11 +237,11 @@ pageScripts: guide/branching-narratives.scripts.html
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-            <dd class="step">For each media file, in any order, do this:</dd>
+            <dd class="step">Under <code>presentation</code>, and for each media file, do this:</dd>
             <dd>Define a <code>file</code> element.</dd>
-            <dd>Set its <code>label</code> attribute to an identifier that is unique amongst different media segments, but is shared between different versions of the same media segment. For instance, for the Introduction, you might have a WebM and an MP4 version; each of which might have a 1080p and a 720p version. So all four of these <code>file</code> elements could have <samp><code>label="intro"</code></samp>, which allows the RedBlue player to select the best version for playback depending on the viewer’s browser capabilities and connection speed.</dd>
+            <dd>Set its <code>label</code> attribute to an identifier that is shared between different versions of the same media segment—but is unique amongst different media segments. For instance, for the Introduction file, you might have a WebM and an MP4 version; each of which might have a 1080p and a 720p version. So all four of these <code>file</code> elements could have <samp><code>label="intro"</code></samp>, which allows the RedBlue Player to select the most appropriate version depending on the viewer’s browser capabilities and connection speed.</dd>
             <dd>Set its <code>xlink:href</code> attribute to the <abbr>URL</abbr> of the media file.</dd>
-            <dd>Optional: Set its <code>xml:id</code> attribute to a globally unique identifier, e.g. <samp><code>intro-webm-1080p</code></samp>, so it can individually referenced.</dd>
+            <dd>Optional: Set its <code>xml:id</code> attribute to a globally unique identifier, e.g. <samp><code>intro-webm-1080p</code></samp>, so it can be linked to directly.</dd>
             <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
@@ -255,7 +260,7 @@ pageScripts: guide/branching-narratives.scripts.html
     &lt;/video&gt;
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
-            <dd>If a video file, specify its container, video, and audio <abbr>MIME</abbr> type identifiers. If an image file, specify a bare <code>codec</code> element.</dd>
+            <dd>If a video file, specify the container format, video codec, and audio codec using their respective <abbr>MIME</abbr> type identifiers. If an image file, specify a bare <code>codec</code> element.</dd>
             <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
@@ -298,47 +303,9 @@ pageScripts: guide/branching-narratives.scripts.html
         </section>
         <section id="nonlinear-playlists">
           <h3>Nonlinear Playlists</h3>
-          <p>In <abbr>HVML</abbr>, branching narratives are achieved by what is termed a <dfn>nonlinear playlist</dfn>. Nonlinear playlists are like regular playlists in that they specify a list of media files to be played back sequentially. But in nonlinear playlists, choice prompts can be queued in addition to media files. When the viewer chooses an option in a choice prompt, the playhead can continue sequentially, or it can be sent to a different part of the playlist, skipping over other playlist items.</p>
-          <p>When creating nonlinear playlists, there are three <abbr>HVML</abbr> elements to be familiar with.</p>
-          <section id="media">
-            <h4><code>media</code></h4>
-            <p>A <code>media</code> element instructs the RedBlue player to play a single media file. It can link to a single media file directly, or in can link to a set of media file candidates, from which the RedBlue player will select one to play back depending on browser and network capabilities.</p>
-            <p>By default, the playhead will traverse from one <code>media</code> element to the next in source order (linear progression) unless it encounters an instruction that diverts it elsewhere (nonlinear progression).</p>
-            <p>To make it possible to navigate to a <code>media</code> element nonlinearly, set its <code>xml:id</code> attribute to a globally-unique ID so the playhead can be sent there.</p>
-            <section id="linking-to-a-single-media-file">
-              <h5>Linking to A Single Media File</h5>
-              <p>Set the <code>xlink:href</code> attribute to the appropriate URL.</p>
-              <pre><code class="xml">&lt;media
-  xml:id="intro"
-  xlink:href="media/webm/intro-1080p.webm"
-&gt;&lt;/media&gt;</code></pre>
-            </section>
-            <section id="linking-to-a-set-of-media-file-candidates" class="--modest-top-margin">
-              <h5>Linking to A Set of Media File Candidates</h5>
-              <p>Set the <code>xlink:href</code> attribute to an XPointer expression.</p>
-              <p>If you aren’t familiar with XPointer expressions, they’re like advanced URL hashes. While URL hashes can only refer to an element by ID or anchor name, XPointer hashes can refer to an element—or group of elements—using arbitrary selectors. To do this, XPointer expressions take XPath selectors as a parameter, which are very similar to CSS selectors but more expressive. Compare:</p>
-              <dl>
-                <dt>URL hash</dt>
-                <dd>URL: <code class="url">https://example.com/#section-two</code></dd>
-                <dd>CSS equivalent: <code>#section-two</code></dd>
-                <dt>XPointer hash</dt>
-                <dd>URL: <code>https://example.com/#xpointer(//section[2])</code></dd>
-                <dd>CSS equivalent: <code>section:nth-child(2)</code></dd>
-                <dt>XPointer hash</dt>
-                <dd>URL: <code>https://example.com/#xpointer(/section[2]/p[@class="info"])</code></dd>
-                <dd>CSS equivalent: <code>:root > section:nth-child(2) > p[class="info"]</code></dd>
-              </dl>
-              <pre><code class="xml">&lt;media
-  xml:id="intro"
-  xlink:href="#xpointer(//file[@label='intro'])"
-&gt;&lt;/media&gt;</code></pre>
-            </section>
-          </section>
-          <section id="choices" class="--modest-top-margin">
-            <h4><code>choices</code></h4>
-          </section>
+          <p>In <abbr>HVML</abbr>, branching narratives are achieved by what is termed a <dfn>nonlinear playlist</dfn>. Nonlinear playlists are like regular playlists in that they specify a list of media files to be played back sequentially. But in nonlinear playlists, <dfn>choice prompts</dfn> can be queued in addition to media files. When the playhead encounters a choice prompt, the viewer is presented with one or more options that, when selected, redirect the playhead to different parts of the playlist. Each choice prompt can be assigned a <dfn>wait screen</dfn>, a background video or image to display while waiting for the viewer’s input. In our example, the Red Pill/Blue Pill choice prompt features a closeup of Morpheus’s hands as its wait screen.</p>
           <dl class="instructions">
-            <dd class="step"></dd>
+            <dd class="step">Under <code>presentation</code>, add a <code>playlist</code> element with its <code>type</code> attribute set to “nonlinear”. This attribute activates RedBlue’s interactive playback mode.</dd>
             <dd class="step step--code"><pre><code class="xml">&lt;redblue-video&gt;
   &lt;hvml xmlns="https://hypervideo.tech/hvml#" hidden="hidden"&gt;
     &lt;video&gt;
@@ -354,5 +321,78 @@ pageScripts: guide/branching-narratives.scripts.html
   &lt;/hvml&gt;
 &lt;/redblue-video&gt;</code></pre></dd>
           </dl>
+          <p>When creating nonlinear playlists, there are three <abbr>HVML</abbr> elements to be familiar with.</p>
+          <section id="media">
+            <h4><span class="enumeration">1.</span> <code>media</code></h4>
+            <p>A <code>media</code> element instructs the RedBlue Player to play a single media file. It can link to a single media file directly, or in can link to a set of <dfn>media file candidates</dfn>. When a <code>media</code> file links to a set of media file candidates, the RedBlue Player will select one to play back based on the browser features, device specs, and/or network conditions of the viewer.</p>
+            <p>The playhead traverses from one <code>media</code> element to the next in top-down source order (linear progression), unless it encounters an instruction that diverts it elsewhere (nonlinear progression).</p>
+            <p>To make it possible to navigate to a <code>media</code> element nonlinearly, set its <code>xml:id</code> attribute to a globally-unique ID so the playhead can be sent there.</p>
+            <section id="linking-to-a-single-media-file">
+              <h5>Linking to A Single Media File</h5>
+              <p>Set the <code>media</code> element’s <code>xlink:href</code> attribute to the appropriate URL.</p>
+              <pre><code class="xml">&lt;media
+  xml:id="intro"
+  xlink:href="media/webm/intro-1080p.webm"
+&gt;&lt;/media&gt;</code></pre>
+            </section>
+            <section id="linking-to-a-set-of-media-file-candidates" class="--modest-top-margin">
+              <h5>Linking to A Set of Media File Candidates</h5>
+              <p>Set the <code>media</code> element’s <code>xlink:href</code> attribute to an XPointer expression.</p>
+              <p>If you aren’t familiar with XPointer expressions, they’re like advanced URL hashes. While URL hashes can only refer to one part of a document based on ID or anchor name, XPointer hashes can refer to one or more parts of a document based on arbitrary criteria. To do this, XPointer expressions take XPath selectors as their sole parameter. XPath selectors are similar in concept to CSS selectors, but more expressive. Compare:</p>
+              <dl>
+                <dt>URL hash</dt>
+                <dd><code class="url">https://example.com/#section-two</code></dd>
+                <dd>CSS equivalent: <code>#section-two</code></dd>
+                <dt>XPointer hash</dt>
+                <dd><code>https://example.com/#xpointer(//section[2])</code></dd>
+                <dd>CSS equivalent: <code>section:nth-child(2)</code></dd>
+                <dt>XPointer hash (advanced)</dt>
+                <dd><code>https://example.com/#xpointer(/section[2]/p[@class="info"])</code></dd>
+                <dd>CSS equivalent: <code>:root > section:nth-child(2) > p[class="info"]</code></dd>
+              </dl>
+              <p>The following specifies that when the playhead reaches this <code>media</code> element, the RedBlue Player should find every <code>file</code> element with a <code>label</code> of “intro” in the current document, and then of those candidates, queue up the best fit according to browser, device, and network conditions. It might choose between different file formats, resolutions, aspect ratios, etc. (Note: In the current beta, only WebM is supported as a file format.)</p>
+              <pre><code class="xml">&lt;media
+  xml:id="intro"
+  xlink:href="#xpointer(//file[@label='intro'])"
+&gt;&lt;/media&gt;</code></pre>
+            </section>
+          </section>
+          <section id="choices" class="--modest-top-margin">
+            <h4><span class="enumeration">2.</span> <code>choicePrompt</code></h4>
+            <p>A <code>choicePrompt</code> element instructs the RedBlue Player to present the viewer with one or more options to choose from. Under it, you can provide:</p>
+            <ul>
+              <li>A <code>name</code> element, instructing the RedBlue Player to render heading text on top of the wait screen;</li>
+              <li>A <code>media</code> element, specifying a video or image file to use as the wait screen;</li>
+              <li>One or more <code>choice</code> elements, specifying the options to present to the user.</li>
+            </ul>
+            <pre><code class="xml">&lt;choicePrompt xml:id="red-pill-or-blue-pill"&gt;
+  &lt;name&gt;What will it be, Neo?&lt;/name&gt;
+  &lt;media
+    xlink:href="#xpointer(//file[@label='choice-1-wait-screen'])"
+  &gt;&lt;/media&gt;
+  &lt;choice&gt;
+    &lt;!-- … --&gt;
+  &lt;/choice&gt;
+  &lt;choice&gt;
+    &lt;!-- … --&gt;
+  &lt;/choice&gt;
+&lt;/choicePrompt&gt;</pre></code>
+          </section>
+          <section id="choices" class="--modest-top-margin">
+            <h4><span class="enumeration">3.</span> <code>choice</code></h4>
+            <p>A <code>choice</code> element instructs the RedBlue Player to render one of a set of options, usually in the form of a link. <code>choice</code>s can be overlaid onto specific regions of the player, making them <dfn>hotspots</dfn>. When the viewer selects a choice, an action is performed, typically moving the playhead to another point in the playlist.</p>
+            <p>Under <code>choice</code>, you can provide:</p>
+            <ul>
+              <li>A <code>name</code> element, setting the link text. Link text may be invisble if the <code>choice</code> represents a hotspot;</li>
+              <li>A <code>goto</code> element, instructing the RedBlue Player to follow the URL specified in its <code>xlink:href</code> attribute. If the URL resolves to another playlist item, the playhead will be moved there. A <code>goto</code>’s <code>xlink:actuate</code> attribute being set to “onRequest” specifies that the viewer needs to request the URL manually (here, by clicking on the link) before the player will follow the URL.</li>  
+            </ul>
+            <pre><code class="xml">&lt;choice xml:id="red"&gt;
+  &lt;name&gt;Red Pill&lt;/name&gt;
+  &lt;goto
+    xlink:actuate="onRequest"
+    xlink:href="#wakes-up-to-reality"
+  &gt;&lt;/goto&gt;
+&lt;/choice&gt;</pre></code>
+          </section>
         </section>
       </article>

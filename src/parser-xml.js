@@ -126,34 +126,34 @@ const RedBlueXMLParser = ( RedBlueVideo ) => {
         let nodeName = child.nodeName.toLowerCase();
 
         switch ( nodeName ) {
-          case 'choices':
-            let choices = {
-              "type": "choices"
+          case 'choiceprompt':
+            let choicePrompt = {
+              "type": "choicePrompt"
             };
 
             for ( let i = 0, length = child.children.length; i < length; i++ ) {
               let grandchild = child.children[i];
               let nodeName = grandchild.nodeName.toLowerCase();
 
-              choices['xml:id'] = this.getAttributeAnyNS( grandchild, 'xml:id' );
-              choices.id = grandchild.id;
+              choicePrompt['xml:id'] = this.getAttributeAnyNS( grandchild, 'xml:id' );
+              choicePrompt.id = grandchild.id;
 
               switch ( nodeName ) {
                 case 'name':
-                  choices.name = grandchild.textContent;
+                  choicePrompt.name = grandchild.textContent;
                 break;
 
                 case 'media':
-                  choices.media = this.nodeAttributesToJSON( grandchild.attributes );
+                  choicePrompt.media = this.nodeAttributesToJSON( grandchild.attributes );
                 break;
 
                 default:
               }
             }
             
-            choices.choices = this.getAnnotationsFromXML( `.`, child );
+            choicePrompt.choices = this.getAnnotationsFromXML( `.`, child );
 
-            annotations.push( choices );
+            annotations.push( choicePrompt );
           break;
 
           case 'choice':

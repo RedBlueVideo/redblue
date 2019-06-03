@@ -125,7 +125,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       "endy": "endY",
       "starttime": "startTime",
       "startx": "startX",
-      "starty": "startY"
+      "starty": "startY",
+      "choiceprompt": "choicePrompt",
     };
 
     return ( map[nodeName] || nodeName );
@@ -621,12 +622,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     );
   }
 
-  _handleMediaFromPlaylistItem( $playlistItem, mediaCallback, choicesCallback ) {
+  _handleMediaFromPlaylistItem( $playlistItem, mediaCallback, choicePromptCallback ) {
     const nodeName = $playlistItem.nodeName.toLowerCase();
     let $mediaElementsForChoicePrompt;
 
-    if ( !choicesCallback ) {
-      choicesCallback = mediaCallback;
+    if ( !choicePromptCallback ) {
+      choicePromptCallback = mediaCallback;
     }
 
     switch ( nodeName ) {
@@ -634,13 +635,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         mediaCallback( $playlistItem );
       break;
 
-      case 'choices':
+      case 'choiceprompt':
         $mediaElementsForChoicePrompt = this.find( './/media', $playlistItem );
 
         for ( let index = 0; index < $mediaElementsForChoicePrompt.snapshotLength; index++) {
           const $mediaElement = $mediaElementsForChoicePrompt.snapshotItem(index);
 
-          choicesCallback( $mediaElement );
+          choicePromptCallback( $mediaElement );
         }
       break;
     }
@@ -846,8 +847,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             },
 
             /*
-              choicesCallback:
-              If we have a choice prompt (<choices>),
+              choicePromptCallback:
+              If we have a choice prompt (<choicePrompt>),
               get its background image/video (direct <media> child),
               then break the loop so we aren’t queuing up the media for
               every possible story branch.
@@ -918,7 +919,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     for ( let annotationIndex = 0; annotationIndex < loopObject.length; annotationIndex++ ) {
       let annotation = loopObject[annotationIndex];
 
-      if ( annotation.type === 'choices' ) {
+      if ( annotation.type === 'choicePrompt' ) {
         this.applyAnnotationStyles( annotation.choices, annotationIndex );
       } else {
         let animation = loopObject[annotationIndex].goto.animate;
@@ -1212,7 +1213,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
 
     switch ( annotation.type ) {
-      case 'choices':
+      case 'choicePrompt':
         backgroundMedia = this.find(
           this._getXPathFromXPointerURI(
             annotation.media['xlink:href']
