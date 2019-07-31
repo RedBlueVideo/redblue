@@ -1,6 +1,8 @@
 # redblue
 Open-Source Hypervideo Framework
 
+[![Build Status](https://api.travis-ci.com/RedBlueVideo/redblue.svg?branch=master)](https://travis-ci.com/RedBlueVideo/redblue) [![Code Coverage](https://img.shields.io/codecov/c/github/RedBlueVideo/redblue/master.svg)](https://codecov.io/gh/RedBlueVideo/redblue/) [![Downloads per month (NPM)](https://img.shields.io/npm/dm/redblue.svg)](https://www.npmjs.com/package/redblue)
+
 ## Stability
 ⚠️ The `master` branch currently represents an alpha pre-release. Features and syntax are subject to change at any time, so please don’t use it in production. Unless you’re some kind of daredevil.
 

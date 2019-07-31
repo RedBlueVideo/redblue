@@ -4,9 +4,14 @@
   "description": "Open-Source Hypervideo Framework",
   "browser": "src/redblue-video-omni.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false",
+    "test:update-snapshots": "karma start --update-snapshots",
+    "test:prune-snapshots": "karma start --prune-snapshots",
+    "test:compatibility": "karma start --compatibility all --auto-watch=true --single-run=false",
     "prepublishOnly": "[ $(git symbolic-ref --short -q HEAD) = \"npm\" ] && git checkout master -- package.json .gitignore .npmignore README.md examples src && echo '\nexamples/*' >> .gitignore && sed -i '' -e 's,/src/,node_modules/redblue/src/,g' README.md",
-    "watch": "bundle exec jekyll build --watch --incremental"
+    "watch": "bundle exec jekyll build --watch --incremental",
+    "codecov": "./node_modules/.bin/codecov"
   },
   "repository": {
     "type": "git",
@@ -40,5 +45,16 @@
   "bugs": {
     "url": "https://github.com/RedBlueVideo/redblue/issues"
   },
-  "homepage": "https://github.com/RedBlueVideo/redblue#readme"
+  "homepage": "https://github.com/RedBlueVideo/redblue#readme",
+  "devDependencies": {
+    "@open-wc/chai-dom-equals": "^0.12.36",
+    "@open-wc/testing": "^2.2.2",
+    "@open-wc/testing-karma": "^3.1.6",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-config-hughx": "^0.0.2",
+    "eslint-plugin-import": "^2.18.2",
+    "lit-html": "^1.1.1",
+    "webpack": "^4.38.0"
+  }
 }

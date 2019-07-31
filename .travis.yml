@@ -1,0 +1,22 @@
+language: node_js
+
+os:
+  # - windows
+  - linux
+  - osx
+
+node_js:
+  # - node
+  - lts/*
+
+branches:
+  only:
+    - master
+
+cache:
+  yarn: true
+  directories:
+    - node_modules
+
+after_success:
+  - yarn run codecov
