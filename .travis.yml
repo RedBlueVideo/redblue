@@ -5,13 +5,12 @@ os:
   - linux
   - osx
 
-matrix:
-  allow_failures:
-    - os: osx
-
 node_js:
   # - node
   - lts/*
+
+addons:
+  chrome: stable
 
 branches:
   only:
