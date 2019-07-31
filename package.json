@@ -12,7 +12,7 @@
     "test:compatibility": "karma start --compatibility all --auto-watch=true --single-run=false",
     "prepublishOnly": "[ $(git symbolic-ref --short -q HEAD) = \"npm\" ] && git checkout master -- package.json .gitignore .npmignore README.md examples src && echo '\nexamples/*' >> .gitignore && sed -i '' -e 's,/src/,node_modules/redblue/src/,g' README.md",
     "watch": "bundle exec jekyll build --watch --incremental",
-    "codecov": "./node_modules/.bin/codecov"
+    "codecov": "karma start --coverage; ./node_modules/.bin/codecov"
   },
   "repository": {
     "type": "git",
