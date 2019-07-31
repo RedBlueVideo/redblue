@@ -51,6 +51,7 @@
     "@open-wc/chai-dom-equals": "^0.12.36",
     "@open-wc/testing": "^2.2.2",
     "@open-wc/testing-karma": "^3.1.6",
+    "codecov": "^3.5.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-config-hughx": "^0.0.2",
