@@ -45,3 +45,4 @@ _site/
 homepage/
 .jekyll-metadata
 coverage/
+.nyc_output/
