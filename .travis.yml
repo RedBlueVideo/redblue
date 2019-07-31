@@ -3,7 +3,11 @@ language: node_js
 os:
   # - windows
   - linux
-  # - osx
+  - osx
+
+matrix:
+  allow_failures:
+    - os: osx
 
 node_js:
   # - node
@@ -20,3 +24,7 @@ cache:
 
 after_success:
   - yarn run codecov
+
+email:
+  on_failure: change
+  on_success: never
