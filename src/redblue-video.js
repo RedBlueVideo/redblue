@@ -216,7 +216,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     $nextPlaylistItem = this.find( xpath );
 
-    if ( $nextPlaylistItem.snapshotLength ) {
+    if ( $nextPlaylistItem && $nextPlaylistItem.snapshotLength ) {
       $nextPlaylistItem = $nextPlaylistItem.snapshotItem(0);
     } else {
       throw new Error( `No HVML elements found after following choice link to \`${xpath}\`` );
@@ -246,7 +246,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
       let $goto = this.find( './/goto[1]', $nextPlaylistItem );
 
-      if ( $goto.snapshotLength ) {
+      if ( $goto && $goto.snapshotLength ) {
         $goto = $goto.snapshotItem(0);
 
         let targetID = this.getNonlinearPlaylistTargetIDfromGoto( $goto );
@@ -665,7 +665,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     // this.$.description
     let $description = this.find( '//description[1]' );
 
-    if ( $description.snapshotLength ) {
+    if ( $description && $description.snapshotLength ) {
       let $div;
       $description = $description.snapshotItem( 0 );
 
@@ -673,7 +673,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         case 'xhtml':
           $div = this.find( 'html:div[1]', $description );
           
-          if ( $div.snapshotLength ) {
+          if ( $div && $div.snapshotLength ) {
             $div = $div.snapshotItem( 0 );
 
             for ( let index = 0; index < $div.children.length; index++ ) {
@@ -1172,9 +1172,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getEmbedUri() {
-    let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` ).snapshotItem(0);
+    let youtubeUrl = this.find( `.//showing[@scope="release"]/venue[@type="site"]/uri[contains(., '//www.youtube.com/watch?v=')]/text()` );
 
-    if ( youtubeUrl ) {
+    if ( youtubeUrl && youtubeUrl.snapshotLength ) {
+      youtubeUrl = youtubeUrl.snapshotItem( 0 );
       return youtubeUrl.textContent.replace( this.YOUTUBE_VIDEO_REGEX, `//www.youtube.com/embed/$1${this.embedParameters || ''}` );
     }
 
@@ -1182,9 +1183,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getNonlinearPlaylist() {
-    const nonlinearPlaylist = this.find( `.//presentation/playlist[@type="nonlinear"]` ).snapshotItem(0);
+    let nonlinearPlaylist = this.find( `.//presentation/playlist[@type="nonlinear"]` );
 
-    if ( nonlinearPlaylist ) {
+    if ( nonlinearPlaylist && nonlinearPlaylist.snapshotLength ) {
+      nonlinearPlaylist = nonlinearPlaylist.snapshotItem( 0 );
       return nonlinearPlaylist;
     }
 
