@@ -4,7 +4,8 @@
   "description": "Open-Source Hypervideo Framework",
   "browser": "src/redblue-video-omni.js",
   "scripts": {
-    "test": "karma start --coverage",
+    "test": "karma start",
+    "test:coverage": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
     "test:update-snapshots": "karma start --update-snapshots",
     "test:prune-snapshots": "karma start --prune-snapshots",
