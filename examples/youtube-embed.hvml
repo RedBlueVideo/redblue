@@ -1,0 +1,35 @@
+<hvml
+  xmlns="https://hypervideo.tech/hvml#"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:css="https://www.w3.org/TR/CSS/"
+  xml:lang="en-US"
+  hidden="hidden"
+>
+  <video type="personal" xml:id="ep-23">
+    <title>Overnight Dance Party at the Museum of Fine Arts Boston</title>
+    <episode>23</episode>
+    <recorded>2016-09-17</recorded>
+    <description type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <p>Full Facebook Live stream: https://www.facebook.com/hugh.guiney/videos/10100195051457860/</p>
+        <p>#mfaNOW #mfaLateNites</p>
+      </div>
+    </description>
+    <showing scope="release" type="internet" admission="private">
+      <venue type="site">
+        <entity site="https://www.youtube.com/">YouTube</entity>
+        <uri>https://www.youtube.com/watch?v=nWdWq3hMwao</uri>
+        <title>Overnight Dance Party at the Museum of Fine Arts Boston | Hugh’s Vlog | #mfaNOW #mfaLateNites</title>
+      </venue>
+    </showing>
+    <presentation>
+      <choice xml:id="full-stream">
+        <name>Go to: <code style="font-family: inherit; font-weight: bold;">hugh.today/2016-09-17/live</code> for the full stream</name>
+        <goto on="duration" xlink:actuate="onRequest" xlink:href="https://www.facebook.com/hugh.guiney/videos/10100195051457860/" width="70%" height="13%" css:font-size="calc(384 / 150 * 1vw)" css:font-family="'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Sans', sans-serif" css:white-space="nowrap" css:overflow="hidden">
+          <animate startTime="517.292107" endTime="518.872131" startX="14.9%" startY="-15%" endX="15%" endY="10%"></animate>
+          <animate startTime="523.373882" endTime="524.873404" startX="14.9%" startY="10%" endX="15%" endY="-15%"></animate>
+        </goto>
+      </choice>
+    </presentation>
+  </video>
+</hvml>

@@ -1,5 +1,6 @@
 module.exports = {
   "extends": [
+    "plugin:react/recommended",
     "eslint-config-hughx"
   ],
   "rules": {
@@ -9,7 +10,8 @@ module.exports = {
     {
       "files": [
         "karma.conf.js",
-        "**/*.test.js"
+        "**/*.test.js",
+        "**/*.stories.js"
       ],
       "env": {
         "browser": true,
