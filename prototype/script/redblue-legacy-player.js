@@ -1,3 +1,4 @@
+/* eslint-disable */
 RedBlue.LegacyPlayer = extend(RedBlue.__Player, {
   "init": function () {
     console.log( '--init()--' );
