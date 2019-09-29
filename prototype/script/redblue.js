@@ -1,4 +1,5 @@
-/*jshint laxcomma:true, smarttabs:true, globalstrict: true */
+/* jshint laxcomma:true, smarttabs:true, globalstrict: true */
+/* eslint-disable */
 /*
  * RedBlue
  * Open-Source Interactive Video Framework
