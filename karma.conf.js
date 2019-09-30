@@ -1,55 +1,65 @@
-const { createDefaultConfig } = require( '@open-wc/testing-karma' );
-const merge = require( 'deepmerge' );
+process.env.CHROME_BIN = require( 'puppeteer' ).executablePath();
 
 module.exports = ( config ) => {
-  config.set(
-    merge( createDefaultConfig( config ), {
-      "browsers": ["ChromeHeadlessNoSandbox"],
+  config.set( {
+    "browsers": ["Chrome"],
 
-      "files": [
-        // runs all files ending with .test in the test folder,
-        // can be overwritten by passing a --grep flag. examples:
-        //
-        // npm run test -- --grep test/foo/bar.test.js
-        // npm run test -- --grep test/bar/*
-        { "pattern": config.grep ? config.grep : 'src/**/*.test.js', "type": 'module' },
-      ],
+    // "customLaunchers": {
+    //   "FirefoxHeadless": {
+    //     "base": "Firefox",
+    //     "flags": ["-headless"],
+    //   },
+    // },
 
-      // see the karma-esm docs for all options
-      "esm": {
-        // if you are using 'bare module imports' you will need this option
-        "nodeResolve": true,
+    "files": [
+      // {
+      //   "pattern": "src/**/*.js",
+      //   "type": "module",
+      // },
+      {
+        "pattern": "src/**/!(*.stories).js",
+        "type": "module",
       },
+    ],
 
-      // https://github.com/karma-runner/karma/issues/2652#issuecomment-431843769
-      "captureTimeout": 210000,
-      "browserDisconnectTolerance": 3,
-      "browserDisconnectTimeout": 210000,
-      "browserNoActivityTimeout": 210000,
+    "proxies": {
+      "/src/": "/base/src/",
+      // "/node_modules/": "/base/node_modules/",
+    },
 
-      "customLaunchers": {
-        "ChromeHeadlessNoSandbox": {
-          "base": "ChromeHeadless",
-          "flags": [
-            "--disable-background-timer-throttling",
-            "--disable-default-apps",
-            "--disable-dev-shm-usage",
-            "--disable-device-discovery-notifications",
-            "--disable-gpu",
-            "--disable-popup-blocking",
-            "--disable-renderer-backgrounding",
-            "--disable-setuid-sandbox",
-            "--disable-translate",
-            "--disable-web-security",
-            "--enable-logging",
-            "--no-first-run",
-            "--no-sandbox",
-            "--no-default-browser-check",
-            "--remote-debugging-port=9222",
-          ],
-        },
-      },
-    } ),
-  );
-  return config;
+    "reporters": [
+      "spec",
+    ],
+    // "reporters": ['progress'],
+
+    "plugins": [
+      // load plugin
+      require.resolve( '@open-wc/karma-esm' ),
+
+      // fallback: resolve any karma- plugins
+      // 'karma-*',
+      "karma-mocha",
+      "karma-chai",
+      "karma-chrome-launcher",
+      // "karma-firefox-launcher",
+      "karma-spec-reporter",
+    ],
+
+    "frameworks": [
+      "esm",
+      "mocha",
+      "chai",
+    ],
+
+    "esm": {
+      // if you are using 'bare module imports' you will need this option
+      "nodeResolve": true,
+      // set compatibility mode to all
+      // "compatibility": 'all',
+      "compatibility": 'none',
+      // "babelConfig": ".babelrc",
+      // "babel": false,
+      // "coverage": true
+    },
+  } );
 };

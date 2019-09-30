@@ -1,10 +1,11 @@
 module.exports = {
   "extends": [
-    "plugin:react/recommended",
+    // "plugin:react/recommended",
     "eslint-config-hughx"
   ],
   "rules": {
-    "import/extensions": ["error", "ignorePackages"]
+    "import/extensions": ["error", "ignorePackages"],
+    "import/no-absolute-path": false
   },
   "overrides": [
     {
