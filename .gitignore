@@ -46,3 +46,4 @@ homepage/
 .jekyll-metadata
 coverage/
 .nyc_output/
+.jekyll-cache/
