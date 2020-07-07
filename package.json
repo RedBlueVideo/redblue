@@ -14,7 +14,7 @@
     "watch": "bundle exec jekyll build --watch --incremental",
     "codecov": "karma start --coverage; ./node_modules/.bin/codecov",
     "storybook": "start-storybook",
-    "build": "./node_modules/meta/bin/meta git update && jekyll build"
+    "build": "./node_modules/meta/bin/meta git update && bundle exec jekyll build && mv _site/homepage/* _site/ && rm -rf _site/homepage/ && mv _site/examples/ _site/guide/"
   },
   "repository": {
     "type": "git",

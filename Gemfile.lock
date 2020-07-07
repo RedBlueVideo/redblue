@@ -59,6 +59,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bundler
   jekyll
   jekyll-sass-converter
   jekyll-watch

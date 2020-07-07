@@ -1,0 +1,15 @@
+include: [
+  "_redirects"
+]
+exclude: [
+  "coverage",
+  "karma.conf.js",
+  "LICENSE.txt",
+  "package.json",
+  "README.md",
+  "yarn.lock",
+  "yarn-error.log",
+  "homepage/Vagrantfile",
+  "homepage/README.md",
+  "homepage/pkglist.txt",
+]

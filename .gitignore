@@ -47,3 +47,4 @@ homepage/
 coverage/
 .nyc_output/
 .jekyll-cache/
+vendor/bundle/
