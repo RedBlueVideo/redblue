@@ -1,5 +1,3 @@
-'use strict';
-
 const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   static get is() {
     return 'redblue-video';
@@ -138,7 +136,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   get HVML_SOLO_ELEMENTS() {
     return [
-      "presentation"
+      "presentation",
     ];
   }
 
@@ -160,7 +158,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return {
       "isPlainHTML": () => body === 'BODY',
       "isXHTML": () => body === 'body',
-    }
+    };
   }
 
   getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink ) {
@@ -217,7 +215,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     $nextPlaylistItem = this.find( xpath );
 
     if ( $nextPlaylistItem && $nextPlaylistItem.snapshotLength ) {
-      $nextPlaylistItem = $nextPlaylistItem.snapshotItem(0);
+      $nextPlaylistItem = $nextPlaylistItem.snapshotItem( 0 );
     } else {
       throw new Error( `No HVML elements found after following choice link to \`${xpath}\`` );
     }
@@ -226,16 +224,16 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getNonlinearPlaylistItemFromChoiceLink( $choiceLink ) {
-    let id = this.getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink );
+    const id = this.getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink );
     return this.getNonlinearPlaylistItemFromTargetID( id );
   }
 
   queueNonlinearPlaylistItemsFromChoiceLink( $choiceLink ) {
-    let $nextPlaylistItem = this.getNonlinearPlaylistItemFromChoiceLink( $choiceLink );
+    const $nextPlaylistItem = this.getNonlinearPlaylistItemFromChoiceLink( $choiceLink );
 
     if ( this.hasAttributeAnyNS( $nextPlaylistItem, 'xlink:href' ) ) {
-      let fileXPath = this._getXPathFromXPointerURI(
-        this.getAttributeAnyNS( $nextPlaylistItem, 'xlink:href' )
+      const fileXPath = this._getXPathFromXPointerURI(
+        this.getAttributeAnyNS( $nextPlaylistItem, 'xlink:href' ),
       );
 
       if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
@@ -247,10 +245,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       let $goto = this.find( './/goto[1]', $nextPlaylistItem );
 
       if ( $goto && $goto.snapshotLength ) {
-        $goto = $goto.snapshotItem(0);
+        $goto = $goto.snapshotItem( 0 );
 
-        let targetID = this.getNonlinearPlaylistTargetIDfromGoto( $goto );
-        let $playlistItem = this.getNonlinearPlaylistItemFromTargetID( targetID );
+        const targetID = this.getNonlinearPlaylistTargetIDfromGoto( $goto );
+        const $playlistItem = this.getNonlinearPlaylistItemFromTargetID( targetID );
 
         this._handleMediaFromPlaylistItem(
           $playlistItem,
@@ -258,9 +256,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
               this.fetchMediaFromMediaElement( $mediaElement );
             }
-  
+
             this.queueMediaFromMediaElement( $mediaElement );
-          }
+          },
         );
       }
     }
@@ -272,9 +270,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     this.log( 'choice clicked' );
 
-    let currentAnnotation = this.annotations[this.currentChoiceAnnotationIndex];
-    let currentChoiceChoiceIndex = $clicked.dataset.index.split( '-' )[1];
-    let timelineProperty = currentAnnotation.choices[currentChoiceChoiceIndex].goto.timeline;
+    const currentAnnotation = this.annotations[this.currentChoiceAnnotationIndex];
+    const currentChoiceChoiceIndex = $clicked.dataset.index.split( '-' )[1];
+    const timelineProperty = currentAnnotation.choices[currentChoiceChoiceIndex].goto.timeline;
 
     if ( timelineProperty && ( timelineProperty === 'replace' ) ) {
       this.log( 'replacing timeline' );
@@ -303,8 +301,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         // @todo: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
         // Imprecision may not matter if it's going to be an overlay onto bg video.
         const $videoPlayer = event.target; // this
-        const currentTime = +$videoPlayer.currentTime.toFixed(0);
-        const currentDuration = +$videoPlayer.duration.toFixed(0);
+        const currentTime = +$videoPlayer.currentTime.toFixed( 0 );
+        const currentDuration = +$videoPlayer.duration.toFixed( 0 );
 
         if ( currentTime === currentDuration ) {
           this.log( 'choice presented' );
@@ -342,14 +340,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       this.$.localMedia.addEventListener(
         'timeupdate',
         this.Events.presentChoice,
-        false
+        false,
       );
     }
 
     this.$.annotations.addEventListener(
       'click',
       this.Events.choiceClicked,
-      false
+      false,
     );
   }
 
@@ -360,35 +358,35 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     this.bufferTypes = {
       'webm': 'video/webm; codecs="vorbis,vp8"',
-      'mp4': 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"'
+      'mp4': 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"',
     };
 
     this.mimeTypes = {
       'webm': 'video/webm',
-      'mp4': 'video/mp4'
+      'mp4': 'video/mp4',
     };
 
     // this.DEBUG_MODE = true;
     this.DEBUG_MEDIA = 'webm';
     this.DEBUG_BUFFER_TYPE = this.bufferTypes[this.DEBUG_MEDIA];
     this.DEBUG_MIME_TYPE = this.mimeTypes[this.DEBUG_MEDIA];
-  
+
     // this.POLLING_INTERVAL = 1000, // 1 second
     // this.POLLING_INTERVAL = 41.66666666667, // 1/24 second
     // this.POLLING_INTERVAL = 33.33333333333, // 1/30 second
     // this.POLLING_INTERVAL = 20.83333333333, // 1/48 second
     this.POLLING_INTERVAL = 16.66666666667; // 1/60 second
-  
+
     // Past this point, errors: second video gets appended twice, third not at all, because shit is not ready
     // this.POLLING_INTERVAL = 8.33333333333; // 1/120 second
     // this.POLLING_INTERVAL = 1; // 1/1000 second
-  
+
     this.duration = 0;
 
     this.$ = {
       "currentChoice": null,
     };
-   
+
     this.firstChoiceSelected = false;
 
     this.firstSegmentAppended = false;
@@ -398,12 +396,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     // this.XHR = {
     //   "GET": ( url, type, callback ) => {
     //     this.log( '--XHR.GET()--' );
-    
+
     //     var xhr = new XMLHttpRequest();
     //     xhr.open( 'GET', url, true );
     //     xhr.responseType = 'arraybuffer';
     //     xhr.send();
-    
+
     //     xhr.onload = ( event ) => {
     //       if ( xhr.status !== 200 ) {
     //         this.log( "Unexpected status code " + xhr.status + " for " + url );
@@ -414,13 +412,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     //   }
     // };
 
-    switch ( RedBlue.cachingStrategy ) {
+    switch ( window.RedBlue.cachingStrategy ) {
       case 'preload':
         this.cachingStrategy = RedBlueVideo.cachingStrategies.PRELOAD;
-      break;
+        break;
 
-      // case 'predictive':
-      // break;
+        // case 'predictive':
+        // break;
 
       case 'lazy':
       default:
@@ -435,7 +433,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.$template = this.parseHTML(
       RedBlueVideo.template
         .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
-        .replace( 'id="local-media"', `id="local-media-${this.embedID}"` )
+        .replace( 'id="local-media"', `id="local-media-${this.embedID}"` ),
     ).children[RedBlueVideo.is];
     this.mediaQueue = [];
     // TODO: this.mediaQueueHistory = [];
@@ -445,7 +443,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.MISSING_JSONLD_PARSER_ERROR = 'Can’t process; JSON-LD mixin class has not been applied.';
     this.YOUTUBE_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?youtube\.com\/watch\?v=([^&?]+)/i;
     this.YOUTUBE_DOMAIN_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?youtube\.com/i;
-    this.VIMEO_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?vimeo\.com\/([^\/]+)/i;
+    this.VIMEO_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?vimeo\.com\/([^/]+)/i;
     this.VIMEO_DOMAIN_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?vimeo\.com/i;
   } // constructor
 
@@ -466,7 +464,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         }
 
         throw new Error(
-          `Can’t check if <${$element.nodeName.toLowerCase()}> has attribute “${attribute}”: no namespace URI defined in \`RedBlueVideo.NS\` for “${namespace}”`
+          `Can’t check if <${$element.nodeName.toLowerCase()}> has attribute “${attribute}”: no namespace URI defined in \`RedBlueVideo.NS\` for “${namespace}”`,
         );
       }
     }
@@ -488,7 +486,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         }
 
         throw new Error(
-          `Can’t get attribute “${attribute}” from <${$element.nodeName.toLowerCase()}>: no namespace URI defined in \`RedBlueVideo.NS\` for “${namespace}”`
+          `Can’t get attribute “${attribute}” from <${$element.nodeName.toLowerCase()}>: no namespace URI defined in \`RedBlueVideo.NS\` for “${namespace}”`,
         );
       }
     }
@@ -502,10 +500,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   getMimeTypeFromFileElement( fileElement ) {
-    const container = this.find( './/container/mime/text()', fileElement ).snapshotItem(0);
-    const videoCodec = this.find( './/codec[@type="video"]/mime/text()', fileElement ).snapshotItem(0);
-    const audioCodec = this.find( './/codec[@type="audio"]/mime/text()', fileElement ).snapshotItem(0);
-    const ambiguousCodec = this.find( './/codec[not(@type)]/mime/text()' ).snapshotItem(0);
+    const container = this.find( './/container/mime/text()', fileElement ).snapshotItem( 0 );
+    const videoCodec = this.find( './/codec[@type="video"]/mime/text()', fileElement ).snapshotItem( 0 );
+    const audioCodec = this.find( './/codec[@type="audio"]/mime/text()', fileElement ).snapshotItem( 0 );
+    const ambiguousCodec = this.find( './/codec[not(@type)]/mime/text()' ).snapshotItem( 0 );
 
     let mimeType = '';
     const codecs = [];
@@ -516,13 +514,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       if ( videoCodec ) {
         codecs.push( videoCodec.textContent );
       }
-  
+
       if ( audioCodec ) {
         codecs.push( audioCodec.textContent );
       }
-  
+
       if ( codecs.length ) {
-        
         mimeType += `; codecs=${codecs.join( ',' )}`;
       }
     } else if ( ambiguousCodec ) {
@@ -546,15 +543,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         //   "Content-Type": mediaQueueObject.mime.split( ';' )[0],
         // },
         "cache": "force-cache",
-      }
+      },
     )
-      .then( ( response ) => {
+      .then( ( /* response */ ) => {
         // this.log( 'response', response );
       } )
       .catch( ( error ) => {
         console.error( error );
-      } )
-    ;
+      } );
   }
 
   _handleMediaFromFileElements( xpath, callback ) {
@@ -563,11 +559,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     const fileElements = this.find( xpath );
 
     for ( let index = 0; index < fileElements.snapshotLength; index++ ) {
-      const fileElement = fileElements.snapshotItem(index);
+      const fileElement = fileElements.snapshotItem( index );
       const mimeType = this.getMimeTypeFromFileElement( fileElement );
 
       const mediaQueueObject = {
-        //'type': 'media',
+        // 'type': 'media',
         "mime": mimeType,
         "path": this.getAttributeAnyNS( fileElement, 'xlink:href' ),
       };
@@ -585,7 +581,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this._handleMediaFromFileElements(
       xpath,
       // this.mediaQueue.push.bind( this )
-      mediaQueueObject => {
+      ( mediaQueueObject ) => {
         this.mediaQueue.push( mediaQueueObject );
       },
     );
@@ -601,7 +597,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   _handleMediaFromMediaElement( $mediaElement, callback ) {
     if ( this.hasAttributeAnyNS( $mediaElement, 'xlink:href' ) ) {
       const xpath = this._getXPathFromXPointerURI(
-        this.getAttributeAnyNS( $mediaElement, 'xlink:href' )
+        this.getAttributeAnyNS( $mediaElement, 'xlink:href' ),
       );
 
       callback( xpath );
@@ -611,14 +607,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   queueMediaFromMediaElement( $mediaElement ) {
     this._handleMediaFromMediaElement(
       $mediaElement,
-      this.queueMediaFromFileElements.bind( this )
+      this.queueMediaFromFileElements.bind( this ),
     );
   }
 
   fetchMediaFromMediaElement( $mediaElement ) {
     this._handleMediaFromMediaElement(
       $mediaElement,
-      this.fetchMediaFromFileElements.bind( this )
+      this.fetchMediaFromFileElements.bind( this ),
     );
   }
 
@@ -633,31 +629,33 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     switch ( nodeName ) {
       case 'media':
         mediaCallback( $playlistItem );
-      break;
+        break;
 
       case 'choiceprompt':
         $mediaElementsForChoicePrompt = this.find( './/media', $playlistItem );
 
-        for ( let index = 0; index < $mediaElementsForChoicePrompt.snapshotLength; index++) {
-          const $mediaElement = $mediaElementsForChoicePrompt.snapshotItem(index);
+        for ( let index = 0; index < $mediaElementsForChoicePrompt.snapshotLength; index++ ) {
+          const $mediaElement = $mediaElementsForChoicePrompt.snapshotItem( index );
 
           choicePromptCallback( $mediaElement );
         }
-      break;
+        break;
+
+      default:
     }
   }
 
   queueMediaFromPlaylistItem( $playlistItem ) {
     this._handleMediaFromPlaylistItem(
       $playlistItem,
-      this.queueMediaFromMediaElement.bind( this )
+      this.queueMediaFromMediaElement.bind( this ),
     );
   }
 
   fetchMediaFromPlaylistItem( $playlistItem ) {
     this._handleMediaFromPlaylistItem(
       $playlistItem,
-      this.fetchMediaFromMediaElement.bind( this )
+      this.fetchMediaFromMediaElement.bind( this ),
     );
   }
 
@@ -672,7 +670,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       switch ( $description.getAttribute( 'type' ) ) {
         case 'xhtml':
           $div = this.find( 'html:div[1]', $description );
-          
+
           if ( $div && $div.snapshotLength ) {
             $div = $div.snapshotItem( 0 );
 
@@ -681,9 +679,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               this.$.description.appendChild( $node );
             }
           } else {
-            console.error( 'Found HVML `description` with `type` attribute set to `xhtml`, but no HTML `div` child found.' )
+            console.error( 'Found HVML `description` with `type` attribute set to `xhtml`, but no HTML `div` child found.' );
           }
-        break;
+          break;
 
         case 'text':
         default:
@@ -704,21 +702,21 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     if ( this.debug ) {
       this.log = console.log.bind( window.console );
     } else {
-      this.log = function () {};
+      this.log = function noop() {};
     }
 
     if ( !this.shadowRoot ) {
       shadowRoot = this.attachShadow( {
-        "mode": ( this.debug ? "open" : "closed" )
+        "mode": ( this.debug ? "open" : "closed" ),
       } );
 
       shadowRoot.appendChild(
-        document.importNode( this.$template.content, true )
+        document.importNode( this.$template.content, true ),
       );
     }
 
     // this.$   = {};
-    this.$$  = shadowRoot.querySelector.bind( shadowRoot );
+    this.$$ = shadowRoot.querySelector.bind( shadowRoot );
     this.$$$ = shadowRoot.querySelectorAll.bind( shadowRoot );
     this.$id = shadowRoot.getElementById.bind( shadowRoot );
 
@@ -728,7 +726,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         -----------------------------------------------
         - In XHTML, we can do `//foo[@xml:id]`.
         - In HTML, we have to do `//foo[@*[local-name() = 'xml:id']]`.
-        
+
         But for some reason, combinatorial queries work differently.
         In XHTML, we can do `//foo[@xml:id="bar"]`.
         In HTML, we *should* be able to do
@@ -774,14 +772,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.$.description = this.$id( 'description' );
     this.populateDescription();
     this.currentChoiceAnnotationIndex = 0;
-    this.$.currentChoice = this.$.annotations.children[0];
+    [this.$.currentChoice] = this.$.annotations.children;
 
     try {
       const embedUri = this.getEmbedUri();
 
       if ( this.YOUTUBE_DOMAIN_REGEX.test( embedUri ) ) {
         this.log( 'youtube' );
-        this.embedParameters = '?' + [
+        this.embedParameters = `?${[
           'rel=0',
           'showinfo=0',
           'start=517',
@@ -791,8 +789,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           'modestbranding=1',
           'playsinline=1',
           'fs=0',
-          `origin=${encodeURIComponent(window.location.origin)}`
-        ].join( '&amp;' );
+          `origin=${encodeURIComponent( window.location.origin )}`,
+        ].join( '&amp;' )}`;
         this.$.embeddedMedia.hidden = false;
         this.$.embeddedMedia.src = embedUri + this.embedParameters;
         this.setUpYouTubeIframeAPI();
@@ -810,7 +808,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         this.$.localMedia.hidden = false;
 
         this._isNonlinear = !!nonlinearPlaylist;
-        
+
         // No need to if-guard with isNonlinear() since the
         // try block will fail if getNonlinearPlaylist() throws
         this._initChoiceEvents(); // FIXME: potentially applies to linear video with annotations
@@ -819,10 +817,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         // Cache playlist media
         switch ( this.cachingStrategy ) {
           case RedBlueVideo.cachingStrategies.PRELOAD:
-            nonlinearPlaylistChildren.forEach( $playlistItem =>
-              this.fetchMediaFromPlaylistItem( $playlistItem )
-            );
-          break;
+            nonlinearPlaylistChildren.forEach( ( $playlistItem ) => this.fetchMediaFromPlaylistItem( $playlistItem ) );
+            break;
 
           default:
         }
@@ -838,7 +834,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               mediaCallback:
               If we have media tha
             */
-            $mediaElement => {
+            ( $mediaElement ) => {
               if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
                 this.fetchMediaFromMediaElement( $mediaElement );
               }
@@ -853,7 +849,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               then break the loop so we aren’t queuing up the media for
               every possible story branch.
             */
-            $mediaElement => {
+            ( $mediaElement ) => {
               if ( this.cachingStrategy === RedBlueVideo.cachingStrategies.LAZY ) {
                 this.fetchMediaFromMediaElement( $mediaElement );
               }
@@ -863,7 +859,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             },
           );
         }
-        
+
         this.log( 'this.mediaQueue', this.mediaQueue );
       } catch ( error ) {
         console.warn( error );
@@ -891,25 +887,25 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  async resolveCSSNamespacePrefix() {
+  // FIXME:
+  async resolveCSSNamespacePrefix() { // eslint-disable-line consistent-return
     if ( !this.hvml ) {
       return null;
     }
 
-    switch ( this._hvmlParser ) {
+    // FIXME:
+    switch ( this._hvmlParser ) { // eslint-disable-line default-case
       case 'xml':
         if ( !this.hasXMLParser ) {
           throw this.MISSING_XML_PARSER_ERROR;
         }
         return this.resolveCSSNamespacePrefixFromXML();
-      break;
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
           throw this.MISSING_JSONLD_PARSER_ERROR;
         }
-        return await this.resolveCSSNamespacePrefixFromJSONLD();
-      break;
+        return this.resolveCSSNamespacePrefixFromJSONLD();
     }
   }
 
@@ -917,22 +913,22 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     const stylesheet = this.$.style.sheet;
 
     for ( let annotationIndex = 0; annotationIndex < loopObject.length; annotationIndex++ ) {
-      let annotation = loopObject[annotationIndex];
+      const annotation = loopObject[annotationIndex];
 
       if ( annotation.type === 'choicePrompt' ) {
         this.applyAnnotationStyles( annotation.choices, annotationIndex );
       } else {
-        let animation = loopObject[annotationIndex].goto.animate;
-        let animationLength = ( animation.length || 1 );
+        const animation = loopObject[annotationIndex].goto.animate;
+        const animationLength = ( animation.length || 1 );
 
         for ( let animateIndex = 0; animateIndex < animationLength; animateIndex++ ) {
-          let animate = animation[animateIndex];
+          const animate = animation[animateIndex];
 
           if ( animateIndex === 0 ) {
             let styleProperties = '';
             let compoundIndex = annotationIndex;
-  
-            for ( let attribute in annotation.goto ) {
+
+            for ( const attribute in annotation.goto ) {
               switch ( attribute ) {
                 case 'height':
                 case 'width':
@@ -941,12 +937,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
                 case 'bottom':
                 case 'left':
                   styleProperties += `${attribute}: ${annotation.goto[attribute]};\n`;
-                break;
+                  break;
 
                 default: {
-                  let cssAttributeRegex = new RegExp( `^${this._cssNamespacePrefix}:([^=]+)`, 'i' );
-                  let cssAttribute = attribute.match( cssAttributeRegex );
-    
+                  const cssAttributeRegex = new RegExp( `^${this._cssNamespacePrefix}:([^=]+)`, 'i' );
+                  const cssAttribute = attribute.match( cssAttributeRegex );
+
                   if ( cssAttribute ) {
                     styleProperties += `${cssAttribute[1]}: ${annotation.goto[attribute]};`;
                   }
@@ -958,28 +954,26 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               compoundIndex = `${parentIndex}-${annotationIndex}`;
             }
 
-            let rule = `
+            const rule = `
             .redblue-annotations__link.redblue-annotations__link--${compoundIndex} {
               ${styleProperties}
-              ${animate ? `transition: ${animate.endTime - animate.startTime}s bottom linear;` : '' }
+              ${animate ? `transition: ${animate.endTime - animate.startTime}s bottom linear;` : ''}
             }`;
 
             stylesheet.insertRule( rule, ( this.stylesheetRules.length ) );
-  
+
             if ( animate ) {
               stylesheet.insertRule( `
                 .redblue-annotations__link.redblue-annotations__link--${compoundIndex}-start {
                   left: ${animate.startX};
                   bottom: ${animate.startY};
-                }`, ( this.stylesheetRules.length )
-              );
+                }`, ( this.stylesheetRules.length ) );
 
               stylesheet.insertRule( `
                 .redblue-annotations__link.redblue-annotations__link--${compoundIndex}-animate-${animateIndex}-end {
                   left: ${animate.startX};
                   bottom: ${animate.endY};
-                }`, ( this.stylesheetRules.length )
-              );
+                }`, ( this.stylesheetRules.length ) );
             }
           } // if animateIndex === 0
         }
@@ -1002,18 +996,20 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   initializeYoutubePlayer() {
-    this.player = new YT.Player( this.$.embeddedMedia, {
+    this.player = new window.YT.Player( this.$.embeddedMedia, {
       "events": {
         "onReady": this.onPlayerReady.bind( this ),
-        "onStateChange": this.onStateChange.bind( this )
-      }
+        "onStateChange": this.onStateChange.bind( this ),
+      },
     } );
 
     document.addEventListener( 'keydown', ( event ) => {
       switch ( event.key ) {
         case 'm':
           this.log( this.player.getCurrentTime() );
-        break;
+          break;
+
+        default:
       }
     } );
   }
@@ -1042,11 +1038,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         var time = ( new Date() ).getTime();
         var counter = 0;
       }
-      let interval = setInterval( () => {
+      const interval = setInterval( () => {
         if ( ( 'YT' in window ) && YT.Player ) {
           clearInterval( interval );
           this.initializeYoutubePlayer();
-          this.log( `YouTube Iframe API found after ${counter} tries in ${( new Date() ).getTime() - time } seconds` );
+          this.log( `YouTube Iframe API found after ${counter} tries in ${( new Date() ).getTime() - time} seconds` );
         }
         if ( this.debug ) {
           counter++;
@@ -1087,21 +1083,21 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   updateUIOnYoutubePlayback() {
     if ( this.player && this.player.getCurrentTime ) {
       // Returns the elapsed time in seconds since the video started playing
-      const time = this.player.getCurrentTime(); /* * 1000*/
+      const time = this.player.getCurrentTime(); /* * 1000 */
       const state = this.player.getPlayerState();
 
       // https://stackoverflow.com/a/9882349/214325
       switch ( state ) {
         case YT.PlayerState.PLAYING:
           for ( let startTime in this.timelineTriggers ) {
-            startTime  = parseFloat( startTime );
-            let trigger = this.timelineTriggers[startTime];
-            let endTime = trigger.endTime;
+            startTime = parseFloat( startTime );
+            const trigger = this.timelineTriggers[startTime];
+            const { endTime } = trigger;
             let totalAnimations = this.annotations[trigger.annotationIndex].goto.animate.length;
 
             if ( ( time >= startTime ) && ( time <= endTime ) && !trigger.$ui.classList.contains( trigger.endClass ) ) {
               this.log( '---------' );
-              let drift = Math.abs( time - trigger.startTime );
+              const drift = Math.abs( time - trigger.startTime );
 
               if ( trigger.animateIndex == 0 ) {
                 trigger.$ui.classList.remove( trigger.startClass );
@@ -1116,7 +1112,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               this.log( 'Drift: ', drift );
 
               if ( trigger.animateIndex == ( totalAnimations - 1 ) ) {
-                let transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
+                const transitionDuration = parseFloat( getComputedStyle( trigger.$ui ).getPropertyValue( 'transition-duration' ).slice( 0, -1 ) );
 
                 this.log( '---------' );
                 this.log( 'No more animations' );
@@ -1128,7 +1124,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
                   // Remove all previous animate classes
                   while ( totalAnimations-- ) {
                     trigger.$ui.classList.remove(
-                      trigger.endClass.replace( /animate-[0-9]+-/, `animate-${totalAnimations}-` )
+                      trigger.endClass.replace( /animate-[0-9]+-/, `animate-${totalAnimations}-` ),
                     );
                   }
 
@@ -1137,12 +1133,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
               }
             }
           }
-        break;
+          break;
 
-        case YT.PlayerState.PAUSED:
+        case window.YT.PlayerState.PAUSED:
           // this.log( 'not playing' );
 
-        break;
+          break;
+
+        default:
       }
     }
 
@@ -1151,14 +1149,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   loadData() {
     for ( let i = 0; i < this.children.length; i++ ) {
-      let child = this.children[i];
+      const child = this.children[i];
 
       switch ( child.nodeName.toLowerCase() ) {
         case 'hvml':
           this.hvml = child;
           this._hvmlParser = 'xml';
           return;
-        break;
+          break;
 
         case 'script':
           if ( child.hasAttribute( 'type' ) && ( child.type === 'application/ld+json' ) ) {
@@ -1166,7 +1164,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             this._hvmlParser = 'json-ld';
             return;
           }
-        break;
+          break;
       } // switch
     } // for
   }
@@ -1190,7 +1188,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       return nonlinearPlaylist;
     }
 
-    throw 'No nonlinear playlists found';
+    throw new Error( 'No nonlinear playlists found' );
   }
 
   createHotspots() {
@@ -1199,7 +1197,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
 
     for ( let i = 0; i < this.annotations.length; i++ ) {
-      let annotation = this.annotations[i];
+      const annotation = this.annotations[i];
 
       this.createHotspot( annotation, i );
     }
@@ -1227,8 +1225,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       case 'choicePrompt':
         backgroundMedia = this.find(
           this._getXPathFromXPointerURI(
-            annotation.media['xlink:href']
-          )
+            annotation.media['xlink:href'],
+          ),
         );
 
         stylesheet.insertRule( `
@@ -1244,8 +1242,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         `, this.stylesheetRules.length );
 
         for ( let i = 0; i < backgroundMedia.snapshotLength; i++ ) {
-          const $fileElement = backgroundMedia.snapshotItem(i);
-          
+          const $fileElement = backgroundMedia.snapshotItem( i );
+
           // TODO: if ( supportsImageFormat() ) {
           stylesheet.insertRule( `
             .redblue-annotations__choices.redblue-annotations__choices--${index} {
@@ -1263,15 +1261,15 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             hidden="hidden"
             >
             <h2 class="redblue-prompt">${annotation.name}</h2>
-          </div>`
+          </div>`,
         );
         $target.appendChild( $annotation );
 
         for ( let i = 0; i < annotation.choices.length; i++ ) {
-          let choice = annotation.choices[i];
+          const choice = annotation.choices[i];
           this.createHotspot( choice, `${index}-${i}`, this.$id( `annotation-${index}` ) );
         }
-      break;
+        break;
 
       case 'choice':
         $annotation = this.parseHTML(
@@ -1283,16 +1281,16 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             target="_blank"
             >
               <span>${annotation.name}</span>
-          </a>`
+          </a>`,
         );
         $target.appendChild( $annotation );
-      break;
+        break;
     }
   }
 
   mapAttributeToKeyValuePair( attribute ) {
     const object = {};
-    object[RedBlueVideo.reCamelCase(attribute.nodeName)] = attribute.nodeValue;
+    object[RedBlueVideo.reCamelCase( attribute.nodeName )] = attribute.nodeValue;
     return object;
   }
 
@@ -1320,14 +1318,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           throw this.MISSING_XML_PARSER_ERROR;
         }
         return this.getAnnotationsFromXML();
-      break;
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
           throw this.MISSING_JSONLD_PARSER_ERROR;
         }
         return this.getAnnotationsFromJSONLD();
-      break;
     } // switch
   } // getAnnotations
 
@@ -1336,14 +1332,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       return null;
     }
 
-    let triggers = {};
+    const triggers = {};
 
-    for ( let annotationIndex = 0; annotationIndex  < this.annotations.length; annotationIndex++ ) {
-      let annotation = this.annotations[annotationIndex ];
+    for ( let annotationIndex = 0; annotationIndex < this.annotations.length; annotationIndex++ ) {
+      const annotation = this.annotations[annotationIndex];
 
       if ( annotation.goto && annotation.goto.animate ) {
         for ( let animateIndex = 0, totalAnimations = annotation.goto.animate.length; animateIndex < totalAnimations; animateIndex++ ) {
-          let animate = annotation.goto.animate[animateIndex];
+          const animate = annotation.goto.animate[animateIndex];
 
           triggers[animate.startTime] = {
             ...animate,
@@ -1352,7 +1348,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             "name": annotation.name,
             "$ui": this.$$( `#annotations [data-index="${annotationIndex}"]` ),
             "startClass": `redblue-annotations__link--${annotationIndex}-start`,
-            "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`
+            "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`,
           };
 
           if ( animateIndex > 0 ) {
@@ -1365,23 +1361,23 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return triggers;
   }
 
-  find( query, contextNode ) {
-    switch ( this._hvmlParser ) {
+  // FIXME:
+  find( query, contextNode ) { // eslint-disable-line consistent-return
+    // FIXME:
+    switch ( this._hvmlParser ) { // eslint-disable-line default-case
       case 'xml':
         if ( !this.hasXMLParser ) {
           throw this.MISSING_XML_PARSER_ERROR;
         }
         return this.findInXML( query, contextNode );
-      break;
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
           throw this.MISSING_JSONLD_PARSER_ERROR;
         }
-        return this.findInJSONLD( query/*, contextNode*/ );
-      break;
+        return this.findInJSONLD( query/* , contextNode */ );
     }
   }
-}
+};
 
 export default RedBlueVideo;
