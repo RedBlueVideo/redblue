@@ -124,7 +124,7 @@ RedBlue.MSE = {
 
     if ( !RedBlue.XML.xmlLoaded ) {
       // Load playlist
-      RedBlue.XML.import( '/examples/db/redblue.ovml.xml' );
+      RedBlue.XML.import( '/guide/db/redblue.ovml.xml' );
     } else {
       console.log( '--XML already loaded--' );
       RedBlue.XHR.GET( RedBlue.mediaQueue[0].path, RedBlue.mediaQueue[0].type, RedBlue.Reader.init );
@@ -591,7 +591,7 @@ RedBlue.LegacyPlayer = extend(RedBlue.__Player, {
 
     if ( !RedBlue.XML.xmlLoaded ) {
       // Load playlist
-      RedBlue.XML.import( '/examples/db/redblue.ovml.xml' );
+      RedBlue.XML.import( '/guide/db/redblue.ovml.xml' );
     } else {
       console.log( '--XML already loaded--' );
 

@@ -41,7 +41,7 @@ Note that RedBlue is not yet feature-complete, so only an alpha version has been
 Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)
 ```html
 <script type="module">
-  import RedBlueVideo from './examples/modules/redblue-video-omni.js';
+  import RedBlueVideo from './guide/modules/redblue-video-omni.js';
   customElements.define( RedBlueVideo.is, RedBlueVideo );
 </script>
 ```
