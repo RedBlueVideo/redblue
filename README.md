@@ -1,7 +1,21 @@
-# redblue
-Open-Source Hypervideo Framework
+<p align="center">
+  <br />
+  <img src="https://raw.githubusercontent.com/RedBlueVideo/redblue-site/master/img/redblue-logo--no-spacing.svg?sanitize=true" width="113" alt="logo" />
+</p>
+<h1 align="center">redblue</h1>
+<p align="center">Open-Source Hypervideo Framework</p>
+<p align="center">
+  <a href="https://travis-ci.com/RedBlueVideo/redblue">
+    <img src="https://api.travis-ci.com/RedBlueVideo/redblue.svg?branch=master" alt="Build Status" />
+  </a> <a href="https://codecov.io/gh/RedBlueVideo/redblue/">
+    <img src="https://img.shields.io/codecov/c/github/RedBlueVideo/redblue/master.svg" alt="Code Coverage">
+  </a> <a href="https://www.npmjs.com/package/redblue">
+    <img src="https://img.shields.io/npm/dm/redblue.svg" alt="Downloads per month (NPM)">
+  </a>
+</p>
 
-[![Build Status](https://api.travis-ci.com/RedBlueVideo/redblue.svg?branch=master)](https://travis-ci.com/RedBlueVideo/redblue) [![Code Coverage](https://img.shields.io/codecov/c/github/RedBlueVideo/redblue/master.svg)](https://codecov.io/gh/RedBlueVideo/redblue/) [![Downloads per month (NPM)](https://img.shields.io/npm/dm/redblue.svg)](https://www.npmjs.com/package/redblue)
+----
+
 
 ## Stability
 ⚠️ The `master` branch currently represents an alpha pre-release. Features and syntax are subject to change at any time, so please don’t use it in production. Unless you’re some kind of daredevil.
@@ -41,7 +55,7 @@ Note that RedBlue is not yet feature-complete, so only an alpha version has been
 Import the RedBlue video player Custom Element. (This requires ES6 support to work directly in the browser; otherwise the source code can be transpiled to ES5.)
 ```html
 <script type="module">
-  import RedBlueVideo from './examples/modules/redblue-video-omni.js';
+  import RedBlueVideo from './guide/modules/redblue-video-omni.js';
   customElements.define( RedBlueVideo.is, RedBlueVideo );
 </script>
 ```
@@ -91,12 +105,10 @@ Populate the <abbr>HVML</abbr> data. RedBlue will render the appropriate video e
 ## Contributing
 As this is alpha software, we are not currently accepting Pull Requests, but you are welcome to test it out and offer feedback by posting it to Issues, or by tweeting [@RedBlueVideo](https://twitter.com/RedBlueVideo).
 
-Another big way you can contribute is by supporting us on [Patreon](https://www.patreon.com/redbluevideo)!
-
 ## Known Issues
 - Limited browser support
 - Choice-based narratives not in `master`
 - Hotspot animations do not respond to pauses or timeline seeking within their trigger range
 
 ## Team
-RedBlue Video is a small-time operation headed by Hugh Guiney (Twitter: [@LordPancreas](https://twitter.com/LordPancreas) & [@HughxDev](https://twitter.com/HughxDev), GitHub: [@HughxDev](https://github.com/HughxDev)), with help from his brother Austin (Twitter: [@SenorKoffey](https://twitter.com/SenorKoffey), GitHub: [@pyreking](https://github.com/pyreking)).
+RedBlue Video is a small-time operation headed by Hugh Guiney, a senior UX developer (Twitter: [@LordPancreas](https://twitter.com/LordPancreas) & [@HughxDev](https://twitter.com/HughxDev), GitHub: [@HughxDev](https://github.com/HughxDev)), with help from his brother Austin, a CS undergrad (Twitter: [@SenorKoffey](https://twitter.com/SenorKoffey), GitHub: [@pyreking](https://github.com/pyreking)).

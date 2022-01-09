@@ -19,7 +19,7 @@
       <fps rate="24000" scale="1001" />
       <!-- We are using XLink 1.1 to avoid having to specify xlink:type. -->
       <!-- labels are shareable identifiers, similar to xlink:label but not limited to xlink:type="resource|locator". -->
-      <file xml:id="intro-webm-1080p" label="intro" xlink:href="/examples/media/webm/intro-1080p.webm">
+      <file xml:id="intro-webm-1080p" label="intro" xlink:href="/guide/media/webm/intro-1080p.webm">
         <!-- Specify equivalent files (in terms of quality, dimensions, etc.) but in a different format. -->
         <!-- No longer necessary with @label attribute:
         <link rel="alternate" xlink:href="#intro-mp4-1080p" /> -->
@@ -45,7 +45,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="red-webm-1080p" label="red" xlink:href="/examples/media/webm/red-pill-outcome-1080p.webm">
+      <file xml:id="red-webm-1080p" label="red" xlink:href="/guide/media/webm/red-pill-outcome-1080p.webm">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -68,7 +68,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="blue-webm-1080p" label="blue" xlink:href="/examples/media/webm/blue-pill-outcome-1080p.webm">
+      <file xml:id="blue-webm-1080p" label="blue" xlink:href="/guide/media/webm/blue-pill-outcome-1080p.webm">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -91,7 +91,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="the-end-webm" label="the-end" xlink:href="/examples/media/webm/the-end.webm">
+      <file xml:id="the-end-webm" label="the-end" xlink:href="/guide/media/webm/the-end.webm">
         <!-- Done: Conceptually it might make more sense to put codec and coduc inside container -->
         <container>
           <name>WebM</name>
@@ -105,7 +105,7 @@
         </container>
       </file>
       <!-- MP4 versions -->
-      <file xml:id="intro-mp4-1080p" label="intro" xlink:href="/examples/media/mp4-dash/intro-1080p.mp4">
+      <file xml:id="intro-mp4-1080p" label="intro" xlink:href="/guide/media/mp4-dash/intro-1080p.mp4">
         <!-- Point to all files labeled "1080p" as equivalents. Necessary with @label? -->
         <link rel="alternate" xlink:href="#xpointer(//file[@label='intro'])" /><!-- should also have not:parent but i'm not going to deal with that right now -->
         <container>
@@ -124,7 +124,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="red-mp4-1080p" label="red" xlink:href="/examples/media/mp4-dash/red-pill-1080p.mp4">
+      <file xml:id="red-mp4-1080p" label="red" xlink:href="/guide/media/mp4-dash/red-pill-1080p.mp4">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -145,7 +145,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="blue-mp4-1080p" label="blue" xlink:href="/examples/media/mp4-dash/blue-pill-1080p.mp4">
+      <file xml:id="blue-mp4-1080p" label="blue" xlink:href="/guide/media/mp4-dash/blue-pill-1080p.mp4">
         <!-- Instrinsic width and height in pixels. -->
         <width>1920</width>
         <height>1080</height>
@@ -166,7 +166,7 @@
           </codec>
         </container>
       </file>
-      <file xml:id="the-end-mp4-1080p" label="the-end" xlink:href="/examples/media/mp4-dash/the-end.mp4">
+      <file xml:id="the-end-mp4-1080p" label="the-end" xlink:href="/guide/media/mp4-dash/the-end.mp4">
         <!-- Done: Conceptually it might make more sense to put codec and coduc inside container -->
         <container>
           <name>MPEG-4 Part 14</name>
@@ -185,21 +185,21 @@
         </container>
       </file>
       <!-- Stills -->
-      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="/examples/media/bitmap/choice-1-wait-screen.jpg">
+      <file xml:id="intro-choice-1080p" label="intro-choice" xlink:href="/guide/media/bitmap/choice-1-wait-screen.jpg">
         <!-- Non-video sources -->
         <codec>
           <name>JPEG</name>
           <mime>image/jpeg</mime>
         </codec>
       </file>
-      <file xml:id="the-end-wait-screen-1080p" label="the-end-wait-screen" xlink:href="/examples/media/bitmap/the-end-wait-screen.png">
+      <file xml:id="the-end-wait-screen-1080p" label="the-end-wait-screen" xlink:href="/guide/media/bitmap/the-end-wait-screen.png">
         <!-- Non-video sources -->
         <codec>
           <name>PNG</name>
           <mime>image/png</mime>
         </codec>
       </file>
-      <file xml:id="easter-egg-1080p" label="easter-egg" xlink:href="/examples/media/bitmap/easter-egg.png">
+      <file xml:id="easter-egg-1080p" label="easter-egg" xlink:href="/guide/media/bitmap/easter-egg.png">
         <codec>
           <name>PNG</name>
           <mime>image/png</mime>
