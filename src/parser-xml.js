@@ -1,3 +1,5 @@
+'use strict';
+
 const RedBlueXMLParser = ( RedBlueVideo ) => class extends RedBlueVideo {
   constructor() {
     super();

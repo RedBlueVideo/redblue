@@ -1,8 +1,20 @@
+'use strict';
+
 const RedBlueVideo = class RedBlueVideo extends HTMLElement {
+  /**
+   * Returns the Custom Element tag name.
+   *
+   * @returns {string} tagName
+   */
   static get is() {
     return 'redblue-video';
   }
 
+  /**
+   * Returns a string representation of the player’s Shadow DOM, including the base stylesheet.
+   *
+   * @readonly
+   */
   static get template() {
     return `
       <template id="${RedBlueVideo.is}">
@@ -98,6 +110,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     `;
   }
 
+  /**
+   * Returns a lookup table mapping XML namespace prefixes to URIs.
+   *
+   * @readonly
+   */
   static get NS() {
     return {
       "hvml": "https://hypervideo.tech/hvml#",
@@ -109,13 +126,26 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     };
   }
 
+  /**
+   * Different modes for loading media segments.
+   *
+   * @readonly
+   */
   static get cachingStrategies() {
     return {
+      /** Load media segments as they are encountered as a result of user input. */
       "LAZY": 0,
+      /** Load all media segments in advance to minimize buffering. */
       "PRELOAD": 1,
     };
   }
 
+  /**
+   * Map lowercased attribute names (HTML-compat) back to original camel case attributes (XML-compat).
+   *
+   * @param {string} nodeName - Attribute name in lowercase
+   * @returns {string} Attribute name in camel case
+   */
   static reCamelCase( nodeName ) {
     const map = {
       "endtime": "endTime",
@@ -130,28 +160,46 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return ( map[nodeName] || nodeName );
   }
 
+  /**
+   * @readonly
+   */
   static MSEsupported() {
     return !!( window.MediaSource || window.WebKitMediaSource );
   }
 
+  /**
+   * @readonly
+   */
   get HVML_SOLO_ELEMENTS() {
     return [
       "presentation",
     ];
   }
 
+  /**
+   * @readonly
+   */
   get hasXMLParser() {
     return false;
   }
 
+  /**
+   * @readonly
+   */
   get hasJSONLDParser() {
     return false;
   }
 
+  /**
+   * @readonly
+   */
   get hasMSEPlayer() {
     return false;
   }
 
+  /**
+   * @readonly
+   */
   get hostDocument() {
     const body = this.ownerDocument.body.nodeName;
 
@@ -184,6 +232,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return href;
   }
 
+  /**
+   * @param {HTMLElement | Node} $goto - HVML `<goto>` element
+   * @returns {string} - HTML or XML `id` URI
+   */
   getNonlinearPlaylistTargetIDfromGoto( $goto ) {
     let href;
 
@@ -202,6 +254,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return href;
   }
 
+  /**
+   * @param {string} id - HTML or XML `id` pointing to an interactive playback instruction.
+   * @returns {HTMLElement | Node}
+   */
   getNonlinearPlaylistItemFromTargetID( id ) {
     let xpath;
     let $nextPlaylistItem;
@@ -909,6 +965,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
+  // eslint-disable-next-line default-param-last
   applyAnnotationStyles( loopObject = this.annotations, parentIndex ) {
     const stylesheet = this.$.style.sheet;
 
@@ -1034,12 +1091,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         this.initializeYoutubePlayer();
       };
     } else {
+      /* eslint-disable vars-on-top */
       if ( this.debug ) {
         var time = ( new Date() ).getTime();
         var counter = 0;
       }
+      /* eslint-enable vars-on-top */
       const interval = setInterval( () => {
-        if ( ( 'YT' in window ) && YT.Player ) {
+        if ( ( 'YT' in window ) && window.YT.Player ) {
           clearInterval( interval );
           this.initializeYoutubePlayer();
           this.log( `YouTube Iframe API found after ${counter} tries in ${( new Date() ).getTime() - time} seconds` );
@@ -1050,7 +1109,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       }, 0 );
       // Kill the check for YT after n minutes
       setTimeout( () => {
-        // this.log( 'YT NOT found after ', ( new Date() ).getTime() - time, ' seconds' );
         clearInterval( interval );
         if ( this.debug ) {
           console.error( `Couldn’t find YouTube Iframe API after ${counter} tries in ${( new Date() ).getTime() - time} seconds'` );
@@ -1061,7 +1119,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  onPlayerReady( event ) {
+  onPlayerReady( /* event */ ) {
     this.log( 'ready' );
     this.$.embeddedMedia.style.borderColor = '#FF6D00';
     this.player.mute();
@@ -1088,7 +1146,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
       // https://stackoverflow.com/a/9882349/214325
       switch ( state ) {
-        case YT.PlayerState.PLAYING:
+        case window.YT.PlayerState.PLAYING:
           for ( let startTime in this.timelineTriggers ) {
             startTime = parseFloat( startTime );
             const trigger = this.timelineTriggers[startTime];
@@ -1147,6 +1205,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     requestAnimationFrame( this.updateUIOnYoutubePlayback.bind( this ) );
   }
 
+  /**
+   * Load HVML annotations from the player’s Light DOM children.
+   *
+   * @returns {void}
+   */
   loadData() {
     for ( let i = 0; i < this.children.length; i++ ) {
       const child = this.children[i];
@@ -1156,7 +1219,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           this.hvml = child;
           this._hvmlParser = 'xml';
           return;
-          break;
 
         case 'script':
           if ( child.hasAttribute( 'type' ) && ( child.type === 'application/ld+json' ) ) {
@@ -1164,9 +1226,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             this._hvmlParser = 'json-ld';
             return;
           }
-          break;
+          throw new TypeError( '<script> elements must contain JSON-LD data. If this is what you have, please set the `type` attribute to "application/ld+json"` to make this explicit.' );
+
+        default:
       } // switch
     } // for
+
+    this.log( 'No <hvml> or <script> elements found.' );
   }
 
   getEmbedUri() {
@@ -1177,7 +1243,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       return youtubeUrl.textContent.replace( this.YOUTUBE_VIDEO_REGEX, `//www.youtube.com/embed/$1${this.embedParameters || ''}` );
     }
 
-    throw 'No Embed URL found';
+    throw new Error( 'No Embed URL found' );
   }
 
   getNonlinearPlaylist() {
@@ -1285,6 +1351,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         );
         $target.appendChild( $annotation );
         break;
+
+      default:
+        throw new TypeError( `Cannot create hotspot. Invalid annotation type \`${annotation.type}\`.` );
     }
   }
 
@@ -1324,6 +1393,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
           throw this.MISSING_JSONLD_PARSER_ERROR;
         }
         return this.getAnnotationsFromJSONLD();
+
+      default:
+        throw new TypeError( `Invalid or uninitialized HVML parser. Expected one of “xml” or “json-ld”; got “${this._hvmlParser}”` );
     } // switch
   } // getAnnotations
 

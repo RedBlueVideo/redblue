@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 'use strict';
 
 // Dummy clone of XPathResult
@@ -46,13 +47,33 @@ class JSONXPathResult {
     }
   }
 
-  get booleanValue() { return this._booleanValue; }
-  get invalidIteratorState() { return this._invalidIteratorState; }
-  get numberValue() { return this._numberValue; }
-  get resultType() { return this._resultType; }
-  get singleNodeValue() { return this._singleNodeValue; }
-  get snapshotLength() { return this._snapshotLength; }
-  get stringValue() { return this._stringValue; }
+  get booleanValue() {
+    return this._booleanValue;
+  }
+
+  get invalidIteratorState() {
+    return this._invalidIteratorState;
+  }
+
+  get numberValue() {
+    return this._numberValue;
+  }
+
+  get resultType() {
+    return this._resultType;
+  }
+
+  get singleNodeValue() {
+    return this._singleNodeValue;
+  }
+
+  get snapshotLength() {
+    return this._snapshotLength;
+  }
+
+  get stringValue() {
+    return this._stringValue;
+  }
 
   snapshotItem( index ) {
     return this._snapshotItems[index];
@@ -64,7 +85,8 @@ class JSONXPathResult {
 }
 
 const RedBlueJSONLDParser = ( RedBlueVideo ) => {
-  let _customJSONSearchUtility = null;
+  // TODO:
+  // let _customJSONSearchUtility = null;
 
   return class extends RedBlueVideo {
     constructor() {
@@ -85,7 +107,7 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
       const USING_DEFAULT_CSS_PREFIX = `Default CSS namespace prefix of \`${defaultPrefix}\` will be used to look up hotspot styling.`;
 
       if ( !this.hvml['@context'] || !this.hvml['@context'].length ) {
-        console.warn( `JSON-LD Context is blank or missing.\n` + USING_DEFAULT_CSS_PREFIX );
+        console.warn( `JSON-LD Context is blank or missing.\n${USING_DEFAULT_CSS_PREFIX}` );
         return defaultPrefix;
       }
 
@@ -93,12 +115,12 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
       // const fetchURIregex = /^(((https?|ftps?|about|blob|data|file|filesystem):)|\.\.?\/)(.*)\.json(ld)?$/i;
 
       if ( typeof context === 'string' ) {
-        let request = new Request( context );
+        const request = new Request( context );
 
         context = await fetch( request )
           .then( ( response ) => {
             if ( !response.ok ) {
-              throw `JSON-LD Context interpreted as URL but unresolvable: \`${this.hvml['@context']}\`.\n` + USING_DEFAULT_CSS_PREFIX;
+              throw new Error( `JSON-LD Context interpreted as URL but unresolvable: \`${this.hvml['@context']}\`.\n${USING_DEFAULT_CSS_PREFIX}` );
             }
 
             return response.json();
@@ -111,7 +133,7 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
       }
 
       if ( context ) {
-        for ( let property in context ) {
+        for ( const property in context ) {
           if ( context[property].match( /https?:\/\/www\.w3\.org\/TR\/CSS\/?/i ) ) {
             return property;
           }
@@ -123,32 +145,33 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
 
     getAnnotationsFromJSONLD() {
       const annotations = [];
-      const $presentation = this.find( `.//presentation[1]` ).snapshotItem(0);
+      const $presentation = this.find( `.//presentation[1]` ).snapshotItem( 0 );
 
-      for ( let nodeName in $presentation ) {
+      for ( const nodeName in $presentation ) {
         switch ( nodeName ) {
           case 'choice':
-            for ( let grandchildNodeName in $presentation[nodeName] ) {
+            for ( const grandchildNodeName in $presentation[nodeName] ) {
               switch ( grandchildNodeName ) {
                 case 'name':
                   $presentation[nodeName][grandchildNodeName] = $presentation[nodeName][grandchildNodeName].reduce( ( previous, current ) => {
                     switch ( typeof current ) {
                       case 'string':
                         return previous + current;
-                      break;
 
                       case 'object':
-                        return previous + `<${current['@type']} style="${current.style}">${current.textContent}</${current['@type']}>`;
-                      break;
+                        return `${previous}<${current['@type']} style="${current.style}">${current.textContent}</${current['@type']}>`;
+
+                      default:
+                        throw new TypeError( `Cannot get annotation: node must be a String or an Object; got ${typeof current}` );
                     }
                   } );
-                break;
+                  break;
               }
             }
 
             $presentation[nodeName].type = 'choice';
             annotations.push( $presentation[nodeName] );
-          break;
+            break;
         }
       }
 
@@ -164,43 +187,44 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
       that takes the same arguments as `document.evaluate`, all of which
       are optional except the first, `xpathExpression`.
     */
+    /* eslint-disable camelcase */
     findInJSONLD( xpathExpression, contextNode = this.hvml, namespaceResolver = null, resultType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, result = null ) {
       if ( RedBlueJSONLDParser.customJSONSearchUtility ) {
         return RedBlueJSONLDParser.customJSONSearchUtility( xpathExpression, contextNode, namespaceResolver, resultType, result );
       }
 
       const atoms = [];
-      let asksForRootDescendants = false;
-      let asksForLocalDescendants = false;
+      // let asksForRootDescendants = false;
+      // let asksForLocalDescendants = false;
 
       // Regular Expressions
-      const xpathRegex__contains = /([^\[\]]+\[contains\(\s*[^,]+,\s*(?:['"]).*\1\s*\)\])/i;
+      const xpathRegex__contains = /([^[\]]+\[contains\(\s*[^,]+,\s*(['"]).*\2\s*\)\])/i;
       const xpathRegex__rootDescendants = /^\/\//i;
       const xpathRegex__localDescendants = /\.\/\//i;
-      const xpathRegex__withAttribute = /[^\[\]]+\[@[^=]+=(['"]).*\1\]/i;
-      const xpathRegex__withIndex = /[^\[\]]+\[[0-9]+\]/i;
-      const xpathRegex__text = /text()/i;
-      const xpathRegex__brackets = /[\[\]]/i;
+      const xpathRegex__withAttribute = /[^[\]]+\[@[^=]+=(['"]).*\1\]/i;
+      const xpathRegex__withIndex = /[^[\]]+\[[0-9]+\]/i;
+      const xpathRegex__text = /text\(\)/i;
+      const xpathRegex__brackets = /[[\]]/i;
 
       if ( xpathRegex__rootDescendants.test( xpathExpression ) ) {
-        asksForRootDescendants = true;
+        // asksForRootDescendants = true;
         xpathExpression = xpathExpression.replace( xpathRegex__rootDescendants, '' );
       } else if ( xpathRegex__localDescendants.test( xpathExpression ) ) {
-        asksForLocalDescendants = true;
+        // asksForLocalDescendants = true;
         xpathExpression = xpathExpression.replace( xpathRegex__localDescendants, '' );
       }
 
       const xpathParts = xpathExpression.split( xpathRegex__contains );
 
       for ( let i = 0; i < xpathParts.length; i++ ) {
-        let xpathPart = xpathParts[i];
+        const xpathPart = xpathParts[i];
 
         if ( !xpathRegex__contains.test( xpathPart ) ) {
-          let splitted = xpathPart.split( '/' );
+          const splitted = xpathPart.split( '/' );
 
-          for ( let i = 0; i < splitted.length; i++ ) {
-            if ( splitted[i] !== '' ) {
-              atoms.push( splitted[i] );
+          for ( let j = 0; j < splitted.length; j++ ) {
+            if ( splitted[j] !== '' ) {
+              atoms.push( splitted[j] );
             }
           }
         } else {
@@ -226,14 +250,18 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
           }
         },
       */
-      let atom, lastAtom = null, datum, lastDatum = null;
+      let atom;
+      // let lastAtom = null;
+      let datum;
+      let lastDatum = null;
+
       while ( atoms.length > 0 ) {
         atom = atoms.shift();
 
         if ( xpathRegex__withIndex.test( atom ) ) {
-          let subatomicParticles = atom.split( xpathRegex__brackets );
-              subatomicParticles.pop();
-              subatomicParticles[1] = ( parseInt( subatomicParticles[1], 10 ) - 1 );
+          const subatomicParticles = atom.split( xpathRegex__brackets );
+          subatomicParticles.pop();
+          subatomicParticles[1] = ( parseInt( subatomicParticles[1], 10 ) - 1 );
 
           if ( ( subatomicParticles[1] === 0 ) && this.HVML_SOLO_ELEMENTS.indexOf( subatomicParticles[0] ) !== -1 ) {
             if ( lastDatum ) {
@@ -258,8 +286,8 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
             return new JSONXPathResult();
           }
         } else if ( xpathRegex__withAttribute.test( atom ) ) {
-          let subatomicParticles = atom.split( xpathRegex__brackets );
-              subatomicParticles.pop();
+          const subatomicParticles = atom.split( xpathRegex__brackets );
+          subatomicParticles.pop();
 
           if ( lastDatum ) {
             datum = lastDatum[subatomicParticles[0]];
@@ -277,11 +305,11 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
             return new JSONXPathResult();
           }
 
-          lastAtom = subatomicParticles[0];
+          // [lastAtom] = subatomicParticles;
         } else if ( xpathRegex__contains.test( atom ) ) {
           // uri[contains(., '//www.youtube.com/watch?v=')]
-          let subatomicParticles = atom.split( xpathRegex__brackets );
-              subatomicParticles.pop();
+          const subatomicParticles = atom.split( xpathRegex__brackets );
+          subatomicParticles.pop();
 
           if ( lastDatum ) {
             datum = lastDatum[subatomicParticles[0]];
@@ -290,11 +318,11 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
           }
 
           if ( !datum ) {
-            return new JSONXPathResult;
+            return new JSONXPathResult();
           }
 
           // contains(., '//www.youtube.com/watch?v=')
-          let containsTest = subatomicParticles[1].replace( /contains\(\s*[^,]+,\s*(["'])(.*)\1\)/i, '$2' );
+          const containsTest = subatomicParticles[1].replace( /contains\(\s*[^,]+,\s*(["'])(.*)\1\)/i, '$2' );
           if ( datum.indexOf( containsTest ) === -1 ) {
             return new JSONXPathResult();
           }
@@ -309,7 +337,7 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
         }
 
         if ( atoms.length > 0 ) {
-          lastAtom = atom;
+          // lastAtom = atom;
           lastDatum = datum;
         } else {
           if ( lastDatum === null ) {
@@ -322,7 +350,7 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
             case 'string':
               snapshotItem = {};
               snapshotItem.textContent = lastDatum;
-            break;
+              break;
 
             case 'object':
             default:
@@ -332,13 +360,14 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
           }
 
           return new JSONXPathResult( {
-            "snapshotItems": [ snapshotItem ],
-            "snapshotLength": 1
+            "snapshotItems": [snapshotItem],
+            "snapshotLength": 1,
           } );
         }
       }
     }
-  }
+    /* eslint-enable camelcase */
+  };
 };
 
 export default RedBlueJSONLDParser;

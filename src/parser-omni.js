@@ -5,7 +5,7 @@ import RedBlueXMLParser from './parser-xml.js';
 import RedBlueJSONLDParser from './parser-json-ld.js';
 
 const RedBlueOmniParser = RedBlueJSONLDParser(
-  RedBlueXMLParser( RedBlueVideo )
+  RedBlueXMLParser( RedBlueVideo ),
 );
 
 export default RedBlueOmniParser;
