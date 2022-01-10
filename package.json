@@ -10,11 +10,12 @@
     "test:update-snapshots": "./node_modules/.bin/karma start --update-snapshots",
     "test:prune-snapshots": "./node_modules/.bin/karma start --prune-snapshots",
     "test:compatibility": "./node_modules/.bin/karma start --compatibility all --auto-watch=true --single-run=false",
-    "prepublishOnly": "[ $(git symbolic-ref --short -q HEAD) = \"npm\" ] && git checkout master -- package.json .gitignore .npmignore README.md examples src && echo '\nexamples/*' >> .gitignore && sed -i '' -e 's,/src/,node_modules/redblue/src/,g' README.md",
+    "prepublishOnly": "[ $(git symbolic-ref --short -q HEAD) = \"npm\" ] && git checkout master -- package.json .gitignore .npmignore README.md guide src && echo '\nguide/*' >> .gitignore && sed -i '' -e 's,/src/,node_modules/redblue/src/,g' README.md",
     "watch": "bundle exec jekyll build --watch --incremental",
     "codecov": "./node_modules/.bin/karma start --coverage; ./node_modules/.bin/codecov",
     "storybook": "start-storybook",
-    "build": "./build.sh"
+    "build": "./build.sh",
+    "types": "rm -rf src/types && tsc"
   },
   "repository": {
     "type": "git",
@@ -67,12 +68,14 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-react": "^7.28.0",
     "husky": "^7.0.4",
+    "jsdoc": "^3.6.7",
     "karma": "^6.3.10",
     "meta": "^2.2.25",
     "raw-loader": "^4.0.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-xml-parser": "^1.1.8",
+    "typedoc": "^0.22.10",
     "typescript": "^4.5.4",
     "webpack": "^5.65.0"
   }

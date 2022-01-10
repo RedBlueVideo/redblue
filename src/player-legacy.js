@@ -9,8 +9,8 @@
  * the video src (hard URL) rather than appending a
  * chunk to the video src (MediaSource Blob).
  *
- * @param {*} RedBlueVideo
- * @returns
+ * @param {import("./redblue-video.js")} RedBlueVideo
+ * @returns {RedBlueVideo}
  */
 const _RedBlueLegacyPlayer = ( RedBlueVideo ) => {
   return class RedBlueLegacyPlayer extends RedBlueVideo {
