@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @param {HTMLElement} RedBlueVideo
+ * @returns {HTMLElement}
+ */
 const RedBlueXMLParser = ( RedBlueVideo ) => class extends RedBlueVideo {
   constructor() {
     super();

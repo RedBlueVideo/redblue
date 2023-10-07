@@ -209,6 +209,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     };
   }
 
+  /**
+   *
+   * @param {HTMLAnchorElement | HTMLButtonElement | Node} $choiceLink
+   * @returns {string} href
+   */
   getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink ) {
     let href;
 
@@ -220,11 +225,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       // );
       href = this.getAttributeAnyNS( $choiceLink, 'xlink:href' );
     } else {
-      throw new Error( 'Choice link has no `href` or `xlink:href` attribute; no action to perform.' );
+      throw new TypeError( 'Choice link has no `href` or `xlink:href` attribute; no action to perform.' );
     }
 
     if ( !/^#/i.test( href ) ) {
-      throw new Error( 'Choice link’s href must be a valid CSS or XLink ID selector (i.e. it must start with a hash symbol)' );
+      throw new TypeError( 'Choice link’s href must be a valid CSS or XLink ID selector (i.e. it must start with a hash symbol)' );
     }
 
     href = href.slice( 1 );
@@ -233,8 +238,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   /**
-   * @param {HTMLElement | Node} $goto - HVML `<goto>` element
-   * @returns {string} - HTML or XML `id` URI
+   * @param {HTMLElement | Node} $goto HVML `<goto>` element
+   * @returns {string} HTML or XML `id` URI
    */
   getNonlinearPlaylistTargetIDfromGoto( $goto ) {
     let href;
@@ -242,11 +247,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     if ( this.hasAttributeAnyNS( $goto, 'xlink:href' ) ) {
       href = this.getAttributeAnyNS( $goto, 'xlink:href' );
     } else {
-      throw new Error( 'Goto has no `href` or `xlink:href` attribute; no action to perform.' );
+      throw new TypeError( 'Goto has no `href` or `xlink:href` attribute; no action to perform.' );
     }
 
     if ( !/^#/i.test( href ) ) {
-      throw new Error( 'Goto’s href must be a valid CSS or XLink ID selector (i.e. it must start with a hash symbol)' );
+      throw new TypeError( 'Goto’s href must be a valid CSS or XLink ID selector (i.e. it must start with a hash symbol)' );
     }
 
     href = href.slice( 1 );
@@ -255,7 +260,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   /**
-   * @param {string} id - HTML or XML `id` pointing to an interactive playback instruction.
+   * @param {string} id HTML or XML `id` pointing to an interactive playback instruction.
    * @returns {HTMLElement | Node}
    */
   getNonlinearPlaylistItemFromTargetID( id ) {
@@ -279,6 +284,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return $nextPlaylistItem;
   }
 
+  /**
+   * @param {HTMLAnchorElement | Node} $choiceLink
+   * @returns {Node}
+   */
   getNonlinearPlaylistItemFromChoiceLink( $choiceLink ) {
     const id = this.getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink );
     return this.getNonlinearPlaylistItemFromTargetID( id );
@@ -320,6 +329,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
+  /**
+   * @param {HTMLAnchorElement | HTMLButtonElement | Node} $clicked
+   */
   handleChoice( $clicked ) {
     this.$.localMedia.addEventListener( 'timeupdate', this.Events.presentChoice, false );
     this.$.currentChoice.hidden = true;
@@ -497,6 +509,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     this.MISSING_XML_PARSER_ERROR = 'Can’t process; XML mixin class has not been applied.';
     this.MISSING_JSONLD_PARSER_ERROR = 'Can’t process; JSON-LD mixin class has not been applied.';
+    this.MISSING_HVML_PARSER_ERROR = 'Can’t process; neither XML nor JSON-LD mixin classes have been applied';
     this.YOUTUBE_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?youtube\.com\/watch\?v=([^&?]+)/i;
     this.YOUTUBE_DOMAIN_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?youtube\.com/i;
     this.VIMEO_VIDEO_REGEX = /^(?:https?:)?\/\/(?:www\.)?vimeo\.com\/([^/]+)/i;
@@ -917,8 +930,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
         }
 
         this.log( 'this.mediaQueue', this.mediaQueue );
-      } catch ( error ) {
-        console.warn( error );
+      } catch ( playlistError ) {
+        console.warn( playlistError );
 
         // const playlist = this.getPlaylist();
       }
@@ -926,7 +939,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   } // connectedCallback
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API
-  toggleFullscreen( event ) {
+  toggleFullscreen() {
     if ( document.fullscreenElement ) {
       document.exitFullscreen();
     } else if ( document.webkitFullscreenElement ) {
@@ -943,25 +956,26 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  // FIXME:
-  async resolveCSSNamespacePrefix() { // eslint-disable-line consistent-return
+  async resolveCSSNamespacePrefix() {
     if ( !this.hvml ) {
       return null;
     }
 
-    // FIXME:
-    switch ( this._hvmlParser ) { // eslint-disable-line default-case
+    switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {
-          throw this.MISSING_XML_PARSER_ERROR;
+          throw new ReferenceError( this.MISSING_XML_PARSER_ERROR );
         }
         return this.resolveCSSNamespacePrefixFromXML();
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
-          throw this.MISSING_JSONLD_PARSER_ERROR;
+          throw new ReferenceError( this.MISSING_JSONLD_PARSER_ERROR );
         }
         return this.resolveCSSNamespacePrefixFromJSONLD();
+
+      default:
+        throw new ReferenceError( this.MISSING_HVML_PARSER_ERROR );
     }
   }
 
@@ -1399,6 +1413,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     } // switch
   } // getAnnotations
 
+  /**
+   * @typedef
+   */
+  /**
+   * 
+   * @returns {}
+   */
   getTimelineTriggers() {
     if ( !this.annotations ) {
       return null;
@@ -1433,21 +1454,22 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return triggers;
   }
 
-  // FIXME:
-  find( query, contextNode ) { // eslint-disable-line consistent-return
-    // FIXME:
-    switch ( this._hvmlParser ) { // eslint-disable-line default-case
+  find( query, contextNode ) {
+    switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {
-          throw this.MISSING_XML_PARSER_ERROR;
+          throw new ReferenceError( this.MISSING_XML_PARSER_ERROR );
         }
         return this.findInXML( query, contextNode );
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
-          throw this.MISSING_JSONLD_PARSER_ERROR;
+          throw new ReferenceError( this.MISSING_JSONLD_PARSER_ERROR );
         }
         return this.findInJSONLD( query/* , contextNode */ );
+
+      default:
+        throw new ReferenceError( this.MISSING_HVML_PARSER_ERROR );
     }
   }
 };

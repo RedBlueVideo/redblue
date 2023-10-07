@@ -84,6 +84,10 @@ class JSONXPathResult {
   }
 }
 
+/**
+ * @param {HTMLElement} RedBlueVideo
+ * @returns {HTMLElement}
+ */
 const RedBlueJSONLDParser = ( RedBlueVideo ) => {
   // TODO:
   // let _customJSONSearchUtility = null;
@@ -166,12 +170,16 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
                     }
                   } );
                   break;
+
+                default:
               }
             }
 
             $presentation[nodeName].type = 'choice';
             annotations.push( $presentation[nodeName] );
             break;
+
+          default:
         }
       }
 
@@ -188,7 +196,22 @@ const RedBlueJSONLDParser = ( RedBlueVideo ) => {
       are optional except the first, `xpathExpression`.
     */
     /* eslint-disable camelcase */
-    findInJSONLD( xpathExpression, contextNode = this.hvml, namespaceResolver = null, resultType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, result = null ) {
+    /**
+     * 
+     * @param {string} xpathExpression
+     * @param {HTMLCollection} contextNode
+     * @param {Object.<string, string>} namespaceResolver
+     * @param {keyof XPathResult} resultType
+     * @param {*} result
+     * @returns {JSONXPathResult}
+     */
+    findInJSONLD(
+      xpathExpression,
+      contextNode = this.hvml,
+      namespaceResolver = null,
+      resultType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+      result = null,
+    ) {
       if ( RedBlueJSONLDParser.customJSONSearchUtility ) {
         return RedBlueJSONLDParser.customJSONSearchUtility( xpathExpression, contextNode, namespaceResolver, resultType, result );
       }
