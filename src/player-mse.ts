@@ -1,7 +1,23 @@
 'use strict';
 
-const RedBlueMSEPlayer = ( RedBlueVideo ) => {
-  return class extends RedBlueVideo {
+import RedBlueVideo, { MediaQueueObject } from "./redblue-video";
+
+export type MSE = {
+  apply: () => void;
+  endOfStream: boolean;
+  init: () => void;
+  isReady: () => boolean;
+  mediaSource: MediaSource;
+  onSourceEnded: MediaSource['onsourceended'];
+  onSourceOpen: () => void;
+  registerEvents: () => void;
+  sourceBuffer?: SourceBuffer;
+};
+
+const RedBlueMSEPlayer = ( RedBlueVideoClass: typeof RedBlueVideo ) => {
+  return class extends RedBlueVideoClass {
+    MSE: MSE;
+
     constructor() {
       super();
 
@@ -27,7 +43,7 @@ const RedBlueMSEPlayer = ( RedBlueVideo ) => {
           "onSourceEnded": ( event ) => {
             console.log( 'onSourceEnded' );
 
-            this.MSE.mediaSource = event.target;
+            this.MSE.mediaSource = event.target as MediaSource;
 
             console.log('mediaSource readyState: ' + this.MSE.mediaSource.readyState);
           },
@@ -49,12 +65,7 @@ const RedBlueMSEPlayer = ( RedBlueVideo ) => {
             }
         
             if ( this.MSE.mediaSource.readyState !== "open" ) {
-              console.log( 'NOT READY: mediaSource.readyState !== "open"', RedBlue.MSE.mediaSource.readyState );
-              return false;
-            }
-        
-            if ( this.MSE.mediaSource.sourceBuffers[0].mode == "PARSING_MEDIA_SEGMENT" ) {
-              console.log( 'NOT READY: mediaSource.sourceBuffers[0].mode == PARSING_MEDIA_SEGMENT' );
+              console.log( 'NOT READY: mediaSource.readyState !== "open"', this.MSE.mediaSource.readyState );
               return false;
             }
         
@@ -98,18 +109,18 @@ const RedBlueMSEPlayer = ( RedBlueVideo ) => {
       return true;
     }
 
-    fetchMedia( mediaQueueObject ) {
+    fetchMedia( mediaQueueObject: MediaQueueObject ) {
       /* {
         "mime": 'video/webm',
         "path": '/foo/bar',
       }; */
-  
+
       const xhr = fetch(
         mediaQueueObject.path,
         {
           "method": "GET",
           "cache": "force-cache",
-        }
+        },
       );
 
       if ( /^video\/.*/i.test( mediaQueueObject.mime ) ) {
@@ -140,7 +151,7 @@ const RedBlueMSEPlayer = ( RedBlueVideo ) => {
           } )
         ;
       }
-        
+
       xhr.catch( ( error ) => {
         console.error( error );
       } );

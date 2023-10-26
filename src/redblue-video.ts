@@ -1,10 +1,171 @@
 'use strict';
 
+import { JSONXPathResult, RedBlueJSONLDParser } from "./parser-json-ld";
+import { MSE } from "./player-mse";
+
+declare global {
+  interface Window {
+    WebKitMediaSource: any;
+  }
+}
+
+// TODO: Specific HVML element types? Bundle with hvml npm package
+// interface HVMLPlaylistXMLElement extends Element {
+//   readonly nodeName: 'playlist';
+//   readonly localName: 'playlist';
+//   readonly namespaceURI: 'https://hypervideo.tech/hvml#';
+// }
+// interface HVMLPlaylistHTMLElement extends HTMLElement {
+//   readonly nodeName: 'playlist';
+//   readonly localName: 'playlist';
+// }
+// type HVMLPlaylistElement = HVMLPlaylistXMLElement | HVMLPlaylistHTMLElement;
+
+export type MediaQueueObject = {
+  mime: string;
+  path: string;
+};
+
+type MediaElementCallback = ( $mediaElement: $Element ) => void;
+
+type MediaQueueObjectCallback = ( mediaQueueObject: MediaQueueObject ) => void;
+
+type ChoiceLink = HTMLAnchorElement;
+
+type CamelCaseHvmlElements =          'endTime' | 'endX' | 'endY' | 'startTime' | 'startX' | 'startY' | 'choicePrompt';
+type CamelCaseHvmlElementsLowerCase = 'endtime' | 'endx' | 'endy' | 'starttime' | 'startx' | 'starty' | 'choiceprompt';
+
+type $Element = HTMLElement | Element;
+
+type HVMLSerialization = 'xml' | 'json-ld';
+
+export enum CachingStrategies {
+  LAZY = 0,
+  PRELOAD = 1,
+}
+
+enum MediaFileTypes {
+  "mp4" = "video/mp4",
+  "webm" = "video/webm",
+}
+type MediaFileExtensions = keyof typeof MediaFileTypes;
+type MediaFileMediaTypes = `${MediaFileTypes}`;
+
+
+export interface Annotation {
+  $ui: HTMLElement;
+  animateIndex: number;
+  annotationIndex: number;
+  choices: Record<string, any>[];
+  endClass: string;
+  goto: Record<string, any>;
+  name: string;
+  startClass: string;
+}
+
 const RedBlueVideo = class RedBlueVideo extends HTMLElement {
+  DEBUG_BUFFER_TYPE: string;
+  DEBUG_MEDIA: MediaFileExtensions;
+  DEBUG_MIME_TYPE: MediaFileMediaTypes;
+  MISSING_HVML_PARSER_ERROR: string;
+  MISSING_JSONLD_PARSER_ERROR: string;
+  MISSING_XML_PARSER_ERROR: string;
+  POLLING_INTERVAL: number;
+  VIMEO_DOMAIN_REGEX: RegExp;
+  VIMEO_VIDEO_REGEX: RegExp;
+  YOUTUBE_DOMAIN_REGEX: RegExp;
+  YOUTUBE_VIDEO_REGEX: RegExp;
+
+  _cssNamespacePrefix: string;
+  _hvmlParser: HVMLSerialization;
+  _isNonlinear: boolean;
+
+  /**
+   * Cached elements
+   */
+  $: {
+    annotations: HTMLElement;
+    currentChoice: HTMLElement;
+    description: HTMLElement;
+    embeddedMedia: HTMLIFrameElement;
+    fullscreenButton: HTMLButtonElement;
+    fullscreenContext: HTMLElement;
+    localMedia: HTMLVideoElement;
+    style: HTMLStyleElement;
+  };
+  $$: ParentNode['querySelector'];
+  $$$: ParentNode['querySelectorAll'];
+  $id: DocumentFragment['getElementById'];
+  $template: HTMLTemplateElement;
+
+  annotations: Annotation[];
+
+  bufferTypes: Record<MediaFileExtensions, string>;
+
+  cachingStrategy: CachingStrategies;
+
+  currentChoiceAnnotationIndex: number;
+
+  debug: boolean;
+
+  duration: number;
+
+  embedID: number;
+  embedParameters: string;
+
+  Events: {
+    presentChoice: ( event: any ) => void;
+    choiceClicked: ( event: MouseEvent ) => void;
+  };
+
+  findInJSONLD: (
+    xpathExpression: string,
+    contextNode?: Record<string, any>,
+    namespaceResolver?: Record<string, string> | null,
+    resultType?: number,
+    result?: any
+  ) => JSONXPathResult;
+
+  // TODO: Import
+  findInXML: ( xpathExpression: string, $contextNode: $Element ) => XPathResult | undefined;
+  
+
+  firstChoiceSelected: boolean;
+
+  firstSegmentAppended: boolean;
+
+  // TODO: Split into HVML and JSON-LD versions? These types have nothing in common
+  hvml: {
+    xml: $Element | null;
+    jsonLD: Record<string, any> | null;
+  };
+
+  lastSegmentAppended: boolean;
+
+  log: ( ...args: any[] ) => void;
+
+  mediaQueue: MediaQueueObject[];
+
+  mimeTypes: Record<MediaFileExtensions, MediaFileMediaTypes>;
+
+  MSE?: MSE;
+
+  stylesheetRules: CSSRuleList;
+
+
+  /**
+ *  ...animate,
+    annotationIndex,
+    animateIndex,
+    "name": annotation.name,
+    "$ui": this.$$( `#annotations [data-index="${annotationIndex}"]` ),
+    "startClass": `redblue-annotations__link--${annotationIndex}-start`,
+    "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`,
+   */
+  timelineTriggers: Record<number, Record<string, string>>;
+
   /**
    * Returns the Custom Element tag name.
-   *
-   * @returns {string} tagName
    */
   static get is() {
     return 'redblue-video';
@@ -12,8 +173,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   /**
    * Returns a string representation of the player’s Shadow DOM, including the base stylesheet.
-   *
-   * @readonly
    */
   static get template() {
     return `
@@ -112,10 +271,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   /**
    * Returns a lookup table mapping XML namespace prefixes to URIs.
-   *
-   * @readonly
    */
-  static get NS() {
+  static get NS(): Record<string, string> {
     return {
       "hvml": "https://hypervideo.tech/hvml#",
       "ovml": "http://vocab.nospoon.tv/ovml#",
@@ -128,8 +285,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   /**
    * Different modes for loading media segments.
-   *
-   * @readonly
    */
   static get cachingStrategies() {
     return {
@@ -143,11 +298,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   /**
    * Map lowercased attribute names (HTML-compat) back to original camel case attributes (XML-compat).
    *
-   * @param {string} nodeName - Attribute name in lowercase
-   * @returns {string} Attribute name in camel case
+   * @param nodeName - Attribute name in lowercase
+   * @returns Attribute name in camel case
    */
-  static reCamelCase( nodeName ) {
-    const map = {
+  static reCamelCase( nodeName: CamelCaseHvmlElementsLowerCase ) {
+    const map: Record<CamelCaseHvmlElementsLowerCase, CamelCaseHvmlElements> = {
       "endtime": "endTime",
       "endx": "endX",
       "endy": "endY",
@@ -160,46 +315,28 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return ( map[nodeName] || nodeName );
   }
 
-  /**
-   * @readonly
-   */
   static MSEsupported() {
     return !!( window.MediaSource || window.WebKitMediaSource );
   }
 
-  /**
-   * @readonly
-   */
   get HVML_SOLO_ELEMENTS() {
     return [
       "presentation",
     ];
   }
 
-  /**
-   * @readonly
-   */
   get hasXMLParser() {
     return false;
   }
 
-  /**
-   * @readonly
-   */
   get hasJSONLDParser() {
     return false;
   }
 
-  /**
-   * @readonly
-   */
   get hasMSEPlayer() {
     return false;
   }
 
-  /**
-   * @readonly
-   */
   get hostDocument() {
     const body = this.ownerDocument.body.nodeName;
 
@@ -209,12 +346,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     };
   }
 
-  /**
-   *
-   * @param {HTMLAnchorElement | HTMLButtonElement | Node} $choiceLink
-   * @returns {string} href
-   */
-  getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink ) {
+  getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink: ChoiceLink ) {
     let href;
 
     if ( $choiceLink.hasAttribute( 'href' ) ) {
@@ -238,11 +370,11 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   /**
-   * @param {HTMLElement | Node} $goto HVML `<goto>` element
-   * @returns {string} HTML or XML `id` URI
+   * @param $goto HVML `<goto>` element
+   * @returns HTML or XML `id` URI
    */
-  getNonlinearPlaylistTargetIDfromGoto( $goto ) {
-    let href;
+  getNonlinearPlaylistTargetIDfromGoto( $goto: $Element ) {
+    let href: string;
 
     if ( this.hasAttributeAnyNS( $goto, 'xlink:href' ) ) {
       href = this.getAttributeAnyNS( $goto, 'xlink:href' );
@@ -260,10 +392,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   /**
-   * @param {string} id HTML or XML `id` pointing to an interactive playback instruction.
-   * @returns {HTMLElement | Node}
+   * @param id HTML or XML `id` pointing to an interactive playback instruction.
    */
-  getNonlinearPlaylistItemFromTargetID( id ) {
+  getNonlinearPlaylistItemFromTargetID( id: string ) {
     let xpath;
     let $nextPlaylistItem;
 
@@ -284,16 +415,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return $nextPlaylistItem;
   }
 
-  /**
-   * @param {HTMLAnchorElement | Node} $choiceLink
-   * @returns {Node}
-   */
-  getNonlinearPlaylistItemFromChoiceLink( $choiceLink ) {
+  getNonlinearPlaylistItemFromChoiceLink( $choiceLink: ChoiceLink ) {
     const id = this.getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink );
     return this.getNonlinearPlaylistItemFromTargetID( id );
   }
 
-  queueNonlinearPlaylistItemsFromChoiceLink( $choiceLink ) {
+  queueNonlinearPlaylistItemsFromChoiceLink( $choiceLink: ChoiceLink ) {
     const $nextPlaylistItem = this.getNonlinearPlaylistItemFromChoiceLink( $choiceLink );
 
     if ( this.hasAttributeAnyNS( $nextPlaylistItem, 'xlink:href' ) ) {
@@ -329,17 +456,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  /**
-   * @param {HTMLAnchorElement | HTMLButtonElement | Node} $clicked
-   */
-  handleChoice( $clicked ) {
+  handleChoice( $clicked: ChoiceLink ) {
     this.$.localMedia.addEventListener( 'timeupdate', this.Events.presentChoice, false );
     this.$.currentChoice.hidden = true;
 
     this.log( 'choice clicked' );
 
     const currentAnnotation = this.annotations[this.currentChoiceAnnotationIndex];
-    const currentChoiceChoiceIndex = $clicked.dataset.index.split( '-' )[1];
+    const currentChoiceChoiceIndex = Number( $clicked.dataset.index.split( '-' )[1] );
     const timelineProperty = currentAnnotation.choices[currentChoiceChoiceIndex].goto.timeline;
 
     if ( timelineProperty && ( timelineProperty === 'replace' ) ) {
@@ -385,19 +509,22 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       "choiceClicked": ( event ) => {
         event.preventDefault();
 
-        let $clicked = event.target;
+        let $clicked = event.target as HTMLElement;
         let nodeName = $clicked.nodeName.toLowerCase();
 
-        // Prevent clicks on `a > span` from following the link
+        /**
+         * Prevent clicks on `a > span`, etc. from following the link,
+         * as it’s the anchor element that contains the navigation instructions.
+         */
         if ( nodeName !== 'a' ) {
           while ( ( $clicked !== event.currentTarget ) && ( nodeName !== 'a' ) ) {
-            $clicked = $clicked.parentNode;
+            $clicked = $clicked.parentElement;
             nodeName = $clicked.nodeName.toLowerCase();
           }
         }
 
         if ( nodeName === 'a' ) {
-          this.handleChoice( $clicked );
+          this.handleChoice( $clicked as HTMLAnchorElement );
         }
       },
     };
@@ -421,8 +548,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   constructor() {
     super();
-
-    window.RedBlue = ( window.RedBlue || {} );
 
     this.bufferTypes = {
       'webm': 'video/webm; codecs="vorbis,vp8"',
@@ -452,7 +577,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     this.duration = 0;
 
     this.$ = {
+      "annotations": null,
       "currentChoice": null,
+      "description": null,
+      "embeddedMedia": null,
+      "fullscreenButton": null,
+      "fullscreenContext": null,
+      "localMedia": null,
+      "style": null,
     };
 
     this.firstChoiceSelected = false;
@@ -480,19 +612,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     //   }
     // };
 
-    switch ( window.RedBlue.cachingStrategy ) {
-      case 'preload':
-        this.cachingStrategy = RedBlueVideo.cachingStrategies.PRELOAD;
-        break;
-
-        // case 'predictive':
-        // break;
-
-      case 'lazy':
-      default:
-        this.cachingStrategy = RedBlueVideo.cachingStrategies.LAZY;
-    }
-
     // TODO: Avoid falling out of sync:
     // Option A.) delete RedBlue.cachingStrategy;
     // Option B.) observe property changes
@@ -502,7 +621,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       RedBlueVideo.template
         .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
         .replace( 'id="local-media"', `id="local-media-${this.embedID}"` ),
-    ).children[RedBlueVideo.is];
+    ).children.namedItem( RedBlueVideo.is ) as HTMLTemplateElement;
     this.mediaQueue = [];
     // TODO: this.mediaQueueHistory = [];
     this._isNonlinear = false;
@@ -520,7 +639,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return this._isNonlinear;
   }
 
-  hasAttributeAnyNS( $element, attribute ) {
+  hasAttributeAnyNS( $element: $Element, attribute: string ) {
     const attributeParts = attribute.split( ':' );
 
     if ( attributeParts.length > 1 ) { // Has namespace
@@ -529,7 +648,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
       if ( this.hostDocument.isXHTML() ) {
         if ( RedBlueVideo.NS.hasOwnProperty( namespace ) ) {
-          return $element.hasAttributeNS( RedBlueVideo.NS[namespace], localName );
+          return ( $element as HTMLElement ).hasAttributeNS( RedBlueVideo.NS[namespace], localName );
         }
 
         throw new Error(
@@ -542,7 +661,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return $element.hasAttribute( attribute );
   }
 
-  getAttributeAnyNS( $element, attribute ) {
+  getAttributeAnyNS( $element: $Element, attribute: string ) {
     const attributeParts = attribute.split( ':' );
 
     if ( attributeParts.length > 1 ) { // Has namespace
@@ -564,14 +683,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return $element.getAttribute( attribute );
   }
 
-  _getXPathFromXPointerURI( uri ) {
+  _getXPathFromXPointerURI( uri: string ) {
     return uri.replace( /#xpointer\(([^)]+)\)/i, '$1' );
   }
 
-  getMimeTypeFromFileElement( fileElement ) {
-    const container = this.find( './/container/mime/text()', fileElement ).snapshotItem( 0 );
-    const videoCodec = this.find( './/codec[@type="video"]/mime/text()', fileElement ).snapshotItem( 0 );
-    const audioCodec = this.find( './/codec[@type="audio"]/mime/text()', fileElement ).snapshotItem( 0 );
+  getMimeTypeFromFileElement( $fileElement: $Element ) {
+    const container = this.find( './/container/mime/text()', $fileElement ).snapshotItem( 0 );
+    const videoCodec = this.find( './/codec[@type="video"]/mime/text()', $fileElement ).snapshotItem( 0 );
+    const audioCodec = this.find( './/codec[@type="audio"]/mime/text()', $fileElement ).snapshotItem( 0 );
     const ambiguousCodec = this.find( './/codec[not(@type)]/mime/text()' ).snapshotItem( 0 );
 
     let mimeType = '';
@@ -598,7 +717,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return mimeType;
   }
 
-  fetchMedia( mediaQueueObject ) {
+  fetchMedia( mediaQueueObject: MediaQueueObject ) {
     /* {
       "mime": 'video/webm',
       "path": '/foo/bar',
@@ -622,7 +741,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       } );
   }
 
-  _handleMediaFromFileElements( xpath, callback ) {
+  _handleMediaFromFileElements( xpath: string, callback:  MediaQueueObjectCallback ) {
     // TODO: Check if xpath is actually searching for a file element
 
     const fileElements = this.find( xpath );
@@ -646,24 +765,24 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  queueMediaFromFileElements( xpath ) {
+  queueMediaFromFileElements( xpath: string ) {
     this._handleMediaFromFileElements(
       xpath,
       // this.mediaQueue.push.bind( this )
-      ( mediaQueueObject ) => {
+      ( mediaQueueObject: MediaQueueObject ) => {
         this.mediaQueue.push( mediaQueueObject );
       },
     );
   }
 
-  fetchMediaFromFileElements( xpath ) {
+  fetchMediaFromFileElements( xpath: string ) {
     this._handleMediaFromFileElements(
       xpath,
       this.fetchMedia.bind( this ),
     );
   }
 
-  _handleMediaFromMediaElement( $mediaElement, callback ) {
+  _handleMediaFromMediaElement( $mediaElement: $Element, callback: ( xpath: string ) => void ) {
     if ( this.hasAttributeAnyNS( $mediaElement, 'xlink:href' ) ) {
       const xpath = this._getXPathFromXPointerURI(
         this.getAttributeAnyNS( $mediaElement, 'xlink:href' ),
@@ -673,21 +792,25 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  queueMediaFromMediaElement( $mediaElement ) {
+  queueMediaFromMediaElement( $mediaElement: $Element ) {
     this._handleMediaFromMediaElement(
       $mediaElement,
       this.queueMediaFromFileElements.bind( this ),
     );
   }
 
-  fetchMediaFromMediaElement( $mediaElement ) {
+  fetchMediaFromMediaElement( $mediaElement: $Element ) {
     this._handleMediaFromMediaElement(
       $mediaElement,
       this.fetchMediaFromFileElements.bind( this ),
     );
   }
 
-  _handleMediaFromPlaylistItem( $playlistItem, mediaCallback, choicePromptCallback ) {
+  _handleMediaFromPlaylistItem(
+    $playlistItem: $Element,
+    mediaCallback: MediaElementCallback,
+    choicePromptCallback?: MediaElementCallback,
+  ) {
     const nodeName = $playlistItem.nodeName.toLowerCase();
     let $mediaElementsForChoicePrompt;
 
@@ -714,14 +837,14 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 
-  queueMediaFromPlaylistItem( $playlistItem ) {
+  queueMediaFromPlaylistItem( $playlistItem: $Element ) {
     this._handleMediaFromPlaylistItem(
       $playlistItem,
       this.queueMediaFromMediaElement.bind( this ),
     );
   }
 
-  fetchMediaFromPlaylistItem( $playlistItem ) {
+  fetchMediaFromPlaylistItem( $playlistItem: $Element ) {
     this._handleMediaFromPlaylistItem(
       $playlistItem,
       this.fetchMediaFromMediaElement.bind( this ),
@@ -744,8 +867,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
             $div = $div.snapshotItem( 0 );
 
             for ( let index = 0; index < $div.children.length; index++ ) {
-              const $node = $div.children[index];
-              this.$.description.appendChild( $node );
+              const $Element = $div.children[index];
+              this.$.description.appendChild( $Element );
             }
           } else {
             console.error( 'Found HVML `description` with `type` attribute set to `xhtml`, but no HTML `div` child found.' );
@@ -762,6 +885,21 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   connectedCallback() {
     this.setAttribute( 'class', 'redblue-video' );
     this.setAttribute( 'role', 'application' );
+
+    const cachingStrategy = this.getAttribute( 'caching-strategy' );
+
+    switch ( cachingStrategy ) {
+      case 'preload':
+        this.cachingStrategy = RedBlueVideo.cachingStrategies.PRELOAD;
+        break;
+
+        // case 'predictive':
+        // break;
+
+      case 'lazy':
+      default:
+        this.cachingStrategy = RedBlueVideo.cachingStrategies.LAZY;
+    }
 
     let shadowRoot;
 
@@ -818,7 +956,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
 
     // Cached elements
-    this.$.fullscreenButton = this.$id( 'fullscreen-button' );
+    this.$.fullscreenButton = this.$id( 'fullscreen-button' ) as HTMLButtonElement;
     this.$.fullscreenContext = this.$id( 'fullscreen-context' );
     this.$.fullscreenButton.addEventListener( 'click', this.toggleFullscreen.bind( this ) );
     this.$.annotations = this.$id( 'annotations' );
@@ -836,12 +974,12 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     } );
     this.createHotspots();
     this.timelineTriggers = this.getTimelineTriggers();
-    this.$.embeddedMedia = this.$id( `embedded-media-${this.embedID}` );
-    this.$.localMedia = this.$id( `local-media-${this.embedID}` );
+    this.$.embeddedMedia = this.$id( `embedded-media-${this.embedID}` ) as HTMLIFrameElement;
+    this.$.localMedia = this.$id( `local-media-${this.embedID}` ) as HTMLVideoElement;
     this.$.description = this.$id( 'description' );
     this.populateDescription();
     this.currentChoiceAnnotationIndex = 0;
-    [this.$.currentChoice] = this.$.annotations.children;
+    this.$.currentChoice = this.$.annotations.children[0] as HTMLElement;
 
     try {
       const embedUri = this.getEmbedUri();
@@ -1062,7 +1200,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return true;
   }
 
-  parseHTML( string ) {
+  parseHTML( string: string ) {
     return document.createRange().createContextualFragment( string );
   }
 
@@ -1221,8 +1359,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
   /**
    * Load HVML annotations from the player’s Light DOM children.
-   *
-   * @returns {void}
    */
   loadData() {
     for ( let i = 0; i < this.children.length; i++ ) {
@@ -1230,13 +1366,13 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
       switch ( child.nodeName.toLowerCase() ) {
         case 'hvml':
-          this.hvml = child;
+          this.hvml.xml = child;
           this._hvmlParser = 'xml';
           return;
 
         case 'script':
           if ( child.hasAttribute( 'type' ) && ( child.type === 'application/ld+json' ) ) {
-            this.hvml = JSON.parse( child.textContent );
+            this.hvml.jsonLD = JSON.parse( child.textContent );
             this._hvmlParser = 'json-ld';
             return;
           }
@@ -1413,13 +1549,6 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     } // switch
   } // getAnnotations
 
-  /**
-   * @typedef
-   */
-  /**
-   * 
-   * @returns {}
-   */
   getTimelineTriggers() {
     if ( !this.annotations ) {
       return null;
@@ -1454,7 +1583,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     return triggers;
   }
 
-  find( query, contextNode ) {
+  find( query: string, contextNode?: $Element ): XPathResult | JSONXPathResult {
     switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {

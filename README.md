@@ -5,13 +5,9 @@
 <h1 align="center">redblue</h1>
 <p align="center">Open-Source Hypervideo Framework</p>
 <p align="center">
-  <a href="https://travis-ci.com/RedBlueVideo/redblue">
-    <img src="https://api.travis-ci.com/RedBlueVideo/redblue.svg?branch=master" alt="Build Status" />
-  </a> <a href="https://codecov.io/gh/RedBlueVideo/redblue/">
-    <img src="https://img.shields.io/codecov/c/github/RedBlueVideo/redblue/master.svg" alt="Code Coverage">
-  </a> <a href="https://www.npmjs.com/package/redblue">
-    <img src="https://img.shields.io/npm/dm/redblue.svg" alt="Downloads per month (NPM)">
-  </a>
+  <a href="https://travis-ci.com/RedBlueVideo/redblue"><img src="https://api.travis-ci.com/RedBlueVideo/redblue.svg?branch=master" alt="Build Status" /></a>
+  <a href="https://codecov.io/gh/RedBlueVideo/redblue/"><img src="https://img.shields.io/codecov/c/github/RedBlueVideo/redblue/master.svg" alt="Code Coverage"></a>
+  <a href="https://www.npmjs.com/package/redblue"><img src="https://img.shields.io/npm/dm/redblue.svg" alt="Downloads per month (NPM)"></a>
 </p>
 
 ----
