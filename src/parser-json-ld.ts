@@ -1,14 +1,18 @@
 /* eslint-disable max-classes-per-file */
 'use strict';
 
-declare global {
-  interface HTMLElement {
-      connectedCallback(): void;
-  }
-}
+// declare global {
+//   interface HTMLElement {
+//       connectedCallback(): void;
+//   }
+// }
 
-import RedBlueVideoBase, { $Element } from "./redblue-video";
+import RedBlueVideo, { $Element } from "./redblue-video";
 import { MixinConstructor } from "./util";
+
+type JSONNode = Record<string, any> & {
+  nodeType: Node['nodeType'];
+}
 
 // Dummy clone of XPathResult
 export class JSONXPathResult /*extends XPathResult*/ {
@@ -19,9 +23,9 @@ export class JSONXPathResult /*extends XPathResult*/ {
   _singleNodeValue: XPathResult['singleNodeValue'];
   _snapshotLength: XPathResult['snapshotLength'];
   _stringValue: XPathResult['stringValue'];
-  _snapshotItems: Record<string, any>[];
+  _snapshotItems: JSONNode[];
 
-  constructor( properties: Partial<XPathResult> & { snapshotItems?: Record<string, any>[] } = {} ) {
+  constructor( properties: Partial<XPathResult> & { snapshotItems?: JSONNode[] } = {} ) {
     // super();
 
     if ( properties.booleanValue ) {
@@ -378,11 +382,11 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
             lastDatum = datum;
           }
 
-          let snapshotItem: Record<string, any>;
+          let snapshotItem: JSONNode;
 
           switch ( typeof lastDatum ) {
             case 'string':
-              snapshotItem = {};
+              snapshotItem = { nodeType: 1 };
               snapshotItem.textContent = lastDatum;
               break;
 

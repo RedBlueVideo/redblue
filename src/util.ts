@@ -1,3 +1,3 @@
-import RedBlueVideoBase from "./redblue-video";
+import RedBlueVideo from "./redblue-video";
 
-export type MixinConstructor = new ( ...args: any[] ) => RedBlueVideoBase;
+export type MixinConstructor = new ( ...args: any[] ) => RedBlueVideo;

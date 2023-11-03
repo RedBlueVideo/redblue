@@ -1,3 +1,4 @@
+// TODO: This is very HTML/XML-biased currently; flesh out JSON-LD support.
 'use strict';
 
 import { JSONXPathResult, JSONLDParser } from "./parser-json-ld";
@@ -39,7 +40,12 @@ type CamelCaseHvmlElementsCamelOrLowerCase = CamelCaseHvmlElements | CamelCaseHv
 export type $Element = HTMLElement | Element;
 type $Node = $Element | Node;
 
-type ResolvableExpression = XPathResult | JSONXPathResult | $Node;
+type FindResult = XPathResult | JSONXPathResult;
+type FoundItem = Node | Record<string, any>;
+/**
+ * @deprecated
+ */
+type ResolvableExpression = FindResult | $Node;
 
 type HVMLSerialization = 'xml' | 'json-ld';
 
@@ -66,7 +72,7 @@ export interface Annotation {
   startClass: string;
 }
 
-export default class RedBlueVideoBase extends HTMLElement {
+export default class RedBlueVideo extends HTMLElement {
   DEBUG_BUFFER_TYPE: string;
   DEBUG_MEDIA: MediaFileExtensions;
   DEBUG_MIME_TYPE: MediaFileMediaTypes;
@@ -177,7 +183,7 @@ export default class RedBlueVideoBase extends HTMLElement {
    */
   static get template() {
     return `
-      <template id="${RedBlueVideoBase.is}">
+      <template id="${RedBlueVideo.is}">
         <style>
           :host {
             position: relative;
@@ -347,16 +353,20 @@ export default class RedBlueVideoBase extends HTMLElement {
     };
   }
 
-  getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink: ChoiceLink ) {
+  getNonlinearPlaylistTargetIDfromChoiceLink( $choiceLink: ChoiceLink | { 'href': string; } ) {
     let href;
 
-    if ( $choiceLink.hasAttribute( 'href' ) ) {
+    if ( $choiceLink instanceof HTMLAnchorElement && $choiceLink.hasAttribute( 'href' ) ) {
       href = $choiceLink.getAttribute( 'href' );
-    } else if ( this.hasAttributeAnyNS( $choiceLink, 'xlink:href' ) ) {
+    } else if ( $choiceLink instanceof Element && this.hasAttributeAnyNS( $choiceLink, 'xlink:href' ) ) {
       // href = this._getXPathFromXPointerURI(
       //   this.getAttributeAnyNS( $clicked, 'xlink:href' )
       // );
       href = this.getAttributeAnyNS( $choiceLink, 'xlink:href' );
+    } else if ( 'href' in $choiceLink ) {
+      ( { href } = $choiceLink );
+    } else if ( 'xlink:href' in $choiceLink ) {
+      href = $choiceLink['xlink:href'];
     } else {
       throw new TypeError( 'Choice link has no `href` or `xlink:href` attribute; no action to perform.' );
     }
@@ -393,11 +403,10 @@ export default class RedBlueVideoBase extends HTMLElement {
   }
 
   /**
-   * @param id HTML or XML `id` pointing to an interactive playback instruction.
+   * @param id - HTML or XML `id` pointing to an interactive playback instruction.
    */
   getNonlinearPlaylistItemFromTargetID( id: string ): HTMLElement | Element {
     let xpath: string;
-    let $nextPlaylistItem: ResolvableExpression;
 
     if ( this.hostDocument.isPlainHTML() ) {
       xpath = `//*[@id="${id}"]`;
@@ -405,10 +414,11 @@ export default class RedBlueVideoBase extends HTMLElement {
       xpath = `//*[@xml:id="${id}"]`;
     }
 
-    $nextPlaylistItem = this.find( xpath );
+    const nextPlaylistResult = this.find( xpath );
+    let $nextPlaylistItem: FoundItem;
 
-    if ( $nextPlaylistItem && $nextPlaylistItem.snapshotLength ) {
-      $nextPlaylistItem = $nextPlaylistItem.snapshotItem( 0 );
+    if ( nextPlaylistResult && nextPlaylistResult.snapshotLength ) {
+      $nextPlaylistItem = nextPlaylistResult.snapshotItem( 0 );
     } else {
       throw new Error( `No HVML elements found after following choice link to \`${xpath}\`` );
     }
@@ -435,10 +445,11 @@ export default class RedBlueVideoBase extends HTMLElement {
 
       this.queueMediaFromFileElements( fileXPath );
 
-      let $goto: ResolvableExpression = this.find( './/goto[1]', $nextPlaylistItem );
+      const gotoResult = this.find( './/goto[1]', $nextPlaylistItem );
+      let $goto: FoundItem;
 
-      if ( $goto && $goto.snapshotLength ) {
-        $goto = $goto.snapshotItem( 0 );
+      if ( gotoResult && gotoResult.snapshotLength ) {
+        $goto = gotoResult.snapshotItem( 0 );
 
         const targetID = this.getNonlinearPlaylistTargetIDfromGoto( $goto );
         const $playlistItem = this.getNonlinearPlaylistItemFromTargetID( targetID );
@@ -619,10 +630,10 @@ export default class RedBlueVideoBase extends HTMLElement {
 
     this.embedID = ( new Date().getTime() );
     this.$template = this.parseHTML(
-      RedBlueVideoBase.template
+      RedBlueVideo.template
         .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
         .replace( 'id="local-media"', `id="local-media-${this.embedID}"` ),
-    ).children.namedItem( RedBlueVideoBase.is ) as HTMLTemplateElement;
+    ).children.namedItem( RedBlueVideo.is ) as HTMLTemplateElement;
     this.mediaQueue = [];
     // TODO: this.mediaQueueHistory = [];
     this._isNonlinear = false;
@@ -854,11 +865,12 @@ export default class RedBlueVideoBase extends HTMLElement {
 
   populateDescription() {
     // this.$.description
-    let $description = this.find( '//description[1]' );
+    const descriptionResult = this.find( '//description[1]' );
+    let $description: FoundItem;
 
-    if ( $description && $description.snapshotLength ) {
+    if ( descriptionResult && descriptionResult.snapshotLength ) {
       let $div;
-      $description = $description.snapshotItem( 0 );
+      $description = descriptionResult.snapshotItem( 0 );
 
       switch ( $description.getAttribute( 'type' ) ) {
         case 'xhtml':
@@ -1011,7 +1023,7 @@ export default class RedBlueVideoBase extends HTMLElement {
 
       try {
         const nonlinearPlaylist = this.getNonlinearPlaylist();
-        const nonlinearPlaylistChildren = Array.from( nonlinearPlaylist.children );
+        const nonlinearPlaylistChildren = Array.from( nonlinearPlaylist.childNodes ).filter( ( childNode ) => childNode.nodeT );
 
         this.$.localMedia.hidden = false;
 
@@ -1398,10 +1410,11 @@ export default class RedBlueVideoBase extends HTMLElement {
   }
 
   getNonlinearPlaylist() {
-    let nonlinearPlaylist = this.find( `.//presentation/playlist[@type="nonlinear"]` );
+    const nonlinearPlaylistResult = this.find( `.//presentation/playlist[@type="nonlinear"]` );
+    let nonlinearPlaylist: FoundItem;
 
-    if ( nonlinearPlaylist && nonlinearPlaylist.snapshotLength ) {
-      nonlinearPlaylist = nonlinearPlaylist.snapshotItem( 0 );
+    if ( nonlinearPlaylistResult && nonlinearPlaylistResult.snapshotLength ) {
+      nonlinearPlaylist = nonlinearPlaylistResult.snapshotItem( 0 );
       return nonlinearPlaylist;
     }
 
@@ -1584,7 +1597,7 @@ export default class RedBlueVideoBase extends HTMLElement {
     return triggers;
   }
 
-  find( query: string, contextNode?: $Element ): XPathResult | JSONXPathResult {
+  find( query: string, contextNode?: $Element ): FindResult {
     switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {
