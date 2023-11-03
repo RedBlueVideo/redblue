@@ -1,6 +1,6 @@
 'use strict';
 
-import { JSONXPathResult, RedBlueJSONLDParser } from "./parser-json-ld";
+import { JSONXPathResult, JSONLDParser } from "./parser-json-ld";
 import { MSE } from "./player-mse";
 
 declare global {
@@ -34,8 +34,12 @@ type ChoiceLink = HTMLAnchorElement;
 
 type CamelCaseHvmlElements =          'endTime' | 'endX' | 'endY' | 'startTime' | 'startX' | 'startY' | 'choicePrompt';
 type CamelCaseHvmlElementsLowerCase = 'endtime' | 'endx' | 'endy' | 'starttime' | 'startx' | 'starty' | 'choiceprompt';
+type CamelCaseHvmlElementsCamelOrLowerCase = CamelCaseHvmlElements | CamelCaseHvmlElementsLowerCase;
 
-type $Element = HTMLElement | Element;
+export type $Element = HTMLElement | Element;
+type $Node = $Element | Node;
+
+type ResolvableExpression = XPathResult | JSONXPathResult | $Node;
 
 type HVMLSerialization = 'xml' | 'json-ld';
 
@@ -51,7 +55,6 @@ enum MediaFileTypes {
 type MediaFileExtensions = keyof typeof MediaFileTypes;
 type MediaFileMediaTypes = `${MediaFileTypes}`;
 
-
 export interface Annotation {
   $ui: HTMLElement;
   animateIndex: number;
@@ -63,7 +66,7 @@ export interface Annotation {
   startClass: string;
 }
 
-const RedBlueVideo = class RedBlueVideo extends HTMLElement {
+export default class RedBlueVideoBase extends HTMLElement {
   DEBUG_BUFFER_TYPE: string;
   DEBUG_MEDIA: MediaFileExtensions;
   DEBUG_MIME_TYPE: MediaFileMediaTypes;
@@ -118,17 +121,15 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     choiceClicked: ( event: MouseEvent ) => void;
   };
 
-  findInJSONLD: (
+  findInJSONLD?(
     xpathExpression: string,
     contextNode?: Record<string, any>,
     namespaceResolver?: Record<string, string> | null,
     resultType?: number,
-    result?: any
-  ) => JSONXPathResult;
+    result?: any,
+  ): JSONXPathResult;
 
-  // TODO: Import
-  findInXML: ( xpathExpression: string, $contextNode: $Element ) => XPathResult | undefined;
-  
+  findInXML?( xpathExpression: string, $contextNode: $Element ): XPathResult;
 
   firstChoiceSelected: boolean;
 
@@ -176,7 +177,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
    */
   static get template() {
     return `
-      <template id="${RedBlueVideo.is}">
+      <template id="${RedBlueVideoBase.is}">
         <style>
           :host {
             position: relative;
@@ -301,8 +302,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
    * @param nodeName - Attribute name in lowercase
    * @returns Attribute name in camel case
    */
-  static reCamelCase( nodeName: CamelCaseHvmlElementsLowerCase ) {
-    const map: Record<CamelCaseHvmlElementsLowerCase, CamelCaseHvmlElements> = {
+  static reCamelCase( nodeName: string ): CamelCaseHvmlElements | undefined {
+    const map: Record<string, CamelCaseHvmlElements> = {
       "endtime": "endTime",
       "endx": "endX",
       "endy": "endY",
@@ -312,7 +313,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       "choiceprompt": "choicePrompt",
     };
 
-    return ( map[nodeName] || nodeName );
+    return map[nodeName];
   }
 
   static MSEsupported() {
@@ -394,9 +395,9 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   /**
    * @param id HTML or XML `id` pointing to an interactive playback instruction.
    */
-  getNonlinearPlaylistItemFromTargetID( id: string ) {
-    let xpath;
-    let $nextPlaylistItem;
+  getNonlinearPlaylistItemFromTargetID( id: string ): HTMLElement | Element {
+    let xpath: string;
+    let $nextPlaylistItem: ResolvableExpression;
 
     if ( this.hostDocument.isPlainHTML() ) {
       xpath = `//*[@id="${id}"]`;
@@ -412,7 +413,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
       throw new Error( `No HVML elements found after following choice link to \`${xpath}\`` );
     }
 
-    return $nextPlaylistItem;
+    return $nextPlaylistItem as Element;
   }
 
   getNonlinearPlaylistItemFromChoiceLink( $choiceLink: ChoiceLink ) {
@@ -434,7 +435,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
       this.queueMediaFromFileElements( fileXPath );
 
-      let $goto = this.find( './/goto[1]', $nextPlaylistItem );
+      let $goto: ResolvableExpression = this.find( './/goto[1]', $nextPlaylistItem );
 
       if ( $goto && $goto.snapshotLength ) {
         $goto = $goto.snapshotItem( 0 );
@@ -618,10 +619,10 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
 
     this.embedID = ( new Date().getTime() );
     this.$template = this.parseHTML(
-      RedBlueVideo.template
+      RedBlueVideoBase.template
         .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
         .replace( 'id="local-media"', `id="local-media-${this.embedID}"` ),
-    ).children.namedItem( RedBlueVideo.is ) as HTMLTemplateElement;
+    ).children.namedItem( RedBlueVideoBase.is ) as HTMLTemplateElement;
     this.mediaQueue = [];
     // TODO: this.mediaQueueHistory = [];
     this._isNonlinear = false;
@@ -747,7 +748,7 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     const fileElements = this.find( xpath );
 
     for ( let index = 0; index < fileElements.snapshotLength; index++ ) {
-      const fileElement = fileElements.snapshotItem( index );
+      const fileElement = fileElements.snapshotItem( index ) as ;
       const mimeType = this.getMimeTypeFromFileElement( fileElement );
 
       const mediaQueueObject = {
@@ -1508,8 +1509,8 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
   }
 
   mapAttributeToKeyValuePair( attribute ) {
-    const object = {};
-    object[RedBlueVideo.reCamelCase( attribute.nodeName )] = attribute.nodeValue;
+    const object: Partial<Record<CamelCaseHvmlElements, string>> = {};
+    object[RedBlueVideo.reCamelCase( attribute.nodeName ) ] = attribute.nodeValue;
     return object;
   }
 
@@ -1602,5 +1603,3 @@ const RedBlueVideo = class RedBlueVideo extends HTMLElement {
     }
   }
 };
-
-export default RedBlueVideo;
