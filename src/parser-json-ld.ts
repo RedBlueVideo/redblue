@@ -7,12 +7,42 @@
 //   }
 // }
 
-import RedBlueVideo, { $Element } from "./redblue-video";
 import { MixinConstructor } from "./util";
 
-type JSONNode = Record<string, any> & {
-  nodeType: Node['nodeType'];
-}
+/**
+ * FIXME:
+ * 
+ * It may be that we don’t want to try and create a cross-compatible
+ * DOM interface for JSON results. For instance, real DOM nodes provide:
+ * 
+ * 1.) Deeply nested properties, even if the property in question is effectively blank.
+ * E.g. a `#text` node will still have a `.childNodes` property, which is just a `NodeList`
+ * with nothing in it. And the `NodeList` will in turn have `.item(0)` which returns `null`.
+ * 
+ * 2.) Non-WebIDL classes that are difficult to replicate, such as `NodeList` which cannot be
+ * instantiated with `new NodeList()`.
+ * 
+ * But if this approach is abandoned, then every single `.find` call will have to be replaced
+ * with an if-else branch (`if ( this._hvmlParser === 'xml' ) {} else () {}`) which makes the code
+ * a bit unruly.
+ * 
+ * Alternatively, we could just drop support for JSON-LD parsing, since the forced serialization to
+ * XML/HTML allows us to use broswers’ native XPath searching without doing all of this extra work.
+ * For those with JSON-LD sources (it’s likely that these won’t materialize if we don’t even allow the option)
+ * we can provide a syntax converter.
+ */
+export type JSONElement = (
+  Record<string, any> & {
+    nodeType: Element['nodeType'];
+    nodeName: Element['nodeName'];
+    getAttribute: Element['getAttribute'];
+    getAttributeNS: Element['getAttributeNS'];
+    // childNodes: JSONElement[];
+    // childNodes: NodeList;
+  }
+);
+
+// export JSONElement
 
 // Dummy clone of XPathResult
 export class JSONXPathResult /*extends XPathResult*/ {
@@ -23,9 +53,9 @@ export class JSONXPathResult /*extends XPathResult*/ {
   _singleNodeValue: XPathResult['singleNodeValue'];
   _snapshotLength: XPathResult['snapshotLength'];
   _stringValue: XPathResult['stringValue'];
-  _snapshotItems: JSONNode[];
+  _snapshotItems: JSONElement[];
 
-  constructor( properties: Partial<XPathResult> & { snapshotItems?: JSONNode[] } = {} ) {
+  constructor( properties: Partial<XPathResult> & { snapshotItems?: JSONElement[] } = {} ) {
     // super();
 
     if ( properties.booleanValue ) {
@@ -131,6 +161,11 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
     async resolveCSSNamespacePrefixFromJSONLD( defaultPrefix = 'css' ) {
       const USING_DEFAULT_CSS_PREFIX = `Default CSS namespace prefix of \`${defaultPrefix}\` will be used to look up hotspot styling.`;
 
+      if ( !this.hvml.jsonLD ) {
+        console.warn( `JSON-LD HVML data is not yet loaded.\n${USING_DEFAULT_CSS_PREFIX}` );
+        return defaultPrefix;
+      }
+
       if ( !this.hvml.jsonLD['@context'] || !this.hvml.jsonLD['@context'].length ) {
         console.warn( `JSON-LD Context is blank or missing.\n${USING_DEFAULT_CSS_PREFIX}` );
         return defaultPrefix;
@@ -145,7 +180,7 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
         context = await fetch( request )
           .then( ( response ) => {
             if ( !response.ok ) {
-              throw new Error( `JSON-LD Context interpreted as URL but unresolvable: \`${this.hvml.jsonLD['@context']}\`.\n${USING_DEFAULT_CSS_PREFIX}` );
+              throw new Error( `JSON-LD Context interpreted as URL but unresolvable: \`${this.hvml.jsonLD!['@context']}\`.\n${USING_DEFAULT_CSS_PREFIX}` );
             }
 
             return response.json();
@@ -230,7 +265,11 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
         return RedBlueJSONLDParser.customJSONSearchUtility( xpathExpression, contextNode, namespaceResolver, resultType, result );
       }
 
-      const atoms = [];
+      if ( !contextNode ) {
+        throw new ReferenceError( `Missing \`contextNode\` parameter.` );
+      }
+
+      const xpathAtoms: string[] = [];
       // let asksForRootDescendants = false;
       // let asksForLocalDescendants = false;
 
@@ -257,15 +296,15 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
         const xpathPart = xpathParts[i];
 
         if ( !xpathRegex__contains.test( xpathPart ) ) {
-          const splitted = xpathPart.split( '/' );
+          const split = xpathPart.split( '/' );
 
-          for ( let j = 0; j < splitted.length; j++ ) {
-            if ( splitted[j] !== '' ) {
-              atoms.push( splitted[j] );
+          for ( let j = 0; j < split.length; j++ ) {
+            if ( split[j] !== '' ) {
+              xpathAtoms.push( split[j] );
             }
           }
         } else {
-          atoms.push( xpathPart.replace( /\//i, '' ) );
+          xpathAtoms.push( xpathPart.replace( /\//i, '' ) );
         }
       }
 
@@ -287,114 +326,127 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
           }
         },
       */
-      let atom;
+      let xpathAtom: string;
       // let lastAtom = null;
-      let datum;
-      let lastDatum = null;
+      let node: JSONElement | null;
+      let lastNode: JSONElement | null = null;
 
-      while ( atoms.length > 0 ) {
-        atom = atoms.shift();
+      while ( xpathAtoms.length > 0 ) {
+        xpathAtom = xpathAtoms.shift() as string;
 
-        if ( xpathRegex__withIndex.test( atom ) ) {
-          const subatomicParticles = atom.split( xpathRegex__brackets );
-          subatomicParticles.pop();
+        if ( xpathRegex__withIndex.test( xpathAtom ) ) {
+          const xpathSubatomicParticles = xpathAtom.split( xpathRegex__brackets );
+          xpathSubatomicParticles.pop();
 
-          const secondSubatomicParticle: number = Number( subatomicParticles[1] ) - 1;
+          const nodeIndex = Number( xpathSubatomicParticles[1] ) - 1;
 
-          if ( ( secondSubatomicParticle === 0 ) && this.HVML_SOLO_ELEMENTS.indexOf( subatomicParticles[0] ) !== -1 ) {
-            if ( lastDatum ) {
-              this.log( `lastDatum[${subatomicParticles[0]}]`, lastDatum[subatomicParticles[0]] );
-              datum = lastDatum[subatomicParticles[0]];
+          if ( ( nodeIndex === 0 ) && this.HVML_SOLO_ELEMENTS.indexOf( xpathSubatomicParticles[0] ) !== -1 ) {
+            if ( lastNode ) {
+              this.log( `lastNode[${xpathSubatomicParticles[0]}]`, lastNode[xpathSubatomicParticles[0]] );
+              node = lastNode[xpathSubatomicParticles[0]];
             } else {
-              this.log( `contextNode[${subatomicParticles[0]}];`, contextNode[subatomicParticles[0]] );
-              datum = contextNode[subatomicParticles[0]];
+              this.log( `contextNode[${xpathSubatomicParticles[0]}];`, contextNode[xpathSubatomicParticles[0]] );
+              node = contextNode[xpathSubatomicParticles[0]];
             }
           } else {
-            if ( lastDatum ) {
-              // this.log( `lastDatum[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
-              datum = lastDatum[subatomicParticles[0]][subatomicParticles[1]];
+            if ( lastNode ) {
+              // this.log( `lastNode[${xpathSubatomicParticles[0]}][${xpathSubatomicParticles[1]}];` );
+              node = lastNode[xpathSubatomicParticles[0]][xpathSubatomicParticles[1]];
             } else {
               // this.log( 'contextNode', contextNode );
-              // this.log( `contextNode[${subatomicParticles[0]}][${subatomicParticles[1]}];` );
-              datum = contextNode[subatomicParticles[0]][subatomicParticles[1]];
+              // this.log( `contextNode[${xpathSubatomicParticles[0]}][${xpathSubatomicParticles[1]}];` );
+              node = contextNode[xpathSubatomicParticles[0]][xpathSubatomicParticles[1]];
             }
           }
 
-          if ( !datum ) {
+          if ( !node ) {
             return new JSONXPathResult();
           }
-        } else if ( xpathRegex__withAttribute.test( atom ) ) {
-          const subatomicParticles: ( string | string[] )[] = atom.split( xpathRegex__brackets );
-          subatomicParticles.pop();
+        } else if ( xpathRegex__withAttribute.test( xpathAtom ) ) {
+          const xpathSubatomicParticles = xpathAtom.split( xpathRegex__brackets );
+          xpathSubatomicParticles.pop();
 
-          if ( lastDatum ) {
-            datum = lastDatum[subatomicParticles[0] as string];
+          if ( lastNode ) {
+            node = lastNode[xpathSubatomicParticles[0]];
           } else {
-            datum = contextNode[subatomicParticles[0] as string];
+            node = contextNode[xpathSubatomicParticles[0]];
           }
 
-          if ( !datum ) {
+          if ( !node ) {
             return new JSONXPathResult();
           }
 
-          subatomicParticles[1] = ( subatomicParticles[1] as string ).replace( /@([^=]+)=(['"])(.*)\2/i, '$1=$3' ).split( '=' );
+          const [attributeSelectorName, attributeSelectorValue] = xpathSubatomicParticles[1].replace( /@([^=]+)=(['"])(.*)\2/i, '$1=$3' ).split( '=' );
 
-          if ( datum[subatomicParticles[1][0]] !== subatomicParticles[1][1] ) {
+          if ( node[attributeSelectorName] !== attributeSelectorValue ) {
             return new JSONXPathResult();
           }
 
-          // [lastAtom] = subatomicParticles;
-        } else if ( xpathRegex__contains.test( atom ) ) {
+          // [lastAtom] = xpathSubatomicParticles;
+        } else if ( xpathRegex__contains.test( xpathAtom ) ) {
           // uri[contains(., '//www.youtube.com/watch?v=')]
-          const subatomicParticles = atom.split( xpathRegex__brackets );
-          subatomicParticles.pop();
+          const xpathSubatomicParticles = xpathAtom.split( xpathRegex__brackets );
+          xpathSubatomicParticles.pop();
 
-          if ( lastDatum ) {
-            datum = lastDatum[subatomicParticles[0]];
+          if ( lastNode ) {
+            node = lastNode[xpathSubatomicParticles[0]];
           } else {
-            datum = contextNode[subatomicParticles[0]];
+            node = contextNode[xpathSubatomicParticles[0]];
           }
 
-          if ( !datum ) {
+          if ( !node ) {
             return new JSONXPathResult();
           }
 
           // contains(., '//www.youtube.com/watch?v=')
-          const containsTest = subatomicParticles[1].replace( /contains\(\s*[^,]+,\s*(["'])(.*)\1\)/i, '$2' );
-          if ( datum.indexOf( containsTest ) === -1 ) {
+          const containsTest = xpathSubatomicParticles[1].replace( /contains\(\s*[^,]+,\s*(["'])(.*)\1\)/i, '$2' );
+          if ( node.indexOf( containsTest ) === -1 ) {
             return new JSONXPathResult();
           }
-        } else if ( xpathRegex__text.test( atom ) ) {
-          datum = lastDatum;
+        } else if ( xpathRegex__text.test( xpathAtom ) ) {
+          node = lastNode;
         } else {
-          datum = contextNode[atom];
+          node = contextNode[xpathAtom];
 
-          if ( !datum ) {
+          if ( !node ) {
             return new JSONXPathResult();
           }
         }
 
-        if ( atoms.length > 0 ) {
-          // lastAtom = atom;
-          lastDatum = datum;
+        if ( xpathAtoms.length > 0 ) {
+          lastNode = node;
         } else {
-          if ( lastDatum === null ) {
-            lastDatum = datum;
+          if ( lastNode === null ) {
+            if ( !node ) {
+              return new JSONXPathResult();
+            }
+
+            lastNode = node;
           }
 
-          let snapshotItem: JSONNode;
+          let snapshotItem: JSONElement;
 
-          switch ( typeof lastDatum ) {
+          switch ( typeof lastNode ) {
             case 'string':
-              snapshotItem = { nodeType: 1 };
-              snapshotItem.textContent = lastDatum;
+              snapshotItem = {
+                nodeType: Node.TEXT_NODE,
+                nodeName: '#text',
+                getAttribute: () => null,
+                getAttributeNS: () => null,
+                textContent: lastNode,
+                // childNodes: 
+              };
               break;
 
             case 'object':
             default:
-              snapshotItem = { ...lastDatum };
-              // snapshotItem.textContent = JSON.stringify( lastDatum );
-              snapshotItem.textContent = null;
+              snapshotItem = {
+                ...lastNode,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: lastNode['@type'],
+                // textContent: JSON.stringify( lastNode );
+                textContent: null,
+              };
           }
 
           return new JSONXPathResult( {
@@ -403,6 +455,8 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
           } );
         }
       }
+
+      return new JSONXPathResult();
     }
   /* eslint-enable camelcase */
   };
