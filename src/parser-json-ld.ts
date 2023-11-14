@@ -9,6 +9,8 @@
 
 import { MixinConstructor } from "./util";
 
+export interface JSONChildNode extends ChildNode {};
+
 /**
  * FIXME:
  * 
@@ -37,8 +39,8 @@ export type JSONElement = (
     nodeName: Element['nodeName'];
     getAttribute: Element['getAttribute'];
     getAttributeNS: Element['getAttributeNS'];
-    // childNodes: JSONElement[];
-    // childNodes: NodeList;
+    // childNodes: JSONChildNode[];
+    childNodes: JSONElement[];
   }
 );
 
@@ -434,7 +436,7 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
                 getAttribute: () => null,
                 getAttributeNS: () => null,
                 textContent: lastNode,
-                // childNodes: 
+                childNodes: [],
               };
               break;
 

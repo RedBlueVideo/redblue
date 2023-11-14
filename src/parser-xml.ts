@@ -1,9 +1,22 @@
 'use strict';
 
+import { $Element } from "./redblue-video";
 import { MixinConstructor } from "./util";
 
 export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
   return class RedBlueXMLParser extends Base {
+    XML: {
+      xmlDoc: Document | null;
+      xmlLoaded: boolean;
+      evaluator: XPathEvaluator;
+      // TODO: Fix type
+      nsResolver: null;
+      // nsResolver: XPathNSResolver;
+      ns: Record<string, string>;
+      read: () => unknown;
+      import: ( xmlFile: string ) => void;
+    };
+
     constructor( ...args: any[] ) {
       super( ...args );
 
@@ -28,7 +41,7 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
         }
       }, // read
 
-      "import": ( xmlFile ) => {
+      "import": ( xmlFile: string ) => {
         this.log( '--XML.import()--' );
         const xhr = new XMLHttpRequest();
 
@@ -121,78 +134,83 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
       return choice;
     }
 
-    getAnnotationsFromXML( xpath = `.//presentation[1]`, contextNode = null ) {
+    getAnnotationsFromXML( xpath = `.//presentation[1]`, contextNode?: $Element ) {
       let annotations = [];
-      const $element = this.find( xpath, contextNode ).snapshotItem( 0 );
 
-      for ( let i = 0, { "length": childrenLength } = $element.children; i < childrenLength; i++ ) {
-        const child = $element.children[i];
-        const nodeName = child.nodeName.toLowerCase();
+      const presentationFindResult = this.find( xpath, contextNode );
 
-        switch ( nodeName ) {
-          case 'choiceprompt': {
-            const choicePrompt = {
-              "type": "choicePrompt",
-            };
+      if ( presentationFindResult.snapshotLength ) {
+        const $element = presentationFindResult.snapshotItem( 0 )!;
 
-            for ( let j = 0, { "length": grandchildrenLength } = child.children; j < grandchildrenLength; j++ ) {
-              const grandchild = child.children[j];
-              const grandchildNodeName = grandchild.nodeName.toLowerCase();
+        for ( let i = 0, { "length": childrenLength } = $element.children; i < childrenLength; i++ ) {
+          const child = $element.children[i];
+          const nodeName = child.nodeName.toLowerCase();
 
-              choicePrompt['xml:id'] = this.getAttributeAnyNS( grandchild, 'xml:id' );
-              choicePrompt.id = grandchild.id;
+          switch ( nodeName ) {
+            case 'choiceprompt': {
+              const choicePrompt = {
+                "type": "choicePrompt",
+              };
 
-              switch ( grandchildNodeName ) {
-                case 'name':
-                  choicePrompt.name = grandchild.textContent;
-                  break;
+              for ( let j = 0, { "length": grandchildrenLength } = child.children; j < grandchildrenLength; j++ ) {
+                const grandchild = child.children[j];
+                const grandchildNodeName = grandchild.nodeName.toLowerCase();
 
-                case 'media':
-                  choicePrompt.media = this.nodeAttributesToJSON( grandchild.attributes );
-                  break;
+                choicePrompt['xml:id'] = this.getAttributeAnyNS( grandchild, 'xml:id' );
+                choicePrompt.id = grandchild.id;
 
-                default:
+                switch ( grandchildNodeName ) {
+                  case 'name':
+                    choicePrompt.name = grandchild.textContent;
+                    break;
+
+                  case 'media':
+                    choicePrompt.media = this.nodeAttributesToJSON( grandchild.attributes );
+                    break;
+
+                  default:
+                }
               }
+
+              choicePrompt.choices = this.getAnnotationsFromXML( `.`, child );
+
+              annotations.push( choicePrompt );
+              break;
             }
 
-            choicePrompt.choices = this.getAnnotationsFromXML( `.`, child );
+            case 'choice':
+              annotations.push( this.getAnnotationFromChoiceElement( child ) );
+              break;
 
-            annotations.push( choicePrompt );
-            break;
+              // case 'media':
+              // break;
+
+            case 'playlist':
+              if ( child.getAttribute( 'type' ) === 'nonlinear' ) {
+                annotations = annotations.concat(
+                  this.getAnnotationsFromXML( `.`, child ),
+                );
+              }
+              break;
+
+              /*
+                <goto
+                  xlink:actuate="onRequest"
+                  on="duration | durationStart | durationEnd"
+                  start="517"
+                  end="527"
+                  xlink:href="http://hugh.today/2016-09-17/live"
+                />
+              */
+              // case 'goto':
+              // break;
+              // case 'playlistAction':
+              // break;
+              // case 'media':
+              // break;
+            default:
+                // this.log( 'not `choice`', nodeName );
           }
-
-          case 'choice':
-            annotations.push( this.getAnnotationFromChoiceElement( child ) );
-            break;
-
-            // case 'media':
-            // break;
-
-          case 'playlist':
-            if ( child.getAttribute( 'type' ) === 'nonlinear' ) {
-              annotations = annotations.concat(
-                this.getAnnotationsFromXML( `.`, child ),
-              );
-            }
-            break;
-
-            /*
-              <goto
-                xlink:actuate="onRequest"
-                on="duration | durationStart | durationEnd"
-                start="517"
-                end="527"
-                xlink:href="http://hugh.today/2016-09-17/live"
-              />
-            */
-            // case 'goto':
-            // break;
-            // case 'playlistAction':
-            // break;
-            // case 'media':
-            // break;
-          default:
-              // this.log( 'not `choice`', nodeName );
         }
       }
 
