@@ -1,6 +1,6 @@
 'use strict';
 
-import { $Element } from "./redblue-video";
+import RedBlueVideo, { $Element, $HTMLorXMLElement, Animation, Annotation, Choice, ChoicePrompt, Goto, Media } from "./redblue-video";
 import { MixinConstructor } from "./util";
 
 export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
@@ -29,6 +29,9 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
         "xml": "http://www.w3.org/XML/1998/namespace",
       },
 
+      /**
+       * @deprecated
+       */
       "read": () => {
         // let element;
 
@@ -41,6 +44,9 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
         }
       }, // read
 
+      /**
+       * @deprecated
+       */
       "import": ( xmlFile: string ) => {
         this.log( '--XML.import()--' );
         const xhr = new XMLHttpRequest();
@@ -56,11 +62,17 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
               // this.log( 'this.mediaQueue', this.mediaQueue );
 
               for ( let i = this.mediaQueue.length - 1; i >= 0; --i ) {
-                this.XHR.GET( this.mediaQueue[i].path, this.mediaQueue[i].type, this.readPlaylistItem );
+                this.XHR.GET(
+                  this.mediaQueue[i].path,
+                  this.mediaQueue[i].mime,
+                  // this.readPlaylistItem,
+                  ( binary, type ) => this.log( `readPlaylistItem( binary, type )`, binary, type ),
+                );
               }
 
               this.log( '--import()--' );
-              this.play();
+              // this.play();
+              this.log( 'this.play();' );
               break;
 
             default:
@@ -76,14 +88,12 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
     }
 
     resolveCSSNamespacePrefixFromXML( defaultPrefix = 'css' ) {
-      for ( let i = 0; i < this.hvml.attributes.length; i++ ) {
-        const attribute = this.hvml.attributes[i].nodeName;
+      for ( let i = 0; i < ( this.hvml.xml as $HTMLorXMLElement ).attributes.length; i++ ) {
+        const attribute = this.hvml.xml!.attributes[i].nodeName;
         const namespaceAttribute = attribute.match( /^xmlns:([^=]+)/i );
+        const attributeValue = this.hvml.xml!.getAttribute( attribute )!;
 
-        if (
-          namespaceAttribute
-            && ( this.hvml.getAttribute( attribute ).match( /https?:\/\/(www\.)?w3\.org\/TR\/CSS\/?/i ) )
-        ) {
+        if ( namespaceAttribute && ( attributeValue.match( /https?:\/\/(www\.)?w3\.org\/TR\/CSS\/?/i ) ) ) {
           return namespaceAttribute[1];
         }
       }
@@ -91,51 +101,59 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
       return defaultPrefix;
     }
 
-    getAnnotationFromChoiceElement( child ) {
-      const choice = {};
+    getAnnotationFromChoiceElement( $child: $Element ) {
+      // @ts-ignore - Init
+      const choice: Choice = {};
 
-      choice['xml:id'] = this.getAttributeAnyNS( child, 'xml:id' );
-      choice.id = child.id;
+      if ( this.hasAttributeAnyNS( $child, 'xml:id' ) ) {
+        choice['xml:id'] = this.getAttributeAnyNS( $child, 'xml:id' )!;
+      }
+      choice.id = $child.id;
 
-      for ( let i = 0; i < child.children.length; i++ ) {
-        const grandchild = child.children[i];
-        const nodeName = grandchild.nodeName.toLowerCase();
+      for ( let i = 0; i < $child.children.length; i++ ) {
+        const $grandchild = $child.children[i];
+        const nodeName = $grandchild.nodeName.toLowerCase();
 
         switch ( nodeName ) {
           case 'name':
-            choice[nodeName] = ( grandchild.nodeValue || grandchild.innerHTML );
+            choice[nodeName] = ( $grandchild.nodeValue || $grandchild.innerHTML );
             break;
 
             // case 'playlistAction':
             // break;
 
           case 'goto':
-            choice[nodeName] = this.nodeAttributesToJSON( grandchild.attributes );
+            choice.goto = this.nodeAttributesToJSON<Goto>( $grandchild.attributes );
+            choice.goto.animate = (
+              Array.isArray( $grandchild.children )
+                ? $grandchild.children
+                : Array.from( $grandchild.children )
+            )
+              .filter( ( $gotoChild ) => {
+                const currentNodeName = $gotoChild.nodeName.toLowerCase();
 
-            choice[nodeName].animate = Array.from( grandchild.children ).filter( ( gotoChild ) => {
-              const currentNodeName = gotoChild.nodeName.toLowerCase();
+                switch ( currentNodeName ) {
+                  case 'animate':
+                    return true;
 
-              switch ( currentNodeName ) {
-                case 'animate':
-                  return true;
-
-                default:
-                  return false;
-              }
-            } ).map( ( animateElement ) => this.nodeAttributesToJSON( animateElement.attributes ) );
+                  default:
+                    return false;
+                }
+              } )
+              .map<Animation>( ( animateElement ) => this.nodeAttributesToJSON( animateElement.attributes ) );
             break;
 
           default:
         }
       }
 
-      choice.type = child.nodeName.toLowerCase();
+      choice.type = $child.nodeName.toLowerCase() as 'choice';
 
       return choice;
     }
 
-    getAnnotationsFromXML( xpath = `.//presentation[1]`, contextNode?: $Element ) {
-      let annotations = [];
+    getAnnotationsFromXML<Cast extends Annotation[] = Annotation[]>( xpath = `.//presentation[1]`, contextNode?: $Element ) {
+      let annotations: Annotation[] = [];
 
       const presentationFindResult = this.find( xpath, contextNode );
 
@@ -143,52 +161,55 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
         const $element = presentationFindResult.snapshotItem( 0 )!;
 
         for ( let i = 0, { "length": childrenLength } = $element.children; i < childrenLength; i++ ) {
-          const child = $element.children[i];
-          const nodeName = child.nodeName.toLowerCase();
+          const $child = $element.children[i];
+          const nodeName = $child.nodeName.toLowerCase();
 
           switch ( nodeName ) {
             case 'choiceprompt': {
-              const choicePrompt = {
+              // @ts-ignore - Init
+              const choicePrompt: ChoicePrompt = {
                 "type": "choicePrompt",
               };
 
-              for ( let j = 0, { "length": grandchildrenLength } = child.children; j < grandchildrenLength; j++ ) {
-                const grandchild = child.children[j];
-                const grandchildNodeName = grandchild.nodeName.toLowerCase();
+              for ( let j = 0, { "length": grandchildrenLength } = $child.children; j < grandchildrenLength; j++ ) {
+                const $grandchild = $child.children[j];
+                const grandchildNodeName = $grandchild.nodeName.toLowerCase();
 
-                choicePrompt['xml:id'] = this.getAttributeAnyNS( grandchild, 'xml:id' );
-                choicePrompt.id = grandchild.id;
+                if ( this.hasAttributeAnyNS( $grandchild, 'xml:id' ) ) {
+                  choicePrompt['xml:id'] = this.getAttributeAnyNS( $grandchild, 'xml:id' )!;
+                }
+                choicePrompt.id = $grandchild.id;
 
                 switch ( grandchildNodeName ) {
                   case 'name':
-                    choicePrompt.name = grandchild.textContent;
+                    choicePrompt.name = $grandchild.textContent;
                     break;
 
                   case 'media':
-                    choicePrompt.media = this.nodeAttributesToJSON( grandchild.attributes );
+                    choicePrompt.media = this.nodeAttributesToJSON<Media>( $grandchild.attributes );
                     break;
 
                   default:
                 }
               }
 
-              choicePrompt.choices = this.getAnnotationsFromXML( `.`, child );
+              choicePrompt.choices = this.getAnnotationsFromXML<Choice[]>( `.`, $child );
 
               annotations.push( choicePrompt );
               break;
             }
 
             case 'choice':
-              annotations.push( this.getAnnotationFromChoiceElement( child ) );
+              annotations.push( this.getAnnotationFromChoiceElement( $child ) );
               break;
 
               // case 'media':
               // break;
 
             case 'playlist':
-              if ( child.getAttribute( 'type' ) === 'nonlinear' ) {
+              if ( $child.getAttribute( 'type' ) === 'nonlinear' ) {
                 annotations = annotations.concat(
-                  this.getAnnotationsFromXML( `.`, child ),
+                  this.getAnnotationsFromXML( `.`, $child ),
                 );
               }
               break;
@@ -214,18 +235,18 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
         }
       }
 
-      return annotations;
+      return annotations as Cast;
     }
 
-    findInXML( xpathExpression, contextNode ) {
-      if ( !contextNode ) {
-        contextNode = this.hvml;
+    findInXML( xpathExpression: string, $contextNode?: $Element ) {
+      if ( !$contextNode ) {
+        $contextNode = this.hvml.xml!;
       }
 
       return document.evaluate(
         xpathExpression,
-        contextNode,
-        ( prefix ) => ( RedBlueVideo.NS[prefix] || RedBlueVideo.NS.html ), // namespaceResolver
+        $contextNode as $HTMLorXMLElement,
+        ( prefix ) => ( prefix ? RedBlueVideo.NS[prefix] : RedBlueVideo.NS.html ), // namespaceResolver
         // XPathResult.ANY_TYPE, // resultType
         XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
         null, // result

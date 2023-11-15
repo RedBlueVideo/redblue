@@ -35,12 +35,16 @@ export interface JSONChildNode extends ChildNode {};
  */
 export type JSONElement = (
   Record<string, any> & {
+    _isJSONElement: true;
     nodeType: Element['nodeType'];
     nodeName: Element['nodeName'];
+    nodeValue: Element['nodeValue'];
     getAttribute: Element['getAttribute'];
     getAttributeNS: Element['getAttributeNS'];
     // childNodes: JSONChildNode[];
     childNodes: JSONElement[];
+    children: JSONElement[];
+    textContent: Element['textContent'];
   }
 );
 
@@ -144,7 +148,7 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
   return class RedBlueJSONLDParser extends Base {
     MISSING_JSONLD_CONTEXT_ERROR: string;
 
-    static customJSONSearchUtility: RedBlueJSONLDParser['findInJSONLD'];
+    static customJSONSearchUtility?: RedBlueJSONLDParser['findInJSONLD'];
 
     constructor( ...args: any[] ) {
       super( ...args );
@@ -431,12 +435,15 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
           switch ( typeof lastNode ) {
             case 'string':
               snapshotItem = {
+                _isJSONElement: true,
                 nodeType: Node.TEXT_NODE,
                 nodeName: '#text',
+                nodeValue: lastNode,
                 getAttribute: () => null,
                 getAttributeNS: () => null,
                 textContent: lastNode,
                 childNodes: [],
+                children: [],
               };
               break;
 
@@ -444,10 +451,12 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
             default:
               snapshotItem = {
                 ...lastNode,
+                _isJSONElement: true,
                 nodeType: Node.ELEMENT_NODE,
                 nodeName: lastNode['@type'],
-                // textContent: JSON.stringify( lastNode );
-                textContent: null,
+                nodeValue: null,
+                textContent: JSON.stringify( lastNode ),
+                // textContent: null,
               };
           }
 

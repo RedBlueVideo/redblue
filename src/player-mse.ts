@@ -1,5 +1,6 @@
 'use strict';
 
+import RedBlueOmniParser from "./parser-omni";
 import RedBlueVideo, { MediaQueueObject } from "./redblue-video";
 
 export type MSE = {
@@ -8,14 +9,14 @@ export type MSE = {
   init: () => void;
   isReady: () => boolean;
   mediaSource: MediaSource;
-  onSourceEnded: MediaSource['onsourceended'];
-  onSourceOpen: () => void;
+  onSourceEnded: NonNullable<MediaSource['onsourceended']>;
+  onSourceOpen: NonNullable<MediaSource['onsourceopen']>;
   registerEvents: () => void;
   sourceBuffer?: SourceBuffer;
 };
 
-const RedBlueMSEPlayer = ( RedBlueVideoClass: typeof RedBlueVideo ) => {
-  return class extends RedBlueVideoClass {
+const RedBlueMSEPlayer = ( RedBlueVideo: typeof RedBlueOmniParser ) => {
+  return class RedBlueMSEPlayer extends RedBlueVideo {
     MSE: MSE;
 
     constructor() {
@@ -136,8 +137,8 @@ const RedBlueMSEPlayer = ( RedBlueVideoClass: typeof RedBlueVideo ) => {
 
             const appendBufferWhenReady = setInterval( () => {
               if ( this.MSE.isReady() ) {
-                this.MSE.sourceBuffer.timestampOffset = ( this.MSE.mediaSource.duration || 0 );
-                this.MSE.sourceBuffer.appendBuffer( new Uint8Array( arrayBuffer ) );
+                this.MSE.sourceBuffer!.timestampOffset = ( this.MSE.mediaSource.duration || 0 );
+                this.MSE.sourceBuffer!.appendBuffer( new Uint8Array( arrayBuffer ) );
                 this.$.localMedia.play()
                   .then( _ => console.log( 'Played!' ) )
                   .catch( error => console.error( error.message ) )

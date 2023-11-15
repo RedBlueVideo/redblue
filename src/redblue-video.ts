@@ -53,7 +53,7 @@ type CamelCaseHvmlElements =          'endTime' | 'endX' | 'endY' | 'startTime' 
 type CamelCaseHvmlElementsLowerCase = 'endtime' | 'endx' | 'endy' | 'starttime' | 'startx' | 'starty' | 'choiceprompt';
 type CamelCaseHvmlElementsCamelOrLowerCase = CamelCaseHvmlElements | CamelCaseHvmlElementsLowerCase;
 
-type $HTMLorXMLElement = HTMLElement | Element;
+export type $HTMLorXMLElement = HTMLElement | Element;
 
 export type $Element = $HTMLorXMLElement | JSONElement;
 
@@ -94,7 +94,7 @@ type MediaFileMediaTypes = `${MediaFileTypes}`;
 //     "endY": "10%"
 //   },
 
-interface Animation {
+export interface Animation {
   startTime: number;
   endTime: number;
   startX: string;
@@ -147,7 +147,7 @@ TODO: Generate TS definitions from RelaxNG schema
   ]
 }
 */
-interface Goto {
+export interface Goto extends Record<string, any> {
   on: 'durationStart' | 'duration' | 'durationEnd';
   'xlink:actuate': 'onLoad' | 'onRequest' | 'other' | 'none';
   'xlink:href': string;
@@ -164,19 +164,22 @@ export interface Media {
 
 export interface Annotation {
   'xml:id'?: string;
-  $ui: HTMLElement;
-  animateIndex: number;
-  annotationIndex: number;
   choices?: Choice[];
-  endClass: string;
-  endTime: number;
   goto?: Goto;
   id?: string;
   media?: Media;
-  name: string;
+  name: Element['textContent'];
+  type?: 'choicePrompt' | 'choice';
+}
+
+export interface RenderedAnnotation extends Annotation {
+  $ui: HTMLElement;
+  animateIndex: number;
+  annotationIndex: number;
+  endClass: string;
+  endTime: number;
   previousEndClass?: string;
   startClass: string;
-  type?: 'choicePrompt' | 'choice';
 }
 
 export interface ChoicePrompt extends Annotation {
@@ -192,7 +195,7 @@ interface SpecficDocumentFragment extends DocumentFragment {
   getElementById<ElementType extends HTMLElement>( elementId: string ): ElementType | null; 
 }
 
-export type TimelineTriggers = Record<number, Annotation>
+export type TimelineTriggers = Record<number, RenderedAnnotation>
 
 export default class RedBlueVideo extends HTMLElement {
   DEBUG_BUFFER_TYPE: string;
@@ -783,7 +786,7 @@ export default class RedBlueVideo extends HTMLElement {
 
         xhr.onload = ( /*event*/ ) => {
           if ( xhr.status !== 200 ) {
-            this.log( "Unexpected status code " + xhr.status + " for " + url );
+            this.log( `Unexpected HTTP status code ${xhr.status} for ${url}.` );
             return false;
           }
           callback( new Uint8Array( xhr.response ), type );
@@ -1063,8 +1066,16 @@ export default class RedBlueVideo extends HTMLElement {
             const $div = divResult.snapshotItem( 0 )!;
 
             for ( let index = 0; index < $div.children.length; index++ ) {
-              const $Element = $div.children[index];
-              this.$.description.appendChild( $Element );
+              const $element = $div.children[index];
+
+              if ( '_isJSONElement' in $element ) {
+                const $p = document.createElement( 'p' );
+                $p.textContent = $element.textContent;
+
+                this.$.description.appendChild( $p );
+              } else {
+                this.$.description.appendChild( $element );
+              }
             }
           } else {
             console.error( 'Found HVML `description` with `type` attribute set to `xhtml`, but no HTML `div` child found.' );
@@ -1618,7 +1629,7 @@ export default class RedBlueVideo extends HTMLElement {
     if ( youtubeUrlFindResult && youtubeUrlFindResult.snapshotLength ) {
       const youtubeUrl = youtubeUrlFindResult.snapshotItem( 0 )!;
 
-      return youtubeUrl.textContent.replace( this.YOUTUBE_VIDEO_REGEX, `//www.youtube.com/embed/$1${this.embedParameters || ''}` );
+      return youtubeUrl.textContent!.replace( this.YOUTUBE_VIDEO_REGEX, `//www.youtube.com/embed/$1${this.embedParameters || ''}` );
     }
 
     throw new Error( 'No Embed URL found' );
@@ -1768,8 +1779,12 @@ export default class RedBlueVideo extends HTMLElement {
     return accumulator;
   }
 
-  nodeAttributesToJSON( attributes: NamedNodeMap ) {
-    return Array.from( attributes ).map( this.mapAttributeToKeyValuePair ).reduce( this.flattenKeyValuePairs, {} );
+  nodeAttributesToJSON<Cast extends Record<string, any>>( attributes: NamedNodeMap ) {
+    return (
+      Array.from( attributes )
+        .map( this.mapAttributeToKeyValuePair )
+        .reduce( this.flattenKeyValuePairs, {} )
+    ) as Cast;
   }
 
   getAnnotations() {

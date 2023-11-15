@@ -1,5 +1,8 @@
 'use strict';
 
+import RedBlueOmniParser from "./parser-omni";
+import { MediaQueueObject } from "./redblue-video";
+
 /**
  * Fallback player for when the browser
  * does not support Media Source Extensions.
@@ -12,8 +15,12 @@
  * @param {import("./redblue-video.js")} RedBlueVideo
  * @returns {RedBlueVideo}
  */
-const _RedBlueLegacyPlayer = ( RedBlueVideo ) => {
+const _RedBlueLegacyPlayer = ( RedBlueVideo: typeof RedBlueOmniParser ) => {
   return class RedBlueLegacyPlayer extends RedBlueVideo {
+    Legacy: {
+      init: () => void;
+    };
+
     constructor() {
       super();
 
@@ -41,7 +48,7 @@ const _RedBlueLegacyPlayer = ( RedBlueVideo ) => {
       return true;
     }
 
-    fetchMedia( mediaQueueObject ) {
+    fetchMedia( mediaQueueObject: MediaQueueObject ) {
       /* {
         "mime": 'video/webm',
         "path": '/foo/bar',
