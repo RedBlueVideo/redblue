@@ -4,7 +4,7 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import val from '@skatejs/val';
 
-import RedBlueVideo from './parser-omni.js';
+import RedBlueVideo from '../src/parser-omni.js';
 import youtubeEmbed from '../guide/youtube-embed.hvml';
 
 const h = val( React.createElement ); // eslint-disable-line no-unused-vars

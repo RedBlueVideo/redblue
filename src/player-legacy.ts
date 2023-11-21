@@ -1,16 +1,23 @@
-/*
-  Fallback player for when the browser
-  does not support Media Source Extensions.
-
-  The drawback of this approach is that choices can not
-  be played back contiguously. Each choice replaces
-  the video src (hard URL) rather than appending a
-  chunk to the video src (MediaSource Blob).
-*/
 'use strict';
 
-const RedBlueLegacyPlayer = ( RedBlueVideo ) => {
-  return class extends RedBlueVideo {
+import RedBlueOmniParser from "./parser-omni.js";
+import { MediaQueueObject } from "./redblue-video.js";
+
+/**
+ * Fallback player for when the browser
+ * does not support Media Source Extensions.
+ *
+ * The drawback of this approach is that choices can not
+ * be played back contiguously. Each choice replaces
+ * the video src (hard URL) rather than appending a
+ * chunk to the video src (MediaSource Blob).
+ */
+const _RedBlueLegacyPlayer = ( RedBlueVideo: typeof RedBlueOmniParser ) => {
+  return class RedBlueLegacyPlayer extends RedBlueVideo {
+    Legacy: {
+      init: () => void;
+    };
+
     constructor() {
       super();
 
@@ -25,7 +32,7 @@ const RedBlueLegacyPlayer = ( RedBlueVideo ) => {
             } // if
           } // for
         }, // init
-      } // this.Legacy
+      }; // this.Legacy
     }
 
     connectedCallback() {
@@ -38,19 +45,19 @@ const RedBlueLegacyPlayer = ( RedBlueVideo ) => {
       return true;
     }
 
-    fetchMedia( mediaQueueObject ) {
+    fetchMedia( mediaQueueObject: MediaQueueObject ) {
       /* {
         "mime": 'video/webm',
         "path": '/foo/bar',
       }; */
-  
+
       if ( /^video\/.*/i.test( mediaQueueObject.mime ) ) {
         if ( this.$.localMedia.canPlayType( mediaQueueObject.mime ) ) {
           this.$.localMedia.src = mediaQueueObject.path;
           this.$.localMedia.addEventListener( 'canplay', () => {
             this.$.localMedia.play()
-              .then( _ => console.log( 'Played!' ) )
-              .catch( error => console.error( error.message ) )
+              .then( () => console.log( 'Played!' ) )
+              .catch( ( error ) => console.error( error.message ) )
             ;
           } );
         } // if canplaytype
@@ -59,4 +66,4 @@ const RedBlueLegacyPlayer = ( RedBlueVideo ) => {
   };
 };
 
-export default RedBlueLegacyPlayer;
+export default _RedBlueLegacyPlayer;

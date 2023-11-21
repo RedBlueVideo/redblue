@@ -1,0 +1,45 @@
+{
+  "extends": "@hughx/tsconfig",
+  "include": [
+    "src/**/*",
+    // "dev/redblue-video.stories.ts",
+    // "dev/redblue-video.test.ts"
+  ],
+  "exclude": [
+    "_includes/**/*",
+    "_layouts/**/*",
+    "guide/**/*",
+    "homepage/**/*",
+    "node_modules/**/*",
+    "prototype/**/*",
+    "src/**/*.stories.js",
+    "src/**/*.stories.ts",
+    "src/**/*.stories.tsx",
+    "src/**/*.test.js",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/types/**/*",
+    "vendor/**/*",
+  ],
+  "compilerOptions": {
+    // Tells TypeScript to read JS files, as
+    // normally they are ignored as source files
+    "allowJs": false,
+    // Generate d.ts files
+    "declaration": true,
+    // This compiler run should
+    // only output d.ts files
+    "emitDeclarationOnly": false,
+    // Types should go into this directory.
+    // Removing this would place the .d.ts files
+    // next to the .js files
+    // "outDir": "out",
+    // go to js file when using IDE functions like
+    // "Go to Definition" in VSCode
+    "declarationMap": true,
+    "strictNullChecks": true,
+    "module": "ES2020",
+    "target": "ES2020",
+    "skipLibCheck": true,
+  }
+}

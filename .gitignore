@@ -48,3 +48,5 @@ coverage/
 .nyc_output/
 .jekyll-cache/
 vendor/bundle/
+src/types/
+dist/

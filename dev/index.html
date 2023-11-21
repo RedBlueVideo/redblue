@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RedBlue Dist Test</title>
+    <script type="module">
+      import OmniParser from '../dist/parser-omni.js'
+      import MSEPlayer from '../dist/player-mse.js';
+
+      const RedBlueVideo = MSEPlayer( OmniParser );
+
+      console.log( 'RedBlueVideo', RedBlueVideo );
+      customElements.define( RedBlueVideo.is, RedBlueVideo );
+    </script>
+  </head>
+  <body>
+    <redblue-video id="redblue-branching-xml" aspect-ratio="16:9">
+      <hvml
+        xmlns="https://hypervideo.tech/hvml#"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:css="https://www.w3.org/TR/CSS/"
+        xml:lang="en-US"
+        hidden="hidden"
+      >
+        <video xml:lang="en" xml:id="branching-narrative">
+          <title>RedBlue Test</title>
+          <published>2014</published>
+          <runtime>variable</runtime>
+          <description>Branching narratives demo</description>
+          <presentation>
+            <file xml:id="intro-webm-1080p" label="intro" xlink:href="../guide/media/webm/intro-1080p.webm">
+              <container>
+                <mime>video/webm</mime>
+                <codec type="video">
+                  <mime>vp8</mime>
+                </codec>
+                <codec type="audio">
+                  <mime>vorbis</mime>
+                </codec>
+              </container>
+            </file>
+            <file xml:id="red-pill-outcome-webm-1080p" label="red" xlink:href="../guide/media/webm/red-pill-outcome-1080p.webm">
+              <container>
+                <mime>video/webm</mime>
+                <codec type="video">
+                  <mime>vp8</mime>
+                </codec>
+                <codec type="audio">
+                  <mime>vorbis</mime>
+                </codec>
+              </container>
+            </file>
+            <file xml:id="blue-pill-outcome-webm-1080p" label="blue" xlink:href="../guide/media/webm/blue-pill-outcome-1080p.webm">
+              <container>
+                <mime>video/webm</mime>
+                <codec type="video">
+                  <mime>vp8</mime>
+                </codec>
+                <codec type="audio">
+                  <mime>vorbis</mime>
+                </codec>
+              </container>
+            </file>
+            <file xml:id="choice-1-wait-screen-1080p" label="choice-1-wait-screen" xlink:href="../guide/media/bitmap/choice-1-wait-screen.jpg">
+              <codec>
+                <name>JPEG</name>
+                <mime>image/jpeg</mime>
+              </codec>
+            </file>
+            <file xml:id="the-end-wait-screen-1080p" label="the-end-wait-screen" xlink:href="../guide/media/bitmap/the-end-wait-screen.png">
+              <codec>
+                <name>PNG</name>
+                <mime>image/png</mime>
+              </codec>
+            </file>
+            <playlist type="nonlinear">
+              <media xml:id="intro" xlink:href="#xpointer(//file[@label='intro'])">
+                <goto on="durationEnd" xlink:href="#red-pill-or-blue-pill"></goto>
+              </media>
+              <choicePrompt xml:id="red-pill-or-blue-pill"><!--displayType="generate|embedded"-->
+                <name>What will it be, Neo?</name>
+                <media xlink:href="#xpointer(//file[@label='choice-1-wait-screen'])"></media>
+                <choice xml:id="red">
+                  <name>Red Pill</name>
+                  <goto
+                    xlink:actuate="onRequest"
+                    xlink:href="#wakes-up-to-reality"
+                    width="28%"
+                    height="45%"
+                    top="26%"
+                    left="17%"
+                  ></goto>
+                </choice>
+                <choice xml:id="blue">
+                  <name>Blue Pill</name>
+                  <goto
+                    xlink:actuate="onRequest"
+                    xlink:href="#stays-in-the-matrix"
+                    width="31%"
+                    height="39%"
+                    top="34%"
+                    left="52%"
+                  ></goto>
+                </choice>
+              </choicePrompt>
+              <media xml:id="wakes-up-to-reality" xlink:href="#xpointer(//file[@label='red'])">
+                <goto xlink:href="#what-next"></goto>
+              </media>
+              <media xml:id="stays-in-the-matrix" xlink:href="#xpointer(//file[@label='blue'])">
+                <goto xlink:href="#what-next"></goto>
+              </media>
+              <choicePrompt xml:id="what-next">
+                <name>What next?</name>
+                <media xlink:href="#xpointer(//file[@label='the-end-wait-screen'])"></media>
+                <choice xml:id="start-over">
+                  <name>Start Over</name>
+                  <goto
+                    xlink:actuate="onRequest"
+                    xlink:href="#intro"
+                    timeline="replace"
+                    width="100%"
+                    top="80%"
+                    left="0"
+                    css:font-size="4vw"
+                    css:text-align="center"
+                    css:color="white"
+                  ></goto><!-- timeline = replace | restart? could be a do over that does not replace the entire timeline, like an undo | continue [default] -->
+                </choice>
+                <!-- <choice>
+                  <name>Watch My Movie</name>
+                  <goto
+                    xlink:actuate="onRequest"
+                    timeline="replay"
+                    width="49%"
+                    top="80%"
+                    css:right="0"
+                    css:font-size="4vw"
+                    css:text-align="center"
+                    css:color="white"
+                  ></goto>
+                </choice> -->
+              </choicePrompt>
+              <media xml:id="easter-egg" xlink:href="#xpointer(//file[@label='easter-egg'])"></media>
+            </playlist>
+          </presentation>
+        </video>
+      </hvml>
+    </redblue-video>
+  </body>
+</html>

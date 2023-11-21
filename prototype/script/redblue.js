@@ -15,13 +15,15 @@
 //(function () {
 "use strict";
 
-if ( typeof console == "undefined" ) {
+if ( typeof console === "undefined" ) {
+  // @ts-ignore
   var console = {
     log: function () {}
   };
 }
 
-if ( typeof alert == "undefined" ) {
+if ( typeof alert === "undefined" ) {
+  // @ts-ignore
   var alert = function () {};
 }
 
