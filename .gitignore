@@ -49,3 +49,4 @@ coverage/
 .jekyll-cache/
 vendor/bundle/
 src/types/
+dist/
