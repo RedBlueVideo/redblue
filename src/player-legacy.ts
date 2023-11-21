@@ -1,7 +1,7 @@
 'use strict';
 
-import RedBlueOmniParser from "./parser-omni";
-import { MediaQueueObject } from "./redblue-video";
+import RedBlueOmniParser from "./parser-omni.js";
+import { MediaQueueObject } from "./redblue-video.js";
 
 /**
  * Fallback player for when the browser
@@ -11,9 +11,6 @@ import { MediaQueueObject } from "./redblue-video";
  * be played back contiguously. Each choice replaces
  * the video src (hard URL) rather than appending a
  * chunk to the video src (MediaSource Blob).
- *
- * @param {import("./redblue-video.js")} RedBlueVideo
- * @returns {RedBlueVideo}
  */
 const _RedBlueLegacyPlayer = ( RedBlueVideo: typeof RedBlueOmniParser ) => {
   return class RedBlueLegacyPlayer extends RedBlueVideo {

@@ -1,5 +1,5 @@
 import { html, fixture, expect } from '@open-wc/testing';
-import RedBlueVideo from './parser-omni.js';
+import RedBlueVideo from '../src/parser-omni.js';
 
 customElements.define( 'redblue-video', RedBlueVideo );
 

@@ -1,7 +1,7 @@
 'use strict';
 
-import RedBlueVideo, { $Element, $HTMLorXMLElement, Animation, Annotation, Choice, ChoicePrompt, Goto, Media } from "./redblue-video";
-import { MixinConstructor } from "./util";
+import RedBlueVideo, { $Element, $HTMLorXMLElement, Animation, Annotation, Choice, ChoicePrompt, Goto, Media } from "./redblue-video.js";
+import { MixinConstructor } from "./util.js";
 
 export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
   return class RedBlueXMLParser extends Base {

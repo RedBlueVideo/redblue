@@ -1,7 +1,7 @@
 'use strict';
 
-import RedBlueOmniParser from "./parser-omni";
-import RedBlueVideo, { MediaQueueObject } from "./redblue-video";
+import RedBlueOmniParser from "./parser-omni.js";
+import RedBlueVideo, { MediaQueueObject } from "./redblue-video.js";
 
 export type MSE = {
   apply: () => void;

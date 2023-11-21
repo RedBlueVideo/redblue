@@ -1,8 +1,8 @@
 // TODO: This is very HTML/XML-biased currently; flesh out JSON-LD support.
 'use strict';
 
-import { JSONXPathResult, JSONLDParser, JSONElement } from "./parser-json-ld";
-import { MSE } from "./player-mse";
+import { JSONXPathResult, JSONLDParser, JSONElement } from "./parser-json-ld.js";
+import { MSE } from "./player-mse.js";
 
 declare global {
   interface Window {
@@ -739,6 +739,11 @@ export default class RedBlueVideo extends HTMLElement {
   constructor() {
     super();
 
+    this.hvml = {
+      jsonLD: null,
+      xml: null,
+    }
+
     this.bufferTypes = {
       'webm': 'video/webm; codecs="vorbis,vp8"',
       'mp4': 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"',
@@ -1368,10 +1373,10 @@ export default class RedBlueVideo extends HTMLElement {
                 switch ( attribute ) {
                   case 'height':
                   case 'width':
-                  // case 'top':
-                  // case 'right':
-                  // case 'bottom':
-                  // case 'left':
+                  case 'top':
+                  case 'right':
+                  case 'bottom':
+                  case 'left':
                     styleProperties += `${attribute}: ${annotation.goto![attribute]};\n`;
                     break;
 
@@ -1390,6 +1395,7 @@ export default class RedBlueVideo extends HTMLElement {
                 compoundIndex = `${parentIndex}-${annotationIndex}`;
               }
 
+              // TODO: Avoid duplicate rules
               const rule = `
               .redblue-annotations__link.redblue-annotations__link--${compoundIndex} {
                 ${styleProperties}

@@ -7,7 +7,7 @@
 //   }
 // }
 
-import { MixinConstructor } from "./util";
+import { MixinConstructor } from "./util.js";
 
 export interface JSONChildNode extends ChildNode {};
 
