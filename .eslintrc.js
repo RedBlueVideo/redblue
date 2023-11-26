@@ -1,10 +1,10 @@
 module.exports = {
-  "extends": [
+  extends: [
     "plugin:react/recommended",
-    "hughx/web-components",
+    "hughx-ts/web-components",
   ],
-  "rules": {
-    "import/extensions": ["error", "ignorePackages"],
+  rules: {
+    "import/extensions": ["error", "never"],
     "no-prototype-builtins": "off",
     "no-restricted-syntax": [
       "error",
@@ -19,26 +19,27 @@ module.exports = {
     "lines-around-directive": [
       "error",
       {
-        "before": "never",
-        "after": "always",
+        before: "never",
+        after: "always",
       },
     ],
     "guard-for-in": "off",
     "no-var": "off",
     "block-scoped-var": "off",
+    "quote-props": ["error", "consistent-as-needed"],
   },
-  "overrides": [
+  overrides: [
     {
-      "files": [
+      files: [
         "karma.conf.js",
         "**/*.test.js",
         "**/*.stories.js",
       ],
-      "env": {
-        "browser": true,
-        "node": true,
+      env: {
+        browser: true,
+        node: true,
       },
-      "rules": {
+      rules: {
         "import/no-extraneous-dependencies": "off",
       },
     },

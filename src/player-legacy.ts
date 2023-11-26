@@ -22,7 +22,7 @@ const _RedBlueLegacyPlayer = ( RedBlueVideo: typeof RedBlueOmniParser ) => {
       super();
 
       this.Legacy = {
-        "init": () => {
+        init: () => {
           for ( let index = 0; index < this.mediaQueue.length; index++ ) {
             const mediaQueueItem = this.mediaQueue[index];
 

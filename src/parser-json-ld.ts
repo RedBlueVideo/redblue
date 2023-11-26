@@ -9,7 +9,7 @@
 
 import { MixinConstructor } from "./util.js";
 
-export interface JSONChildNode extends ChildNode {};
+export interface JSONChildNode extends ChildNode {}
 
 /**
  * FIXME:
@@ -52,13 +52,20 @@ export type JSONElement = (
 
 // Dummy clone of XPathResult
 export class JSONXPathResult /*extends XPathResult*/ {
-  _booleanValue: XPathResult['booleanValue'];
+  _booleanValue?: XPathResult['booleanValue'];
+
   _invalidIteratorState: XPathResult['invalidIteratorState'];
-  _numberValue: XPathResult['numberValue'];
+
+  _numberValue?: XPathResult['numberValue'];
+
   _resultType: XPathResult['resultType'];
-  _singleNodeValue: XPathResult['singleNodeValue'];
+
+  _singleNodeValue?: XPathResult['singleNodeValue'];
+
   _snapshotLength: XPathResult['snapshotLength'];
+
   _stringValue: XPathResult['stringValue'];
+
   _snapshotItems: JSONElement[];
 
   constructor( properties: Partial<XPathResult> & { snapshotItems?: JSONElement[] } = {} ) {
@@ -280,6 +287,7 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
       // let asksForLocalDescendants = false;
 
       // Regular Expressions
+      /* eslint-disable @typescript-eslint/naming-convention */
       const xpathRegex__contains = /([^[\]]+\[contains\(\s*[^,]+,\s*(['"]).*\2\s*\)\])/i;
       const xpathRegex__rootDescendants = /^\/\//i;
       const xpathRegex__localDescendants = /\.\/\//i;
@@ -287,6 +295,7 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
       const xpathRegex__withIndex = /[^[\]]+\[[0-9]+\]/i;
       const xpathRegex__text = /text\(\)/i;
       const xpathRegex__brackets = /[[\]]/i;
+      /* eslint-enable @typescript-eslint/naming-convention */
 
       if ( xpathRegex__rootDescendants.test( xpathExpression ) ) {
         // asksForRootDescendants = true;
@@ -461,8 +470,8 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
           }
 
           return new JSONXPathResult( {
-            "snapshotItems": [snapshotItem],
-            "snapshotLength": 1,
+            snapshotItems: [snapshotItem],
+            snapshotLength: 1,
           } );
         }
       }
@@ -471,4 +480,4 @@ export function JSONLDParser<BaseType extends MixinConstructor>( Base: BaseType 
     }
   /* eslint-enable camelcase */
   };
-};
+}

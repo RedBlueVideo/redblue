@@ -2,6 +2,7 @@
   "extends": "@hughx/tsconfig",
   "include": [
     "src/**/*",
+    ".eslintrc.js",
     // "dev/redblue-video.stories.ts",
     // "dev/redblue-video.test.ts"
   ],
@@ -33,7 +34,7 @@
     // Types should go into this directory.
     // Removing this would place the .d.ts files
     // next to the .js files
-    // "outDir": "out",
+    "outDir": "ts-out",
     // go to js file when using IDE functions like
     // "Go to Definition" in VSCode
     "declarationMap": true,

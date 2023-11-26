@@ -38,15 +38,8 @@ Thumbs.db
 
 # Repo-specific
 www/media/lossless/
-_internal/
 node_modules/
-funky-lines*
-_site/
-homepage/
-.jekyll-metadata
 coverage/
 .nyc_output/
-.jekyll-cache/
-vendor/bundle/
-src/types/
 dist/
+ts-out/

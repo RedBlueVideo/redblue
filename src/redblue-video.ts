@@ -1,7 +1,7 @@
 // TODO: This is very HTML/XML-biased currently; flesh out JSON-LD support.
 'use strict';
 
-import { JSONXPathResult, JSONLDParser, JSONElement } from "./parser-json-ld.js";
+import { JSONXPathResult, JSONElement } from "./parser-json-ld.js";
 import { MSE } from "./player-mse.js";
 
 declare global {
@@ -50,8 +50,8 @@ type MediaQueueObjectCallback = ( mediaQueueObject: MediaQueueObject ) => void;
 type $ChoiceLink = HTMLAnchorElement;
 
 type CamelCaseHvmlElements =          'endTime' | 'endX' | 'endY' | 'startTime' | 'startX' | 'startY' | 'choicePrompt';
-type CamelCaseHvmlElementsLowerCase = 'endtime' | 'endx' | 'endy' | 'starttime' | 'startx' | 'starty' | 'choiceprompt';
-type CamelCaseHvmlElementsCamelOrLowerCase = CamelCaseHvmlElements | CamelCaseHvmlElementsLowerCase;
+// type CamelCaseHvmlElementsLowerCase = 'endtime' | 'endx' | 'endy' | 'starttime' | 'startx' | 'starty' | 'choiceprompt';
+// type CamelCaseHvmlElementsCamelOrLowerCase = CamelCaseHvmlElements | CamelCaseHvmlElementsLowerCase;
 
 export type $HTMLorXMLElement = HTMLElement | Element;
 
@@ -60,15 +60,8 @@ export type $Element = $HTMLorXMLElement | JSONElement;
 export interface HTMLXPathResult extends XPathResult {
   readonly singleNodeValue: $HTMLorXMLElement | null;
   iterateNext(): $HTMLorXMLElement | null;
-  snapshotItem(index: number): $HTMLorXMLElement | null;
+  snapshotItem( index: number ): $HTMLorXMLElement | null;
 }
-
-type FindResult = HTMLXPathResult | JSONXPathResult;
-
-/**
- * @deprecated
- */
-type ResolvableExpression = FindResult | $Element | Node;
 
 type HVMLSerialization = 'xml' | 'json-ld';
 
@@ -192,26 +185,38 @@ export interface Choice extends Annotation {
 }
 
 interface SpecficDocumentFragment extends DocumentFragment {
-  getElementById<ElementType extends HTMLElement>( elementId: string ): ElementType | null; 
+  getElementById<ElementType extends HTMLElement = HTMLElement>( elementId: string ): ElementType | null; 
 }
 
-export type TimelineTriggers = Record<number, RenderedAnnotation>
+export type TimelineTriggers = Record<number, RenderedAnnotation>;
 
 export default class RedBlueVideo extends HTMLElement {
   DEBUG_BUFFER_TYPE: string;
+
   DEBUG_MEDIA: MediaFileExtensions;
+
   DEBUG_MIME_TYPE: MediaFileMediaTypes;
+
   MISSING_HVML_PARSER_ERROR: string;
+
   MISSING_JSONLD_PARSER_ERROR: string;
+
   MISSING_XML_PARSER_ERROR: string;
+
   POLLING_INTERVAL: number;
+
   VIMEO_DOMAIN_REGEX: RegExp;
+
   VIMEO_VIDEO_REGEX: RegExp;
+
   YOUTUBE_DOMAIN_REGEX: RegExp;
+
   YOUTUBE_VIDEO_REGEX: RegExp;
 
-  _cssNamespacePrefix: string;
-  _hvmlParser: HVMLSerialization;
+  _cssNamespacePrefix?: string;
+
+  _hvmlParser?: HVMLSerialization;
+
   _isNonlinear: boolean;
 
   /**
@@ -240,33 +245,41 @@ export default class RedBlueVideo extends HTMLElement {
   /**
    * `querySelector` shortcut
    */
+  // @ts-ignore - assigned in connectedCallback
   $$: ParentNode['querySelector'];
 
   /**
    * `querySelectorAll` shortcut
    */
+  // @ts-ignore - assigned in connectedCallback
   $$$: ParentNode['querySelectorAll'];
 
   /**
    * `getElementById` shorcut
    */
+  // @ts-ignore - assigned in connectedCallback
   $id: SpecficDocumentFragment['getElementById'];
+
   $template: HTMLTemplateElement;
 
+  // @ts-ignore - assigned in connectedCallback  
   annotations: Annotation[];
 
   bufferTypes: Record<MediaFileExtensions, string>;
 
+  // @ts-ignore - assigned in connectedCallback
   cachingStrategy: CachingStrategies;
 
   currentChoiceAnnotationIndex: number;
 
+  // @ts-ignore - assigned in connectedCallback
   debug: boolean;
 
   duration: number;
 
   embedID: number;
-  embedParameters: string;
+
+  embedParameters?: string;
 
   Events: {
     presentChoice: ( event: any ) => void;
@@ -299,6 +312,7 @@ export default class RedBlueVideo extends HTMLElement {
 
   lastSegmentAppended: boolean;
 
+  // @ts-ignore - assigned in connectedCallback
   log: ( ...args: any[] ) => void;
 
   mediaQueue: MediaQueueObject[];
@@ -307,14 +321,18 @@ export default class RedBlueVideo extends HTMLElement {
 
   MSE?: MSE;
 
-  player: YT.Player;
+  player: {
+    YT?: YT.Player;
+  };
 
   resolveCSSNamespacePrefixFromJSONLD?( defaultPrefix?: string ): Promise<string>;
 
   resolveCSSNamespacePrefixFromXML?( defaultPrefix?: string ): Promise<string>;
 
+  // @ts-ignore - Assigned in connectedCallback
   stylesheetRules: CSSRuleList;
 
+  // @ts-ignore - Assigned in connectedCallback
   timelineTriggers: TimelineTriggers;
 
   XHR: {
@@ -431,12 +449,12 @@ export default class RedBlueVideo extends HTMLElement {
    */
   static get NS(): Record<string, string> {
     return {
-      "hvml": "https://hypervideo.tech/hvml#",
-      "ovml": "http://vocab.nospoon.tv/ovml#",
-      "html": "http://www.w3.org/1999/xhtml",
-      "xlink": "http://www.w3.org/1999/xlink",
-      "css": "https://www.w3.org/TR/CSS/",
-      "xml": "http://www.w3.org/XML/1998/namespace",
+      hvml: "https://hypervideo.tech/hvml#",
+      ovml: "http://vocab.nospoon.tv/ovml#",
+      html: "http://www.w3.org/1999/xhtml",
+      xlink: "http://www.w3.org/1999/xlink",
+      css: "https://www.w3.org/TR/CSS/",
+      xml: "http://www.w3.org/XML/1998/namespace",
     };
   }
 
@@ -446,9 +464,9 @@ export default class RedBlueVideo extends HTMLElement {
   static get cachingStrategies() {
     return {
       /** Load media segments as they are encountered as a result of user input. */
-      "LAZY": 0,
+      LAZY: 0,
       /** Load all media segments in advance to minimize buffering. */
-      "PRELOAD": 1,
+      PRELOAD: 1,
     };
   }
 
@@ -460,13 +478,13 @@ export default class RedBlueVideo extends HTMLElement {
    */
   static reCamelCase( nodeName: string ): string {
     const map: Record<string, CamelCaseHvmlElements> = {
-      "endtime": "endTime",
-      "endx": "endX",
-      "endy": "endY",
-      "starttime": "startTime",
-      "startx": "startX",
-      "starty": "startY",
-      "choiceprompt": "choicePrompt",
+      endtime: "endTime",
+      endx: "endX",
+      endy: "endY",
+      starttime: "startTime",
+      startx: "startX",
+      starty: "startY",
+      choiceprompt: "choicePrompt",
     };
 
     if ( nodeName in map ) {
@@ -502,8 +520,8 @@ export default class RedBlueVideo extends HTMLElement {
     const body = this.ownerDocument.body.nodeName;
 
     return {
-      "isPlainHTML": () => body === 'BODY',
-      "isXHTML": () => body === 'body',
+      isPlainHTML: () => body === 'BODY',
+      isXHTML: () => body === 'body',
     };
   }
 
@@ -665,9 +683,84 @@ export default class RedBlueVideo extends HTMLElement {
     this.queueNonlinearPlaylistItemsFromChoiceLink( $clicked );
   }
 
-  _initChoiceEvents() {
+  _registerChoiceEvents() {
+    if ( this.isNonlinear() ) {
+      if ( !this.$.localMedia ) {
+        console.warn( 'No local media element on which to add event listener' );
+      }
+
+      this.$.localMedia?.addEventListener(
+        'timeupdate',
+        this.Events.presentChoice,
+        false,
+      );
+    }
+
+    if ( !this.$.annotations ) {
+      console.warn( 'No annotations container on which to add event listener' );
+    }
+
+    this.$.annotations?.addEventListener(
+      'click',
+      this.Events.choiceClicked,
+      false,
+    );
+  }
+
+  constructor() {
+    super();
+
+    this.hvml = {
+      jsonLD: null,
+      xml: null,
+    };
+
+    this.bufferTypes = {
+      webm: 'video/webm; codecs="vorbis,vp8"',
+      mp4: 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"',
+    };
+
+    this.mimeTypes = {
+      webm: 'video/webm',
+      mp4: 'video/mp4',
+    };
+
+    // this.DEBUG_MODE = true;
+    this.DEBUG_MEDIA = 'webm';
+    this.DEBUG_BUFFER_TYPE = this.bufferTypes[this.DEBUG_MEDIA];
+    this.DEBUG_MIME_TYPE = this.mimeTypes[this.DEBUG_MEDIA];
+
+    // this.POLLING_INTERVAL = 1000, // 1 second
+    // this.POLLING_INTERVAL = 41.66666666667, // 1/24 second
+    // this.POLLING_INTERVAL = 33.33333333333, // 1/30 second
+    // this.POLLING_INTERVAL = 20.83333333333, // 1/48 second
+    this.POLLING_INTERVAL = 16.66666666667; // 1/60 second
+
+    // Past this point, errors: second video gets appended twice, third not at all, because shit is not ready
+    // this.POLLING_INTERVAL = 8.33333333333; // 1/120 second
+    // this.POLLING_INTERVAL = 1; // 1/1000 second
+
+    this.duration = 0;
+
+    this.embedID = ( new Date().getTime() );
+    this.$template = this.parseHTML(
+      RedBlueVideo.template
+        .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
+        .replace( 'id="local-media"', `id="local-media-${this.embedID}"` ),
+    ).children.namedItem( RedBlueVideo.is ) as HTMLTemplateElement;
+
+    // @ts-ignore - Init
+    this.$ = {};
+
+    this.currentChoiceAnnotationIndex = 0;
+
+    this.firstChoiceSelected = false;
+
+    this.firstSegmentAppended = false;
+    this.lastSegmentAppended = false;
+
     this.Events = {
-      "presentChoice": ( event ) => {
+      presentChoice: ( event ) => {
         // toFixed works around a Firefox bug but makes it slightly less accurate
         // TODO: Maybe detect Firefox and implement this conditionally? But then inconsistent playback experience.
         // Imprecision may not matter if it's going to be an overlay onto bg video.
@@ -687,7 +780,7 @@ export default class RedBlueVideo extends HTMLElement {
         }
       },
 
-      "choiceClicked": ( event ) => {
+      choiceClicked: ( event ) => {
         event.preventDefault();
 
         let $clicked = event.target as HTMLElement | null;
@@ -718,70 +811,12 @@ export default class RedBlueVideo extends HTMLElement {
         }
       },
     };
-  }
 
-  _registerChoiceEvents() {
-    if ( this.isNonlinear() ) {
-      this.$.localMedia?.addEventListener(
-        'timeupdate',
-        this.Events.presentChoice,
-        false,
-      );
-    }
-
-    this.$.annotations?.addEventListener(
-      'click',
-      this.Events.choiceClicked,
-      false,
-    );
-  }
-
-  constructor() {
-    super();
-
-    this.hvml = {
-      jsonLD: null,
-      xml: null,
-    }
-
-    this.bufferTypes = {
-      'webm': 'video/webm; codecs="vorbis,vp8"',
-      'mp4': 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"',
-    };
-
-    this.mimeTypes = {
-      'webm': 'video/webm',
-      'mp4': 'video/mp4',
-    };
-
-    // this.DEBUG_MODE = true;
-    this.DEBUG_MEDIA = 'webm';
-    this.DEBUG_BUFFER_TYPE = this.bufferTypes[this.DEBUG_MEDIA];
-    this.DEBUG_MIME_TYPE = this.mimeTypes[this.DEBUG_MEDIA];
-
-    // this.POLLING_INTERVAL = 1000, // 1 second
-    // this.POLLING_INTERVAL = 41.66666666667, // 1/24 second
-    // this.POLLING_INTERVAL = 33.33333333333, // 1/30 second
-    // this.POLLING_INTERVAL = 20.83333333333, // 1/48 second
-    this.POLLING_INTERVAL = 16.66666666667; // 1/60 second
-
-    // Past this point, errors: second video gets appended twice, third not at all, because shit is not ready
-    // this.POLLING_INTERVAL = 8.33333333333; // 1/120 second
-    // this.POLLING_INTERVAL = 1; // 1/1000 second
-
-    this.duration = 0;
-
-    // @ts-ignore - Init
-    this.$ = {};
-
-    this.firstChoiceSelected = false;
-
-    this.firstSegmentAppended = false;
-    this.lastSegmentAppended = false;
+    this.player = {};
 
     // TODO: make pluggable with custom XHR methods
     this.XHR = {
-      "GET": ( url, type, callback ) => {
+      GET: ( url, type, callback ) => {
         this.log( '--XHR.GET()--' );
 
         var xhr = new XMLHttpRequest();
@@ -796,13 +831,21 @@ export default class RedBlueVideo extends HTMLElement {
           }
           callback( new Uint8Array( xhr.response ), type );
         };
-      }
+      },
     };
 
     // TODO: Avoid falling out of sync:
     // Option A.) delete RedBlue.cachingStrategy;
     // Option B.) observe property changes
 
+
+    this.embedID = ( new Date().getTime() );
+    this.$template = this.parseHTML(
+      RedBlueVideo.template
+        .replace( 'id="embedded-media"', `id="embedded-media-${this.embedID}"` )
+        .replace( 'id="local-media"', `id="local-media-${this.embedID}"` ),
+    ).children.namedItem( RedBlueVideo.is ) as HTMLTemplateElement;
+   
     this.embedID = ( new Date().getTime() );
     this.$template = this.parseHTML(
       RedBlueVideo.template
@@ -917,11 +960,11 @@ export default class RedBlueVideo extends HTMLElement {
     fetch(
       mediaQueueObject.path,
       {
-        "method": "GET",
+        method: "GET",
         // "headers": {
         //   "Content-Type": mediaQueueObject.mime.split( ';' )[0],
         // },
-        "cache": "force-cache",
+        cache: "force-cache",
       },
     )
       .then( ( /* response */ ) => {
@@ -951,8 +994,8 @@ export default class RedBlueVideo extends HTMLElement {
 
       const mediaQueueObject: MediaQueueObject = {
         // 'type': 'media',
-        "mime": mimeType,
-        "path": this.getAttributeAnyNS( fileElement, 'xlink:href' )!,
+        mime: mimeType,
+        path: this.getAttributeAnyNS( fileElement, 'xlink:href' )!,
       };
 
       if ( /^image\/.*/i.test( mimeType ) ) {
@@ -1095,7 +1138,19 @@ export default class RedBlueVideo extends HTMLElement {
   }
 
   connectedCallback() {
-    this.setAttribute( 'class', 'redblue-video' );
+    this.debug = this.hasAttribute( 'debug' );
+
+    // https://stackoverflow.com/a/32928812/214325
+    if ( this.debug ) {
+      this.log = console.log.bind( window.console );
+    } else {
+      this.log = function noop() {};
+    }
+
+    if ( !this.classList.contains( 'redblue-video' ) ) {
+      // eslint-disable-next-line wc/no-self-class
+      this.classList.add( 'redblue-video' );
+    }
     this.setAttribute( 'role', 'application' );
 
     const cachingStrategy = this.getAttribute( 'caching-strategy' );
@@ -1113,20 +1168,11 @@ export default class RedBlueVideo extends HTMLElement {
         this.cachingStrategy = RedBlueVideo.cachingStrategies.LAZY;
     }
 
-    this.debug = this.hasAttribute( 'debug' );
-
-    // https://stackoverflow.com/a/32928812/214325
-    if ( this.debug ) {
-      this.log = console.log.bind( window.console );
-    } else {
-      this.log = function noop() {};
-    }
-
     let shadowRoot: ShadowRoot;
 
     if ( !this.shadowRoot ) {
       shadowRoot = this.attachShadow( {
-        "mode": ( this.debug ? "open" : "closed" ),
+        mode: ( this.debug ? "open" : "closed" ),
       } );
 
       shadowRoot.appendChild(
@@ -1139,6 +1185,7 @@ export default class RedBlueVideo extends HTMLElement {
     // this.$   = {};
     this.$$ = shadowRoot.querySelector.bind( shadowRoot );
     this.$$$ = shadowRoot.querySelectorAll.bind( shadowRoot );
+    // @ts-ignore - Pedantic
     this.$id = shadowRoot.getElementById.bind( shadowRoot );
 
     if ( this.hostDocument.isPlainHTML() ) {
@@ -1196,14 +1243,13 @@ export default class RedBlueVideo extends HTMLElement {
     this.$.localMedia = this.$id<HTMLVideoElement>( `local-media-${this.embedID}` )!;
     this.$.description = this.$id<HTMLDivElement>( 'description' )!;
     this.populateDescription();
-    this.currentChoiceAnnotationIndex = 0;
     this.$.currentChoice = this.$.annotations.children[0] as HTMLElement;
 
     try {
       const embedUri = this.getEmbedUri();
 
       if ( this.YOUTUBE_DOMAIN_REGEX.test( embedUri ) ) {
-        this.log( 'youtube' );
+        this.log( 'YouTube embed' );
         this.embedParameters = `?${[
           'rel=0',
           'showinfo=0',
@@ -1233,7 +1279,7 @@ export default class RedBlueVideo extends HTMLElement {
       try {
         const nonlinearPlaylist = this.getNonlinearPlaylist();
         let nonlinearPlaylistChildren = (
-            ( Array.isArray( nonlinearPlaylist.childNodes ) ? nonlinearPlaylist.childNodes : Array.from( nonlinearPlaylist.childNodes ) as $Element[] )
+          ( Array.isArray( nonlinearPlaylist.childNodes ) ? nonlinearPlaylist.childNodes : Array.from( nonlinearPlaylist.childNodes ) as $Element[] )
             .filter( ( childNode ) => childNode.nodeType === Node.ELEMENT_NODE )
         );
 
@@ -1245,7 +1291,6 @@ export default class RedBlueVideo extends HTMLElement {
 
         // No need to if-guard with isNonlinear() since the
         // try block will fail if getNonlinearPlaylist() throws
-        this._initChoiceEvents(); // FIXME: potentially applies to linear video with annotations
         this._registerChoiceEvents();
 
         // Cache playlist media
@@ -1439,17 +1484,17 @@ export default class RedBlueVideo extends HTMLElement {
   }
 
   initializeYoutubePlayer() {
-    this.player = new window.YT.Player( this.$.embeddedMedia, {
-      "events": {
-        "onReady": this.onPlayerReady.bind( this ),
-        "onStateChange": this.onStateChange.bind( this ),
+    this.player.YT = new window.YT.Player( this.$.embeddedMedia, {
+      events: {
+        onReady: this.onPlayerReady.bind( this ),
+        onStateChange: this.onStateChange.bind( this ),
       },
     } );
 
     document.addEventListener( 'keydown', ( event ) => {
       switch ( event.key ) {
         case 'm':
-          this.log( this.player.getCurrentTime() );
+          this.log( this.player.YT!.getCurrentTime() );
           break;
 
         default:
@@ -1518,7 +1563,7 @@ export default class RedBlueVideo extends HTMLElement {
   onPlayerReady( /* event */ ) {
     this.log( 'ready' );
     this.$.embeddedMedia.style.borderColor = '#FF6D00';
-    this.player.mute();
+    this.player.YT?.mute();
   }
 
   onStateChange() {
@@ -1535,10 +1580,10 @@ export default class RedBlueVideo extends HTMLElement {
   // so unfortunately we have to poll the video if
   // we want to react to when the user seeks manually. :(
   updateUIOnYoutubePlayback() {
-    if ( this.player && this.player.getCurrentTime ) {
+    if ( this.player.YT ) {
       // Returns the elapsed time in seconds since the video started playing
-      const time = this.player.getCurrentTime(); /* * 1000 */
-      const state = this.player.getPlayerState();
+      const time = this.player.YT.getCurrentTime(); /* * 1000 */
+      const state = this.player.YT.getPlayerState();
 
       // https://stackoverflow.com/a/9882349/214325
       switch ( state ) {
@@ -1623,10 +1668,11 @@ export default class RedBlueVideo extends HTMLElement {
           throw new TypeError( '<script> elements must contain JSON-LD data. If this is what you have, please set the `type` attribute to "application/ld+json"` to make this explicit.' );
 
         default:
+          throw new TypeError( `HVML annotations must be provided as either \`<hvml>\` or \`<script>\` tags.` );
       } // switch
     } // for
 
-    this.log( 'No <hvml> or <script> elements found.' );
+    throw new ReferenceError( `HVML annotations must be provided as as immediate children of the \`<${RedBlueVideo.is}>\` tag.` );
   }
 
   getEmbedUri() {
@@ -1672,7 +1718,7 @@ export default class RedBlueVideo extends HTMLElement {
     const stylesheet = this.$.style.sheet!;
     let id;
 
-    console.log( annotation );
+    this.log( annotation );
 
     if ( annotation['xml:id'] ) {
       id = annotation['xml:id'];
@@ -1738,7 +1784,7 @@ export default class RedBlueVideo extends HTMLElement {
 
             if ( !$choiceTarget ) {
               throw new ReferenceError(
-                `Could not create hotspot for Annotation #${index}, Choice #${i}. Unable to find DOM element with ID \`annotation-${index}\``
+                `Could not create hotspot for Annotation #${index}, Choice #${i}. Unable to find DOM element with ID \`annotation-${index}\``,
               );
             }
 
@@ -1801,13 +1847,13 @@ export default class RedBlueVideo extends HTMLElement {
     switch ( this._hvmlParser ) {
       case 'xml':
         if ( !this.hasXMLParser ) {
-          throw this.MISSING_XML_PARSER_ERROR;
+          throw new ReferenceError( this.MISSING_XML_PARSER_ERROR );
         }
         return this.getAnnotationsFromXML!();
 
       case 'json-ld':
         if ( !this.hasJSONLDParser ) {
-          throw this.MISSING_JSONLD_PARSER_ERROR;
+          throw new ReferenceError( this.MISSING_JSONLD_PARSER_ERROR );
         }
         return this.getAnnotationsFromJSONLD!();
 
@@ -1817,7 +1863,7 @@ export default class RedBlueVideo extends HTMLElement {
   } // getAnnotations
 
   getTimelineTriggers(): TimelineTriggers {
-    if ( !this.annotations ) {
+    if ( !this.annotations || !this.annotations.length ) {
       // return null;
       return {};
     }
@@ -1835,7 +1881,7 @@ export default class RedBlueVideo extends HTMLElement {
 
           if ( !$ui ) {
             throw new ReferenceError(
-              `Could not process Annotation #${annotationIndex}, Animation #${animateIndex}. Unable to find DOM element with query \`${uiQuery}\`.`
+              `Could not process Annotation #${annotationIndex}, Animation #${animateIndex}. Unable to find DOM element with query \`${uiQuery}\`.`,
             );
           }
 
@@ -1843,10 +1889,10 @@ export default class RedBlueVideo extends HTMLElement {
             ...animate,
             annotationIndex,
             animateIndex,
-            "name": annotation.name,
+            name: annotation.name,
             $ui,
-            "startClass": `redblue-annotations__link--${annotationIndex}-start`,
-            "endClass": `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`,
+            startClass: `redblue-annotations__link--${annotationIndex}-start`,
+            endClass: `redblue-annotations__link--${annotationIndex}-animate-${animateIndex}-end`,
           };
 
           if ( animateIndex > 0 ) {
@@ -1877,4 +1923,4 @@ export default class RedBlueVideo extends HTMLElement {
         throw new ReferenceError( this.MISSING_HVML_PARSER_ERROR );
     }
   }
-};
+}

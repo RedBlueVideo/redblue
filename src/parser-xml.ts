@@ -21,65 +21,65 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
       super( ...args );
 
       this.XML = {
-      "xmlDoc": null,
-      "xmlLoaded": false,
-      "evaluator": new XPathEvaluator(),
-      "nsResolver": null,
-      "ns": {
-        "xml": "http://www.w3.org/XML/1998/namespace",
-      },
+        xmlDoc: null,
+        xmlLoaded: false,
+        evaluator: new XPathEvaluator(),
+        nsResolver: null,
+        ns: {
+          xml: "http://www.w3.org/XML/1998/namespace",
+        },
 
-      /**
-       * @deprecated
-       */
-      "read": () => {
+        /**
+         * @deprecated
+         */
+        read: () => {
         // let element;
 
-        this.log( 'reading XHR result' );
+          this.log( 'reading XHR result' );
 
-        const result = this.find( '//video/presentation/playlist' );
+          const result = this.find( '//video/presentation/playlist' );
 
-        if ( result ) {
+          if ( result ) {
           // this.OVML.parse.playlist( result );
-        }
-      }, // read
-
-      /**
-       * @deprecated
-       */
-      "import": ( xmlFile: string ) => {
-        this.log( '--XML.import()--' );
-        const xhr = new XMLHttpRequest();
-
-        xhr.open( 'GET', xmlFile, true );
-        xhr.setRequestHeader( 'Content-Type', 'text/xml' ); // application/ovml+xml
-        xhr.onload = () => {
-          switch ( xhr.status ) {
-            case 200:
-              this.XML.xmlDoc = xhr.responseXML;
-              this.XML.read();
-
-              // this.log( 'this.mediaQueue', this.mediaQueue );
-
-              for ( let i = this.mediaQueue.length - 1; i >= 0; --i ) {
-                this.XHR.GET(
-                  this.mediaQueue[i].path,
-                  this.mediaQueue[i].mime,
-                  // this.readPlaylistItem,
-                  ( binary, type ) => this.log( `readPlaylistItem( binary, type )`, binary, type ),
-                );
-              }
-
-              this.log( '--import()--' );
-              // this.play();
-              this.log( 'this.play();' );
-              break;
-
-            default:
           }
-        };
-        xhr.send( '' );
-      }, // import
+        }, // read
+
+        /**
+         * @deprecated
+         */
+        import: ( xmlFile: string ) => {
+          this.log( '--XML.import()--' );
+          const xhr = new XMLHttpRequest();
+
+          xhr.open( 'GET', xmlFile, true );
+          xhr.setRequestHeader( 'Content-Type', 'text/xml' ); // application/ovml+xml
+          xhr.onload = () => {
+            switch ( xhr.status ) {
+              case 200:
+                this.XML.xmlDoc = xhr.responseXML;
+                this.XML.read();
+
+                // this.log( 'this.mediaQueue', this.mediaQueue );
+
+                for ( let i = this.mediaQueue.length - 1; i >= 0; --i ) {
+                  this.XHR.GET(
+                    this.mediaQueue[i].path,
+                    this.mediaQueue[i].mime,
+                    // this.readPlaylistItem,
+                    ( binary, type ) => this.log( `readPlaylistItem( binary, type )`, binary, type ),
+                  );
+                }
+
+                this.log( '--import()--' );
+                // this.play();
+                this.log( 'this.play();' );
+                break;
+
+              default:
+            }
+          };
+          xhr.send( '' );
+        }, // import
       }; // XML
     }
 
@@ -168,7 +168,7 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
             case 'choiceprompt': {
               // @ts-ignore - Init
               const choicePrompt: ChoicePrompt = {
-                "type": "choicePrompt",
+                type: "choicePrompt",
               };
 
               for ( let j = 0, { "length": grandchildrenLength } = $child.children; j < grandchildrenLength; j++ ) {
@@ -252,5 +252,5 @@ export function XMLParser<BaseType extends MixinConstructor>( Base: BaseType ) {
         null, // result
       );
     }
-  }
-};
+  };
+}
